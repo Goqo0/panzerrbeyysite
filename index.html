@@ -1,237 +1,526 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panzerr IPTV</title>
-
-<!-- HLS.JS -->
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PanzerSports - Canlı Spor Yayınları</title>
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0f0f0f;
-  color: white;
-}
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.header {
-  height: 12vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  font-weight: bold;
-  letter-spacing: 2px;
-}
+  :root {
+    --red: #e63030;
+    --red-dark: #b91c1c;
+    --s900: #0a0a0f;
+    --s800: #111118;
+    --s700: #1a1a24;
+    --s600: #22222f;
+    --s500: #2d2d3d;
+  }
 
-.player-container {
-  width: 90%;
-  max-width: 800px;
-  aspect-ratio: 16/9;
-  background: black;
-}
+  html, body {
+    height: 100%;
+    background: var(--s900);
+    color: #fff;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
 
-video {
-  width: 100%;
-  height: 100%;
-  background: black;
-}
+  /* Scrollbar */
+  * { scrollbar-width: thin; scrollbar-color: var(--s500) var(--s800); }
+  *::-webkit-scrollbar { width: 5px; height: 5px; }
+  *::-webkit-scrollbar-track { background: var(--s800); }
+  *::-webkit-scrollbar-thumb { background: var(--s500); border-radius: 3px; }
+  *::-webkit-scrollbar-thumb:hover { background: var(--red); }
 
-.button-row {
-  width: 90%;
-  max-width: 800px;
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-}
+  /* Layout */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    height: 56px;
+    background: rgba(17,17,24,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex; align-items: center;
+    padding: 0 24px;
+    justify-content: space-between;
+  }
 
-.toggle-btn {
-  width: 48%;
-  background: #1f1f1f;
-  color: white;
-  border: none;
-  padding: 12px;
-  cursor: pointer;
-  text-align: center;
-  font-size: 16px;
-  border-radius: 8px;
-}
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 32px; height: 32px; background: var(--red); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 18px rgba(230,48,48,0.35);
+    font-size: 15px;
+  }
+  .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+  .logo-text span { color: var(--red); }
+  .live-pill {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 700; color: var(--red); text-transform: uppercase; letter-spacing: .06em;
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--red);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-.separator {
-  width: 4px;
-  height: 40px;
-  background: #ff0066;
-  border-radius: 2px;
-  align-self: center;
-}
+  .social-links { display: flex; gap: 8px; }
+  .social-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 8px;
+    background: var(--s700); border: 1px solid rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.65); font-size: 13px; font-weight: 500;
+    text-decoration: none; transition: all .2s;
+  }
+  .social-btn:hover { background: var(--s600); color: #fff; }
+  .social-btn svg { flex-shrink: 0; }
+  @media(max-width:520px){ .social-label { display:none; } }
 
-.list-row {
-  width: 90%;
-  max-width: 800px;
-  display: flex;
-  justify-content: space-between;
-  margin-top: 5px;
-}
+  /* Hero glow */
+  .hero-glow {
+    position: fixed; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 80% 40% at 50% -10%, rgba(230,48,48,0.12), transparent);
+  }
 
-.channel-list {
-  width: 48%;
-  max-height: 0;
-  overflow-y: auto;
-  background: #181818;
-  transition: max-height 0.4s ease;
-  border-radius: 5px;
-  border: 1px solid #555;
-}
+  /* Main */
+  .main {
+    max-width: 1400px; margin: 0 auto;
+    padding: 76px 24px 32px;
+    display: flex; gap: 24px;
+  }
+  @media(max-width:960px){ .main { flex-direction: column; } }
 
-.channel-list.open {
-  max-height: 300px;
-}
+  /* Player side */
+  .player-side { flex: 1; min-width: 0; }
 
-.channel {
-  padding: 10px;
-  border-bottom: 2px solid #888;
-  cursor: pointer;
-}
+  .player-wrap {
+    position: relative; width: 100%; aspect-ratio: 16/9;
+    background: var(--s800); border-radius: 14px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .player-wrap iframe {
+    position: absolute; left: 0; top: -2%; width: 100%; height: 130%; border: none;
+  }
+  .player-placeholder {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; color: rgba(255,255,255,0.25);
+  }
+  .placeholder-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: var(--s700); border: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+  }
+  .placeholder-text { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.4); }
 
-.channel:hover {
-  background: #333;
-}
+  /* Now playing bar */
+  .now-playing {
+    margin-top: 12px; display: flex; align-items: center; justify-content: space-between;
+    min-height: 40px;
+  }
+  .np-left { display: flex; align-items: center; gap: 10px; }
+  .np-info p { font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .np-info small { font-size: 12px; color: rgba(255,255,255,0.38); }
+  .np-note { font-size: 11px; color: rgba(234,179,8,0.7); display:flex;align-items:center;gap:4px; margin-top:2px; }
 
-.footer {
-  margin-top: auto;
-  padding: 20px;
-  text-align: center;
-  background: #111;
-  width: 100%;
-}
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 20px; }
+  @media(max-width:480px){ .stats { grid-template-columns: repeat(2,1fr); } }
+  .stat-card {
+    background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing:.06em; color:rgba(255,255,255,0.35); margin-bottom:4px; }
+  .stat-value { font-size: 18px; font-weight: 700; }
+  .stat-value.accent { color: var(--red); }
 
-.socials img {
-  width: 40px;
-  margin: 10px;
-}
+  /* Welcome */
+  .welcome {
+    margin-top: 20px;
+    background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px; padding: 22px;
+    display: flex; gap: 16px; align-items: flex-start;
+    animation: fadeIn .4s ease;
+  }
+  .welcome-icon {
+    width: 48px; height: 48px; border-radius: 12px; flex-shrink:0;
+    background: rgba(230,48,48,0.1); border: 1px solid rgba(230,48,48,0.2);
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .welcome h2 { font-size: 16px; font-weight: 700; margin-bottom:6px; }
+  .welcome p { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.6; }
+  .welcome-pills { display:flex; gap:14px; margin-top:10px; flex-wrap:wrap; }
+  .welcome-pill { font-size:11px; color:rgba(255,255,255,0.35); display:flex;align-items:center;gap:5px; }
 
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  /* Sidebar */
+  .sidebar { width: 340px; flex-shrink: 0; }
+  @media(max-width:960px){ .sidebar { width: 100%; } }
+
+  .sidebar-inner {
+    background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px; overflow: hidden;
+    position: sticky; top: 68px;
+  }
+
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .tab-btn {
+    flex: 1; display:flex; align-items:center; justify-content:center; gap:7px;
+    padding: 14px; font-size:13px; font-weight:600; cursor:pointer;
+    background: none; border: none; color: rgba(255,255,255,0.38);
+    border-bottom: 2px solid transparent; margin-bottom:-1px;
+    transition: all .2s;
+  }
+  .tab-btn.active { color:#fff; background:rgba(230,48,48,0.08); border-bottom-color:var(--red); }
+  .tab-btn:hover:not(.active){ color:rgba(255,255,255,0.65); }
+
+  /* Tab content */
+  .tab-content { padding: 16px; max-height: calc(100vh - 150px); overflow-y: auto; }
+
+  .section-header {
+    display:flex; align-items:center; gap:8px; margin-bottom:14px;
+  }
+  .section-header h2 { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+  .count-badge {
+    margin-left:auto; font-size:11px; color:rgba(255,255,255,0.3);
+    background:var(--s700); border:1px solid rgba(255,255,255,0.05);
+    padding:1px 8px; border-radius:20px;
+  }
+
+  /* Search */
+  .search-wrap { position:relative; margin-bottom:10px; }
+  .search-wrap svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.28); pointer-events:none; }
+  .search-input {
+    width:100%; background:var(--s700); border:1px solid rgba(255,255,255,0.06);
+    border-radius:10px; padding:8px 10px 8px 32px;
+    font-size:13px; color:#fff; font-family:inherit; outline:none; transition:all .2s;
+  }
+  .search-input::placeholder { color:rgba(255,255,255,0.28); }
+  .search-input:focus { border-color:rgba(230,48,48,0.35); background:var(--s600); }
+
+  /* Category pills */
+  .cats { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .cat-btn {
+    padding:4px 10px; border-radius:8px; font-size:11px; font-weight:600;
+    cursor:pointer; border:1px solid rgba(255,255,255,0.06);
+    background:var(--s700); color:rgba(255,255,255,0.45); transition:all .2s;
+  }
+  .cat-btn.active { background:var(--red); color:#fff; border-color:var(--red); }
+  .cat-btn:hover:not(.active){ color:rgba(255,255,255,0.8); }
+
+  /* Channel / Match cards */
+  .card-list { display:flex; flex-direction:column; gap:6px; }
+  .card {
+    width:100%; text-align:left; background:rgba(26,26,36,0.8);
+    border:1px solid rgba(255,255,255,0.05); border-radius:12px;
+    padding:11px 13px; cursor:pointer; transition:all .18s;
+    display:flex; align-items:center; gap:11px;
+  }
+  .card:hover { background:rgba(45,45,61,0.9); border-color:rgba(230,48,48,0.22); transform:translateY(-1px); }
+  .card.active { background:rgba(230,48,48,0.13); border-color:rgba(230,48,48,0.45); }
+  .card.active .card-name { color:#ff6b6b; }
+
+  .card-icon {
+    width:32px; height:32px; border-radius:9px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--s600); border:1px solid rgba(255,255,255,0.06); font-size:15px;
+  }
+  .card.active .card-icon { background:rgba(230,48,48,0.12); border-color:rgba(230,48,48,0.3); }
+
+  .card-body { flex:1; min-width:0; }
+  .card-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#fff; }
+  .card-sub { font-size:11px; color:rgba(255,255,255,0.38); margin-top:2px; }
+  .card-note { font-size:11px; color:rgba(234,179,8,0.65); margin-top:3px; display:flex;align-items:center;gap:3px; }
+
+  .quality-badge {
+    flex-shrink:0; font-size:10px; font-weight:700; padding:2px 6px; border-radius:5px;
+    border:1px solid rgba(255,255,255,0.08); color:rgba(255,255,255,0.35); background:rgba(255,255,255,0.04);
+  }
+  .quality-badge.fhd { color:#4ade80; background:rgba(74,222,128,0.08); border-color:rgba(74,222,128,0.2); }
+
+  .live-badge-pill {
+    flex-shrink:0; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px;
+    background:rgba(230,48,48,0.18); color:var(--red); border:1px solid rgba(230,48,48,0.3);
+  }
+
+  .empty-state {
+    text-align:center; padding:32px 0; color:rgba(255,255,255,0.25);
+    font-size:13px;
+  }
+  .empty-state div { font-size:24px; margin-bottom:8px; opacity:.5; }
+
+  /* Footer */
+  .footer {
+    border-top:1px solid rgba(255,255,255,0.05); margin-top:32px;
+    padding:14px 24px; display:flex; justify-content:space-between;
+    max-width:1400px; margin:32px auto 0;
+  }
+  .footer span { font-size:11px; color:rgba(255,255,255,0.2); }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="hero-glow"></div>
 
-  <div class="header">PANZERRBEYY</div>
-
-  <div class="player-container">
-    <video id="video" controls playsinline webkit-playsinline crossorigin="anonymous"></video>
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">Panzer<span>Sports</span></div>
+    <div class="live-pill"><span class="live-dot"></span> Canlı</div>
   </div>
-
-  <div class="button-row">
-    <div class="toggle-btn" onclick="toggleMatches()">Maçlar</div>
-    <div class="separator"></div>
-    <div class="toggle-btn" onclick="toggleChannels()">Canlı Kanallar</div>
+  <div class="social-links">
+    <a class="social-btn" href="https://t.me/xpanzerrbeyy" target="_blank" rel="noopener">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.247-2.022 9.531c-.148.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.885.69z"/></svg>
+      <span class="social-label">Telegram</span>
+    </a>
+    <a class="social-btn" href="https://x.com/panzerrbeyyx" target="_blank" rel="noopener">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      <span class="social-label">@xpanzerrbeyy</span>
+    </a>
   </div>
+</header>
 
-  <div class="list-row">
-    <div id="matchList" class="channel-list">
-      <div class="channel" onclick="playChannel('https://cdn.ssportplus.com/69/3165/yE4AZp9TfpEf/yE4AZp9TfpEf.mpd?hdnts=ip=88.234.216.234~exp=1773725923~acl=/*~id=283939~hmac=2af392eecf2d9fb7c58a0df186e73d7cc315cf8079558cf4109d565127bcf87e')">NBA| LA Lakers - Houston Rockets</div>
-      <div class="channel" onclick="playChannel('MAC_LINK_2')">Maç 2</div>
+<!-- MAIN -->
+<div class="main">
+
+  <!-- Player -->
+  <div class="player-side">
+    <div class="player-wrap" id="playerWrap">
+      <div class="player-placeholder" id="placeholder">
+        <div class="placeholder-icon">▶</div>
+        <p class="placeholder-text">Bir kanal veya maç seçin</p>
+      </div>
+      <iframe id="playerFrame" style="display:none"
+        allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
     </div>
 
-    <div id="channelList" class="channel-list">
-      <div class="channel" onclick="playChannel('https://panzerrbeyy1-deneme.hf.space/proxy/m3u?url=http://mc3.268904.xyz:80/live/fransa1801/18h01c22/366154.m3u8')">Bein Sports 1 FHD|Biraz geç açılabilir. </div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivebs1.m3u8')">Bein Sports 1</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivebs2.m3u8')">Bein Sports 2</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivebs3.m3u8')">Bein Sports 3</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivebs4.m3u8')">Bein Sports 4</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivebs5.m3u8')">Bein Sports 5</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivebsm1.m3u8')">Bein Sports Max 1</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivebsm2.m3u8')">Bein Sports Max 2</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivess1.m3u8')">S SPORT</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivess2.m3u8')">S SPORT 2</div>
-      <div class="channel" onclick="playChannel('https://xz9k2vlpwn4mr7tq5by1sh3gj.medya.trt.com.tr/master.m3u8')">Tabii Spor</div>
-      <div class="channel" onclick="playChannel('https://iaqzu4szhtzeqd0edpsayinle.medya.trt.com.tr/master_1080p.m3u8')">Tabii Spor 1</div>
-      <div class="channel" onclick="playChannel('https://klublsslubcgyiz7zqt5bz8il.medya.trt.com.tr/master_1080p.m3u8')">Tabii Spor 2</div>
-      <div class="channel" onclick="playChannel('https://ujnf69op16x2fiiywxcnx41q8.medya.trt.com.tr/master_1080p.m3u8')">Tabii Spor 3</div>
-      <div class="channel" onclick="playChannel('https://bfxy3jgeydpbphtk8qfqwm3hr.medya.trt.com.tr/master_1080p.m3u8')">Tabii Spor 4</div>
-      <div class="channel" onclick="playChannel('https://z3mmimwz148csv0vaxtphqspf.medya.trt.com.tr/master_1080p.m3u8')">Tabii Spor 5</div>
-      <div class="channel" onclick="playChannel('https://vbtob9hyq58eiophct5qctxr2.medya.trt.com.tr/master_1080p.m3u8')">Tabii Spor 6</div>
-      <div class="channel" onclick="playChannel('https://rxne77juptdeyke3tytvgqwyh.medya.trt.com.tr/master_720p.m3u8')">Tabii Spor 7</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivets.m3u8')">Tivibu Spor</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivets1.m3u8')">Tivibu Spor 1</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivets2.m3u8')">Tivibu Spor 2</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivets3.m3u8')">Tivibu Spor 3</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivets4.m3u8')">Tivibu Spor 4</div>
-      <div class="channel" onclick="playChannel('https://tv-trt1-dash.medya.trt.com.tr/master.mpd')">TRT 1</div>
-      <div class="channel" onclick="playChannel('https://andro.5172948.xyz/checklist/androstreamlivetrt1.m3u8')">TRT 1 YURT DIŞI</div>
-      <div class="channel" onclick="playChannel('https://tv-trtspor1.medya.trt.com.tr/master_1080.m3u8')">TRT SPOR</div>
+    <div class="now-playing" id="nowPlaying" style="display:none">
+      <div class="np-left">
+        <div class="live-pill"><span class="live-dot"></span> Canlı</div>
+        <div class="np-info">
+          <p id="npTitle"></p>
+          <small id="npSub"></small>
+          <div class="np-note" id="npNote" style="display:none">⚠ <span id="npNoteText"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card"><div class="stat-label">Canlı Kanal</div><div class="stat-value accent">26</div></div>
+      <div class="stat-card"><div class="stat-label">Kalite</div><div class="stat-value">HD/FHD</div></div>
+      <div class="stat-card"><div class="stat-label">Platform</div><div class="stat-value">HLS</div></div>
+      <div class="stat-card"><div class="stat-label">Kategori</div><div class="stat-value">5</div></div>
+    </div>
+
+    <div class="welcome" id="welcomeBanner">
+      <div class="welcome-icon">⚡</div>
+      <div>
+        <h2>PanzerSports'e Hoşgeldiniz</h2>
+        <p>Sağ panelden bir maç veya canlı kanal seçerek yayına başlayın. Bein Sports, S Sport, Tabii Spor, Tivibu Spor ve TRT kanallarına erişin.</p>
+        <div class="welcome-pills">
+          <span class="welcome-pill"><span style="color:var(--red)">●</span> Canlı yayın</span>
+          <span class="welcome-pill"><span style="color:#4ade80">●</span> FHD kalite</span>
+          <span class="welcome-pill">🔒 Güvenli</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="footer">
-    İletişim için:
-    <div class="socials">
-      <a href="https://t.me/xpanzerrbeyy" target="_blank">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg">
-      </a>
-      <a href="https://x.com/panzerrbeyyx" target="_blank">
-        <img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png">
-      </a>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-inner">
+      <div class="tabs">
+        <button class="tab-btn active" id="tabMatches" onclick="switchTab('matches')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          Maçlar
+        </button>
+        <button class="tab-btn" id="tabChannels" onclick="switchTab('channels')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+          Kanallar
+        </button>
+      </div>
+
+      <!-- Matches tab -->
+      <div class="tab-content" id="panelMatches">
+        <div class="section-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e63030" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          <h2>Maçlar</h2>
+          <span class="count-badge" id="matchCount">0</span>
+        </div>
+        <div class="card-list" id="matchList"></div>
+      </div>
+
+      <!-- Channels tab -->
+      <div class="tab-content" id="panelChannels" style="display:none">
+        <div class="section-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e63030" stroke-width="2"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+          <h2>Canlı Kanallar</h2>
+          <span class="count-badge" id="channelCount">0</span>
+        </div>
+        <div class="search-wrap">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input class="search-input" id="searchInput" type="text" placeholder="Kanal ara..." oninput="renderChannels()" />
+        </div>
+        <div class="cats" id="catList"></div>
+        <div class="card-list" id="channelList"></div>
+      </div>
     </div>
   </div>
-
 </div>
 
+<footer>
+  <div class="footer">
+    <span>© 2025 PanzerSports · Tüm hakları saklıdır</span>
+    <span>Yalnızca eğitim amaçlıdır</span>
+  </div>
+</footer>
+
 <script>
-let video = document.getElementById('video');
-let hls, dash;
+const BASE = 'https://hlsplayer.net/embed?type=m3u8&src=';
 
-function playChannel(url) {
+const matches = [
+  { id:'m1', title:'NBA | LA Lakers - Houston Rockets', channel:'Bein Sports 1 FHD', isLive:true,
+    note:'Biraz geç açılabilir',
+    url:'https://cdn.ssportplus.com/69/3165/yE4AZp9TfpEf/yE4AZp9TfpEf.mpd?hdnts=ip=88.234.216.234~exp=1773725923~acl=/*~id=283939~hmac=2af392eecf2d9fb7c58a0df186e73d7cc315cf8079558cf4109d565127bcf87e' },
+];
 
-  if (hls) { hls.destroy(); }
-  if (dash) { dash.reset(); }
+const channels = [
+  // BeIN Sports
+  { id:'bein1fhd', name:'Bein Sports 1 FHD', cat:'BeIN Sports', q:'FHD', icon:'🔴', note:'Biraz geç açılabilir', url:'https://panzerrbeyy1-deneme.hf.space/proxy/m3u?url=http://mc3.268904.xyz:80/live/fransa1801/18h01c22/366154.m3u8' },
+  { id:'bein1',    name:'Bein Sports 1',     cat:'BeIN Sports', q:'HD',  icon:'🔴', url:'https://andro.5172948.xyz/checklist/androstreamlivebs1.m3u8' },
+  { id:'bein2',    name:'Bein Sports 2',     cat:'BeIN Sports', q:'HD',  icon:'🔴', url:'https://andro.5172948.xyz/checklist/androstreamlivebs2.m3u8' },
+  { id:'bein3',    name:'Bein Sports 3',     cat:'BeIN Sports', q:'HD',  icon:'🔴', url:'https://andro.5172948.xyz/checklist/androstreamlivebs3.m3u8' },
+  { id:'bein4',    name:'Bein Sports 4',     cat:'BeIN Sports', q:'HD',  icon:'🔴', url:'https://andro.5172948.xyz/checklist/androstreamlivebs4.m3u8' },
+  { id:'bein5',    name:'Bein Sports 5',     cat:'BeIN Sports', q:'HD',  icon:'🔴', url:'https://andro.5172948.xyz/checklist/androstreamlivebs5.m3u8' },
+  { id:'beinm1',   name:'Bein Sports Max 1', cat:'BeIN Sports', q:'HD',  icon:'🔴', url:'https://andro.5172948.xyz/checklist/androstreamlivebsm1.m3u8' },
+  { id:'beinm2',   name:'Bein Sports Max 2', cat:'BeIN Sports', q:'HD',  icon:'🔴', url:'https://andro.5172948.xyz/checklist/androstreamlivebsm2.m3u8' },
+  // S Sport
+  { id:'ss1',  name:'S Sport',   cat:'S Sport', q:'HD', icon:'🟡', url:'https://andro.5172948.xyz/checklist/androstreamlivess1.m3u8' },
+  { id:'ss2',  name:'S Sport 2', cat:'S Sport', q:'HD', icon:'🟡', url:'https://andro.5172948.xyz/checklist/androstreamlivess2.m3u8' },
+  // Tabii Spor
+  { id:'tb0', name:'Tabii Spor',   cat:'Tabii Spor', q:'HD',  icon:'🔵', url:'https://xz9k2vlpwn4mr7tq5by1sh3gj.medya.trt.com.tr/master.m3u8' },
+  { id:'tb1', name:'Tabii Spor 1', cat:'Tabii Spor', q:'FHD', icon:'🔵', url:'https://iaqzu4szhtzeqd0edpsayinle.medya.trt.com.tr/master_1080p.m3u8' },
+  { id:'tb2', name:'Tabii Spor 2', cat:'Tabii Spor', q:'FHD', icon:'🔵', url:'https://klublsslubcgyiz7zqt5bz8il.medya.trt.com.tr/master_1080p.m3u8' },
+  { id:'tb3', name:'Tabii Spor 3', cat:'Tabii Spor', q:'FHD', icon:'🔵', url:'https://ujnf69op16x2fiiywxcnx41q8.medya.trt.com.tr/master_1080p.m3u8' },
+  { id:'tb4', name:'Tabii Spor 4', cat:'Tabii Spor', q:'FHD', icon:'🔵', url:'https://bfxy3jgeydpbphtk8qfqwm3hr.medya.trt.com.tr/master_1080p.m3u8' },
+  { id:'tb5', name:'Tabii Spor 5', cat:'Tabii Spor', q:'FHD', icon:'🔵', url:'https://z3mmimwz148csv0vaxtphqspf.medya.trt.com.tr/master_1080p.m3u8' },
+  { id:'tb6', name:'Tabii Spor 6', cat:'Tabii Spor', q:'FHD', icon:'🔵', url:'https://vbtob9hyq58eiophct5qctxr2.medya.trt.com.tr/master_1080p.m3u8' },
+  { id:'tb7', name:'Tabii Spor 7', cat:'Tabii Spor', q:'HD',  icon:'🔵', url:'https://rxne77juptdeyke3tytvgqwyh.medya.trt.com.tr/master_720p.m3u8' },
+  // Tivibu Spor
+  { id:'tv0', name:'Tivibu Spor',   cat:'Tivibu Spor', q:'HD', icon:'🟢', url:'https://andro.5172948.xyz/checklist/androstreamlivets.m3u8' },
+  { id:'tv1', name:'Tivibu Spor 1', cat:'Tivibu Spor', q:'HD', icon:'🟢', url:'https://andro.5172948.xyz/checklist/androstreamlivets1.m3u8' },
+  { id:'tv2', name:'Tivibu Spor 2', cat:'Tivibu Spor', q:'HD', icon:'🟢', url:'https://andro.5172948.xyz/checklist/androstreamlivets2.m3u8' },
+  { id:'tv3', name:'Tivibu Spor 3', cat:'Tivibu Spor', q:'HD', icon:'🟢', url:'https://andro.5172948.xyz/checklist/androstreamlivets3.m3u8' },
+  { id:'tv4', name:'Tivibu Spor 4', cat:'Tivibu Spor', q:'HD', icon:'🟢', url:'https://andro.5172948.xyz/checklist/androstreamlivets4.m3u8' },
+  // TRT
+  { id:'trt1',  name:'TRT 1',           cat:'TRT', q:'HD',  icon:'⚪', url:'https://tv-trt1-dash.medya.trt.com.tr/master.mpd' },
+  { id:'trt1y', name:'TRT 1 Yurt Dışı', cat:'TRT', q:'HD',  icon:'⚪', url:'https://andro.5172948.xyz/checklist/androstreamlivetrt1.m3u8' },
+  { id:'trts',  name:'TRT Spor',         cat:'TRT', q:'FHD', icon:'⚪', url:'https://tv-trtspor1.medya.trt.com.tr/master_1080.m3u8' },
+];
 
-  // DASH
-  if (url.includes('.mpd')) {
-    dash = dashjs.MediaPlayer().create();
-    dash.initialize(video, url, true);
+const cats = ['Tümü','BeIN Sports','S Sport','Tabii Spor','Tivibu Spor','TRT'];
+let activeCat = 'Tümü';
+let activeId = null;
+
+// Play
+function play(item, type) {
+  activeId = item.id;
+  const frame = document.getElementById('playerFrame');
+  const placeholder = document.getElementById('placeholder');
+  frame.src = BASE + encodeURIComponent(item.url);
+  frame.style.display = 'block';
+  placeholder.style.display = 'none';
+  document.getElementById('welcomeBanner').style.display = 'none';
+  // Now playing
+  const np = document.getElementById('nowPlaying');
+  np.style.display = 'flex';
+  document.getElementById('npTitle').textContent = type === 'match' ? item.title : item.name;
+  document.getElementById('npSub').textContent = type === 'match'
+    ? item.channel
+    : (item.q || '') + (item.cat ? ' · ' + item.cat : '');
+  const noteEl = document.getElementById('npNote');
+  if (item.note) {
+    noteEl.style.display = 'flex';
+    document.getElementById('npNoteText').textContent = item.note;
+  } else {
+    noteEl.style.display = 'none';
+  }
+  // Re-render active state
+  renderMatches();
+  renderChannels();
+}
+
+// Tab switch
+function switchTab(tab) {
+  document.getElementById('panelMatches').style.display = tab === 'matches' ? 'block' : 'none';
+  document.getElementById('panelChannels').style.display = tab === 'channels' ? 'block' : 'none';
+  document.getElementById('tabMatches').className = 'tab-btn' + (tab === 'matches' ? ' active' : '');
+  document.getElementById('tabChannels').className = 'tab-btn' + (tab === 'channels' ? ' active' : '');
+}
+
+// Render matches
+function renderMatches() {
+  const list = document.getElementById('matchList');
+  document.getElementById('matchCount').textContent = matches.length;
+  if (!matches.length) {
+    list.innerHTML = '<div class="empty-state"><div>🏆</div>Aktif maç bulunmuyor</div>';
     return;
   }
+  list.innerHTML = matches.map(m => `
+    <button class="card${activeId === m.id ? ' active' : ''}" onclick="play(matches.find(x=>x.id==='${m.id}'),'match')">
+      <div class="card-icon">${m.isLive ? '<span class="live-dot" style="width:8px;height:8px"></span>' : '🕐'}</div>
+      <div class="card-body">
+        <div class="card-name">${m.title}</div>
+        <div class="card-sub">${m.channel}</div>
+        ${m.note ? `<div class="card-note">⚠ ${m.note}</div>` : ''}
+      </div>
+      ${m.isLive ? '<span class="live-badge-pill">CANLI</span>' : ''}
+    </button>
+  `).join('');
+}
 
-  // iOS native HLS
-  if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = url;
-    video.play().catch(()=>{});
-  } 
-  // Other browsers
-  else if (Hls.isSupported()) {
-    hls = new Hls({
-      maxBufferLength: 30
-    });
-    hls.loadSource(url);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-      video.play().catch(()=>{});
-    });
-  } else {
-    alert('Tarayıcı desteklemiyor');
+// Render channels
+function renderChannels() {
+  const search = (document.getElementById('searchInput').value || '').toLowerCase();
+  const filtered = channels.filter(c =>
+    (activeCat === 'Tümü' || c.cat === activeCat) &&
+    c.name.toLowerCase().includes(search)
+  );
+  document.getElementById('channelCount').textContent = filtered.length;
+  const list = document.getElementById('channelList');
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state"><div>📺</div>Kanal bulunamadı</div>';
+    return;
   }
+  list.innerHTML = filtered.map(c => `
+    <button class="card${activeId === c.id ? ' active' : ''}" onclick="play(channels.find(x=>x.id==='${c.id}'),'channel')">
+      <div class="card-icon">${c.icon}</div>
+      <div class="card-body">
+        <div class="card-name">${c.name}</div>
+        ${c.note ? `<div class="card-note">⚠ ${c.note}</div>` : ''}
+      </div>
+      <span class="quality-badge${c.q==='FHD'?' fhd':''}">${c.q}</span>
+    </button>
+  `).join('');
 }
 
-function toggleChannels() {
-  document.getElementById('channelList').classList.toggle('open');
+// Render category pills
+function renderCats() {
+  const el = document.getElementById('catList');
+  el.innerHTML = cats.map(c => `
+    <button class="cat-btn${activeCat===c?' active':''}" onclick="setcat('${c}')">${c}</button>
+  `).join('');
 }
+function setcat(c) { activeCat = c; renderCats(); renderChannels(); }
 
-function toggleMatches() {
-  document.getElementById('matchList').classList.toggle('open');
-}
+// Init
+renderMatches();
+renderCats();
+renderChannels();
 </script>
-
 </body>
 </html>
