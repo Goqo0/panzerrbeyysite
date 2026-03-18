@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>PanzerSports - Canlı Spor Yayınları</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+<script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -94,22 +96,39 @@
   /* Player side */
   .player-side { flex: 1; min-width: 0; }
 
+  /* ── Player ── */
   .player-wrap {
     position: relative; width: 100%; aspect-ratio: 16/9;
-    background: var(--s800); border-radius: 14px; overflow: hidden;
+    background: #000; border-radius: 14px; overflow: hidden;
     border: 1px solid rgba(255,255,255,0.05);
   }
-  .player-wrap iframe {
-    position: absolute; left: 0; top: 0; width: calc(100% + 20px); height: 100%; border: none;
+  .player-wrap video {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: contain; background: #000;
   }
+
+  /* Placeholder */
+  .player-placeholder {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; color: rgba(255,255,255,0.25); pointer-events: none;
+  }
+  .placeholder-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: var(--s700); border: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+  }
+  .placeholder-text { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.4); }
+
+  /* Loading spinner */
   .player-loader {
-    position: absolute; inset: 0; z-index: 3;
-    background: #0a0a0f;
+    position: absolute; inset: 0; z-index: 4;
+    background: #000;
     display: flex; align-items: center; justify-content: center;
-    transition: opacity 0.6s ease;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
   }
-  .player-loader.fade-out { opacity: 0; pointer-events: none; }
-  .player-loader.hidden { display: none; }
+  .player-loader.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
   .spinner {
     width: 36px; height: 36px;
     border: 2px solid rgba(230,48,48,0.2);
@@ -118,18 +137,71 @@
     animation: spin 0.8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Error overlay */
+  .player-error {
+    position: absolute; inset: 0; z-index: 4;
+    background: #000;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; text-align: center; padding: 20px;
+  }
+  .player-error.show { display: flex; }
+  .player-error p { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.6; }
+  .player-error .err-title { font-size: 15px; color: rgba(239,68,68,0.8); font-weight: 600; }
+
+  /* Controls */
+  .player-controls {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 5;
+    padding: 32px 14px 12px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+    flex-direction: column; gap: 8px;
+    opacity: 0; transition: opacity 0.25s;
+    pointer-events: none;
+  }
+  .player-wrap:hover .player-controls { opacity: 1; pointer-events: auto; }
+  .player-wrap.paused .player-controls { opacity: 1; pointer-events: auto; }
+
+  .progress-wrap {
+    position: relative; height: 3px; background: rgba(255,255,255,0.2);
+    border-radius: 2px; cursor: pointer;
+  }
+  .progress-wrap:hover { height: 5px; }
+  .progress-fill { height: 100%; background: var(--red); border-radius: 2px; width: 0%; pointer-events: none; }
+  .progress-buf  { position: absolute; top:0; left:0; height: 100%; background: rgba(255,255,255,0.15); border-radius:2px; width:0%; pointer-events:none; }
+
+  .ctrl-row { display: flex; align-items: center; gap: 10px; }
+  .ctrl-btn {
+    background: none; border: none; color: rgba(255,255,255,0.85);
+    cursor: pointer; padding: 4px; display: flex; align-items: center;
+    transition: color .15s; flex-shrink:0;
+  }
+  .ctrl-btn:hover { color: #fff; }
+  .ctrl-time { font-size: 11px; color: rgba(255,255,255,0.6); font-variant-numeric: tabular-nums; white-space:nowrap; }
+  .ctrl-spacer { flex: 1; }
+  .vol-wrap { display: flex; align-items: center; gap: 6px; }
+  .vol-slider {
+    -webkit-appearance: none; appearance: none;
+    width: 60px; height: 3px; background: rgba(255,255,255,0.25);
+    border-radius: 2px; outline: none; cursor: pointer;
+  }
+  .vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 11px; height: 11px;
+    border-radius: 50%; background: #fff; cursor: pointer;
+  }
+
+  /* Big play button (center) */
+  .play-center {
+    position: absolute; inset: 0; z-index: 3;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none; opacity: 0; transition: opacity .2s;
+  }
+  .player-wrap.paused .play-center { opacity: 1; }
+  .play-center-btn {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: rgba(0,0,0,0.55); border: 2px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+  }
   .player-cover { display: none !important; }
-  .player-placeholder {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 14px; color: rgba(255,255,255,0.25);
-  }
-  .placeholder-icon {
-    width: 72px; height: 72px; border-radius: 50%;
-    background: var(--s700); border: 1px solid rgba(255,255,255,0.06);
-    display: flex; align-items: center; justify-content: center; font-size: 28px;
-  }
-  .placeholder-text { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.4); }
 
   /* Now playing bar */
   .now-playing {
@@ -317,10 +389,48 @@
         <div class="placeholder-icon">▶</div>
         <p class="placeholder-text">Bir kanal veya maç seçin</p>
       </div>
-      <iframe id="playerFrame" style="display:none"
-        allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
+      <video id="playerVideo" style="display:none" playsinline></video>
+
+      <!-- Custom controls -->
+      <div class="player-controls" id="playerControls" style="display:none">
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-buf" id="progressBuf"></div>
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="ctrl-row">
+          <button class="ctrl-btn" id="btnPlayPause" title="Oynat/Duraklat">
+            <svg id="iconPlay" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            <svg id="iconPause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          </button>
+          <span class="ctrl-time" id="ctrlTime">Canlı</span>
+          <div class="ctrl-spacer"></div>
+          <div class="vol-wrap">
+            <button class="ctrl-btn" id="btnMute" title="Sesi Kapat/Aç">
+              <svg id="iconVol" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              <svg id="iconMuted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+            </button>
+            <input class="vol-slider" id="volSlider" type="range" min="0" max="1" step="0.05" value="1">
+          </div>
+          <button class="ctrl-btn" id="btnFullscreen" title="Tam Ekran">
+            <svg id="iconFs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Big center play button (shown when paused) -->
+      <div class="play-center" id="playCenterEl">
+        <div class="play-center-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg>
+        </div>
+      </div>
+
+      <!-- Error overlay -->
+      <div class="player-error" id="playerError">
+        <p class="err-title">⚠ Yayın açılamadı</p>
+        <p>Bu stream CORS kısıtlaması nedeniyle tarayıcıda doğrudan açılamıyor olabilir.<br>Farklı bir kanal deneyin veya sayfayı yenileyin.</p>
+      </div>
+
       <div class="player-loader hidden" id="playerLoader"><div class="spinner"></div></div>
-      <div class="player-cover" id="playerCover" style="display:none"></div>
     </div>
 
     <div class="now-playing" id="nowPlaying" style="display:none">
@@ -516,33 +626,85 @@ const channels = [
    UYGULAMA KODU — Bu bölümü değiştirmene gerek yok
    ========================================================= */
 
-function buildPlayerSrc(url) {
-  return `https://hlsplayer.net/embed?type=m3u8&src=${encodeURIComponent(url)}`;
-}
-
 const cats = ['Tümü','BeIN Sports','S Sport','Tabii Spor','Tivibu Spor','TRT'];
 let activeCat = 'Tümü';
 let activeId = null;
+let _hlsInstance = null;
+let _dashInstance = null;
 
-// Play
+// ── Player helpers ────────────────────────────────────────────
+function destroyCurrentPlayer() {
+  if (_hlsInstance) { _hlsInstance.destroy(); _hlsInstance = null; }
+  if (_dashInstance) { _dashInstance.reset(); _dashInstance = null; }
+  const vid = document.getElementById('playerVideo');
+  vid.pause();
+  vid.removeAttribute('src');
+  vid.load();
+}
+
+function showLoader() {
+  const loader = document.getElementById('playerLoader');
+  loader.classList.remove('hidden');
+}
+function hideLoader() {
+  const loader = document.getElementById('playerLoader');
+  loader.classList.add('hidden');
+}
+function showError() {
+  hideLoader();
+  document.getElementById('playerError').classList.add('show');
+}
+function hideError() {
+  document.getElementById('playerError').classList.remove('show');
+}
+
+// ── Play ──────────────────────────────────────────────────────
 function play(item, type) {
   activeId = item.id;
-  const frame = document.getElementById('playerFrame');
-  const placeholder = document.getElementById('placeholder');
-  frame.src = buildPlayerSrc(item.url);
-  frame.style.display = 'block';
-  placeholder.style.display = 'none';
+  destroyCurrentPlayer();
+  hideError();
 
-  // Show loader, fade out after stream has time to start
-  const loader = document.getElementById('playerLoader');
-  loader.classList.remove('hidden', 'fade-out');
-  clearTimeout(window._loaderTimer);
-  window._loaderTimer = setTimeout(() => {
-    loader.classList.add('fade-out');
-    setTimeout(() => loader.classList.add('hidden'), 650);
-  }, 4000);
+  const vid = document.getElementById('playerVideo');
+  const placeholder = document.getElementById('placeholder');
+  vid.style.display = 'block';
+  placeholder.style.display = 'none';
+  document.getElementById('playerControls').style.display = 'flex';
+  showLoader();
+
+  const isDash = item.url.endsWith('.mpd') || item.url.includes('.mpd?');
+
+  if (isDash) {
+    // MPEG-DASH via dash.js
+    _dashInstance = dashjs.MediaPlayer().create();
+    _dashInstance.initialize(vid, item.url, true);
+    _dashInstance.on(dashjs.MediaPlayer.events.CAN_PLAY, () => hideLoader());
+    _dashInstance.on(dashjs.MediaPlayer.events.ERROR, () => showError());
+  } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
+    // Native HLS — Safari supports this natively; always prefer it to avoid
+    // hls.js blob-worker restrictions when running from file:// in Safari
+    vid.src = item.url;
+    vid.addEventListener('canplay', hideLoader, { once: true });
+    vid.addEventListener('error', showError, { once: true });
+    vid.play().catch(() => {});
+  } else if (Hls.isSupported()) {
+    // HLS via hls.js (Chrome, Firefox, Edge)
+    _hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: true });
+    _hlsInstance.loadSource(item.url);
+    _hlsInstance.attachMedia(vid);
+    _hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+      vid.play().catch(() => {});
+      hideLoader();
+    });
+    _hlsInstance.on(Hls.Events.ERROR, (_, data) => {
+      if (data.fatal) showError();
+    });
+  } else {
+    showError();
+  }
+
   document.getElementById('welcomeBanner').style.display = 'none';
-  // Now playing
+
+  // Now playing bar
   const np = document.getElementById('nowPlaying');
   np.style.display = 'flex';
   document.getElementById('npTitle').textContent = type === 'match' ? item.title : item.name;
@@ -556,10 +718,94 @@ function play(item, type) {
   } else {
     noteEl.style.display = 'none';
   }
-  // Re-render active state
+
   renderMatches();
   renderChannels();
 }
+
+// ── Player controls ───────────────────────────────────────────
+(function initControls() {
+  const vid = document.getElementById('playerVideo');
+  const wrap = document.getElementById('playerWrap');
+  const progressFill = document.getElementById('progressFill');
+  const progressBuf  = document.getElementById('progressBuf');
+  const progressWrap = document.getElementById('progressWrap');
+  const ctrlTime = document.getElementById('ctrlTime');
+  const iconPlay = document.getElementById('iconPlay');
+  const iconPause = document.getElementById('iconPause');
+  const iconVol = document.getElementById('iconVol');
+  const iconMuted = document.getElementById('iconMuted');
+  const volSlider = document.getElementById('volSlider');
+
+  function fmt(s) {
+    if (!isFinite(s)) return 'Canlı';
+    const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+    return m + ':' + String(sec).padStart(2, '0');
+  }
+
+  // Play/Pause button
+  document.getElementById('btnPlayPause').addEventListener('click', () => {
+    if (vid.paused) { vid.play(); } else { vid.pause(); }
+  });
+
+  // Click video to toggle pause
+  vid.addEventListener('click', () => {
+    if (vid.paused) { vid.play(); } else { vid.pause(); }
+  });
+
+  // Update play/pause icon + center overlay
+  vid.addEventListener('play',  () => {
+    iconPlay.style.display = 'none'; iconPause.style.display = '';
+    wrap.classList.remove('paused');
+  });
+  vid.addEventListener('pause', () => {
+    iconPlay.style.display = ''; iconPause.style.display = 'none';
+    wrap.classList.add('paused');
+  });
+
+  // Progress
+  vid.addEventListener('timeupdate', () => {
+    if (!vid.duration) return;
+    const pct = (vid.currentTime / vid.duration) * 100;
+    progressFill.style.width = pct + '%';
+    ctrlTime.textContent = fmt(vid.currentTime) + ' / ' + fmt(vid.duration);
+  });
+  vid.addEventListener('progress', () => {
+    if (!vid.duration || !vid.buffered.length) return;
+    const pct = (vid.buffered.end(vid.buffered.length - 1) / vid.duration) * 100;
+    progressBuf.style.width = pct + '%';
+  });
+
+  // Seek
+  progressWrap.addEventListener('click', e => {
+    if (!vid.duration) return;
+    const rect = progressWrap.getBoundingClientRect();
+    vid.currentTime = ((e.clientX - rect.left) / rect.width) * vid.duration;
+  });
+
+  // Volume
+  document.getElementById('btnMute').addEventListener('click', () => {
+    vid.muted = !vid.muted;
+    iconVol.style.display = vid.muted ? 'none' : '';
+    iconMuted.style.display = vid.muted ? '' : 'none';
+    volSlider.value = vid.muted ? 0 : vid.volume;
+  });
+  volSlider.addEventListener('input', () => {
+    vid.volume = volSlider.value;
+    vid.muted = volSlider.value == 0;
+    iconVol.style.display = vid.muted ? 'none' : '';
+    iconMuted.style.display = vid.muted ? '' : 'none';
+  });
+
+  // Fullscreen
+  document.getElementById('btnFullscreen').addEventListener('click', () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      wrap.requestFullscreen().catch(() => vid.webkitEnterFullscreen && vid.webkitEnterFullscreen());
+    }
+  });
+})();
 
 // Tab switch
 function switchTab(tab) {
