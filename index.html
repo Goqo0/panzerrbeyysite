@@ -1,660 +1,543 @@
 ﻿<!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PanzerSports - Canlı Spor Yayınları</title>
+<title>PanzerSports - Canlı Yayın</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.7.8/plyr.css" />
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --red: #e63030;
-    --red-dark: #b91c1c;
-    --s900: #0a0a0f;
-    --s800: #111118;
-    --s700: #1a1a24;
-    --s600: #22222f;
-    --s500: #2d2d3d;
+    --bg-color: #f3f4f6;
+    --surface-color: #ffffff;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
+    --primary: #16a34a; 
+    --primary-hover: #15803d;
+    --primary-light: #dcfce7;
+    --player-bg: #000000;
+    --plyr-color-main: #16a34a; 
   }
-
-  html, body {
-    height: 100%;
-    background: var(--s900);
-    color: #fff;
-    font-family: 'Inter', system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
+  [data-theme="dark"] {
+    --bg-color: #0a0a0a;
+    --surface-color: #171717;
+    --text-main: #f9fafb;
+    --text-muted: #9ca3af;
+    --border-color: #262626;
+    --primary: #22c55e; 
+    --primary-hover: #16a34a;
+    --primary-light: #064e3b;
+    --player-bg: #000000;
+    --plyr-color-main: #22c55e;
   }
-
-  /* Scrollbar */
-  * { scrollbar-width: thin; scrollbar-color: var(--s500) var(--s800); }
-  *::-webkit-scrollbar { width: 5px; height: 5px; }
-  *::-webkit-scrollbar-track { background: var(--s800); }
-  *::-webkit-scrollbar-thumb { background: var(--s500); border-radius: 3px; }
-  *::-webkit-scrollbar-thumb:hover { background: var(--red); }
-
-  /* Layout */
-  .header {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
-    height: 56px;
-    background: rgba(17,17,24,0.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    display: flex; align-items: center;
-    padding: 0 24px;
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    transition: background-color 0.3s, color 0.3s;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-color); }
+  ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  header {
+    background-color: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
+    height: 64px;
+    display: flex;
+    align-items: center;
     justify-content: space-between;
+    padding: 0 24px;
+    flex-shrink: 0;
   }
-
-  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-size: 22px; }
   .logo-icon {
-    width: 32px; height: 32px; background: var(--red); border-radius: 8px;
+    background-color: var(--primary); color: white;
+    width: 36px; height: 36px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 18px rgba(230,48,48,0.35);
-    font-size: 15px;
+    font-weight: 700; font-size: 20px;
   }
-  .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
-  .logo-text span { color: var(--red); }
-  .live-pill {
-    display: flex; align-items: center; gap: 5px;
-    font-size: 11px; font-weight: 700; color: var(--red); text-transform: uppercase; letter-spacing: .06em;
+  .logo-text-panzer { color: var(--text-main); font-weight: 800; letter-spacing: -0.5px; }
+  .logo-text-sports { color: var(--primary); font-weight: 800; letter-spacing: -0.5px; }
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  google-cast-launcher {
+    width: 36px; height: 36px; cursor: pointer;
+    --connected-color: var(--primary);
+    --disconnected-color: var(--text-muted);
   }
-  .live-dot {
-    width: 7px; height: 7px; border-radius: 50%; background: var(--red);
-    animation: pulse 2s ease-in-out infinite;
+  .theme-btn {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    width: 42px; height: 42px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-  .social-links { display: flex; gap: 8px; }
-  .social-btn {
-    display: flex; align-items: center; gap: 6px;
-    padding: 6px 12px; border-radius: 8px;
-    background: var(--s700); border: 1px solid rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.65); font-size: 13px; font-weight: 500;
-    text-decoration: none; transition: all .2s;
+  .theme-btn:hover { background: var(--border-color); transform: scale(1.05) rotate(15deg); }
+  .theme-btn svg { width: 22px; height: 22px; stroke: currentColor; }
+  .container {
+    display: flex; flex: 1; overflow: hidden;
+    max-width: 100%; margin: 0 auto; width: 100%;
   }
-  .social-btn:hover { background: var(--s600); color: #fff; }
-  .social-btn svg { flex-shrink: 0; }
-  @media(max-width:520px){ .social-label { display:none; } }
-
-  /* Hero glow */
-  .hero-glow {
-    position: fixed; inset: 0; pointer-events: none;
-    background: radial-gradient(ellipse 80% 40% at 50% -10%, rgba(230,48,48,0.12), transparent);
+  .player-section { flex: 1; padding: 32px; display: flex; flex-direction: column; overflow-y: auto; }
+  .player-wrapper {
+    background-color: var(--player-bg); border-radius: 16px; overflow: hidden;
+    aspect-ratio: 16 / 9; position: relative; border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;
   }
-
-  /* Main */
-  .main {
-    max-width: 1400px; margin: 0 auto;
-    padding: 76px 24px 32px;
-    display: flex; gap: 24px;
-  }
-  @media(max-width:960px){ .main { flex-direction: column; } }
-
-  /* Player side */
-  .player-side { flex: 1; min-width: 0; }
-
-  .player-wrap {
-    position: relative; width: 100%; aspect-ratio: 16/9;
-    background: var(--s800); border-radius: 14px; overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.05);
-  }
-  .player-wrap iframe {
-    position: absolute; left: 0; top: 0; width: calc(100% + 20px); height: 100%; border: none;
-  }
-  .player-loader {
-    position: absolute; inset: 0; z-index: 3;
-    background: #0a0a0f;
-    display: flex; align-items: center; justify-content: center;
-    transition: opacity 0.6s ease;
-  }
-  .player-loader.fade-out { opacity: 0; pointer-events: none; }
-  .player-loader.hidden { display: none; }
-  .spinner {
-    width: 36px; height: 36px;
-    border: 2px solid rgba(230,48,48,0.2);
-    border-top-color: var(--red);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .player-cover { display: none !important; }
-  .player-placeholder {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 14px; color: rgba(255,255,255,0.25);
+  .plyr { width: 100%; height: 100%; }
+  .placeholder {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; color: white; gap: 16px;
+    background: linear-gradient(to bottom right, #0a0a0a, #1a1a1a); z-index: 10;
   }
   .placeholder-icon {
-    width: 72px; height: 72px; border-radius: 50%;
-    background: var(--s700); border: 1px solid rgba(255,255,255,0.06);
-    display: flex; align-items: center; justify-content: center; font-size: 28px;
+    width: 64px; height: 64px; background: rgba(255,255,255,0.05);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 24px; color: var(--primary);
   }
-  .placeholder-text { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.4); }
-
-  /* Now playing bar */
   .now-playing {
-    margin-top: 12px; display: flex; align-items: center; justify-content: space-between;
-    min-height: 40px;
+    margin-top: 20px; padding: 20px; background-color: var(--surface-color);
+    border: 1px solid var(--border-color); border-radius: 16px; display: none; align-items: center; gap: 16px;
   }
-  .np-left { display: flex; align-items: center; gap: 10px; }
-  .np-info p { font-size: 14px; font-weight: 600; line-height: 1.3; }
-  .np-info small { font-size: 12px; color: rgba(255,255,255,0.38); }
-  .np-note { font-size: 11px; color: rgba(234,179,8,0.7); display:flex;align-items:center;gap:4px; margin-top:2px; }
-
-  /* Stats */
-  .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 20px; }
-  @media(max-width:480px){ .stats { grid-template-columns: repeat(2,1fr); } }
-  .stat-card {
-    background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 12px; padding: 14px 16px;
+  .np-badge {
+    background-color: var(--primary-light); color: var(--primary);
+    padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 12px;
+    display: flex; align-items: center; gap: 6px;
   }
-  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing:.06em; color:rgba(255,255,255,0.35); margin-bottom:4px; }
-  .stat-value { font-size: 18px; font-weight: 700; }
-  .stat-value.accent { color: var(--red); }
-
-  /* Welcome */
-  .welcome {
-    margin-top: 20px;
-    background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 16px; padding: 22px;
-    display: flex; gap: 16px; align-items: flex-start;
-    animation: fadeIn .4s ease;
+  .np-dot { width: 8px; height: 8px; background-color: var(--primary); border-radius: 50%; animation: blink 1.5s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .np-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .np-sub { color: var(--text-muted); font-size: 14px; }
+  .list-section {
+    width: 420px; background-color: var(--surface-color); border-left: 1px solid var(--border-color);
+    display: flex; flex-direction: column;
   }
-  .welcome-icon {
-    width: 48px; height: 48px; border-radius: 12px; flex-shrink:0;
-    background: rgba(230,48,48,0.1); border: 1px solid rgba(230,48,48,0.2);
-    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  .list-header { padding: 20px 20px 10px 20px; }
+  .list-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;}
+  .channel-count { color: var(--primary); background: var(--primary-light); padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+  .search-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .search-box {
+    flex: 1; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color); 
+    background-color: var(--bg-color); color: var(--text-main); font-size: 14px; outline: none;
   }
-  .welcome h2 { font-size: 16px; font-weight: 700; margin-bottom:6px; }
-  .welcome p { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.6; }
-  .welcome-pills { display:flex; gap:14px; margin-top:10px; flex-wrap:wrap; }
-  .welcome-pill { font-size:11px; color:rgba(255,255,255,0.35); display:flex;align-items:center;gap:5px; }
-
-  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-
-  /* Sidebar */
-  .sidebar { width: 340px; flex-shrink: 0; }
-  @media(max-width:960px){ .sidebar { width: 100%; } }
-
-  .sidebar-inner {
-    background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 16px; overflow: hidden;
-    position: sticky; top: 68px;
+  .search-box:focus { border-color: var(--primary); }
+  .view-btn {
+    width: 44px; border-radius: 10px; border: 1px solid var(--border-color);
+    background-color: var(--bg-color); color: var(--text-main); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: 0.2s;
   }
-
-  /* Tabs */
-  .tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .tab-btn {
-    flex: 1; display:flex; align-items:center; justify-content:center; gap:7px;
-    padding: 14px; font-size:13px; font-weight:600; cursor:pointer;
-    background: none; border: none; color: rgba(255,255,255,0.38);
-    border-bottom: 2px solid transparent; margin-bottom:-1px;
-    transition: all .2s;
-  }
-  .tab-btn.active { color:#fff; background:rgba(230,48,48,0.08); border-bottom-color:var(--red); }
-  .tab-btn:hover:not(.active){ color:rgba(255,255,255,0.65); }
-
-  /* Tab content */
-  .tab-content { padding: 16px; max-height: calc(100vh - 150px); overflow-y: auto; }
-
-  .section-header {
-    display:flex; align-items:center; gap:8px; margin-bottom:14px;
-  }
-  .section-header h2 { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
-  .count-badge {
-    margin-left:auto; font-size:11px; color:rgba(255,255,255,0.3);
-    background:var(--s700); border:1px solid rgba(255,255,255,0.05);
-    padding:1px 8px; border-radius:20px;
-  }
-
-  /* Search */
-  .search-wrap { position:relative; margin-bottom:10px; }
-  .search-wrap svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.28); pointer-events:none; }
-  .search-input {
-    width:100%; background:var(--s700); border:1px solid rgba(255,255,255,0.06);
-    border-radius:10px; padding:8px 10px 8px 32px;
-    font-size:13px; color:#fff; font-family:inherit; outline:none; transition:all .2s;
-  }
-  .search-input::placeholder { color:rgba(255,255,255,0.28); }
-  .search-input:focus { border-color:rgba(230,48,48,0.35); background:var(--s600); }
-
-  /* Category pills */
-  .cats { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .view-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .view-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .categories { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; }
   .cat-btn {
-    padding:4px 10px; border-radius:8px; font-size:11px; font-weight:600;
-    cursor:pointer; border:1px solid rgba(255,255,255,0.06);
-    background:var(--s700); color:rgba(255,255,255,0.45); transition:all .2s;
+    padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; white-space: nowrap; 
+    cursor: pointer; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-muted); transition: 0.2s;
   }
-  .cat-btn.active { background:var(--red); color:#fff; border-color:var(--red); }
-  .cat-btn:hover:not(.active){ color:rgba(255,255,255,0.8); }
-
-  /* Channel / Match cards */
-  .card-list { display:flex; flex-direction:column; gap:6px; }
-  .card {
-    width:100%; text-align:left; background:rgba(26,26,36,0.8);
-    border:1px solid rgba(255,255,255,0.05); border-radius:12px;
-    padding:11px 13px; cursor:pointer; transition:all .18s;
-    display:flex; align-items:center; gap:11px;
+  .cat-btn:hover { color: var(--text-main); border-color: var(--text-muted); }
+  .cat-btn.active { background-color: var(--primary); color: white; border-color: var(--primary); }
+  
+  .channel-list { flex: 1; overflow-y: auto; padding: 0 20px 20px 20px; display: flex; flex-direction: column; gap: 8px; }
+  
+  .channel-list.grid-view {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    align-content: start;
   }
-  .card:hover { background:rgba(45,45,61,0.9); border-color:rgba(230,48,48,0.22); transform:translateY(-1px); }
-  .card.active { background:rgba(230,48,48,0.13); border-color:rgba(230,48,48,0.45); }
-  .card.active .card-name { color:#ff6b6b; }
-
-  .card-icon {
-    width:32px; height:32px; border-radius:9px; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
-    background:var(--s600); border:1px solid rgba(255,255,255,0.06); font-size:15px;
+  
+  .channel-card {
+    display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 12px; 
+    cursor: pointer; background-color: var(--bg-color); border: 1px solid transparent; transition: 0.2s;
   }
-  .card.active .card-icon { background:rgba(230,48,48,0.12); border-color:rgba(230,48,48,0.3); }
-
-  .card-body { flex:1; min-width:0; }
-  .card-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#fff; }
-  .card-sub { font-size:11px; color:rgba(255,255,255,0.38); margin-top:2px; }
-  .card-note { font-size:11px; color:rgba(234,179,8,0.65); margin-top:3px; display:flex;align-items:center;gap:3px; }
-
-  .quality-badge {
-    flex-shrink:0; font-size:10px; font-weight:700; padding:2px 6px; border-radius:5px;
-    border:1px solid rgba(255,255,255,0.08); color:rgba(255,255,255,0.35); background:rgba(255,255,255,0.04);
+  .channel-card:hover { border-color: var(--border-color); transform: translateY(-1px); }
+  .channel-card.active { background-color: var(--primary-light); border-color: var(--primary); }
+  
+  .cc-logo {
+    width: 42px; height: 42px; border-radius: 8px; flex-shrink: 0; margin-right: 12px;
+    background: var(--surface-color); border: 1px solid var(--border-color);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    font-weight: 700; color: var(--text-muted); font-size: 18px;
   }
-  .quality-badge.fhd { color:#4ade80; background:rgba(74,222,128,0.08); border-color:rgba(74,222,128,0.2); }
-
-  .live-badge-pill {
-    flex-shrink:0; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px;
-    background:rgba(230,48,48,0.18); color:var(--red); border:1px solid rgba(230,48,48,0.3);
+  .channel-card.active .cc-logo { color: var(--primary); border-color: var(--primary); }
+  .cc-logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+  
+  .cc-info { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; padding-right: 8px; }
+  .cc-name { font-weight: 600; font-size: 14px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .channel-card.active .cc-name { color: var(--primary); }
+  .cc-cat { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
+  .channel-list.grid-view .channel-card {
+    flex-direction: column; text-align: center; padding: 16px;
+  }
+  .channel-list.grid-view .cc-logo {
+    margin: 0 0 12px 0; width: 56px; height: 56px; border-radius: 12px; font-size: 24px;
+  }
+  .channel-list.grid-view .cc-info {
+    padding: 0; align-items: center; width: 100%;
+  }
+  .channel-list.grid-view .cc-actions {
+    margin-top: 12px; width: 100%; justify-content: space-between;
   }
 
-  .card.expired {
-    opacity: 0.45;
-    cursor: not-allowed;
-    pointer-events: none;
+  .highlight { color: var(--primary); font-weight: 800; background: var(--primary-light); border-radius: 2px; padding: 0 2px;}
+  .cc-actions { display: flex; align-items: center; gap: 8px; }
+  .cc-quality {
+    font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px;
+    background-color: var(--surface-color); border: 1px solid var(--border-color); color: var(--text-muted);
   }
-
-  .empty-state {
-    text-align:center; padding:32px 0; color:rgba(255,255,255,0.25);
-    font-size:13px;
+  .channel-card.active .cc-quality { background-color: var(--primary); color: white; border-color: var(--primary); }
+  .fav-btn {
+    background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; padding: 4px; transition: 0.2s;
   }
-  .empty-state div { font-size:24px; margin-bottom:8px; opacity:.5; }
-
-  /* Footer */
-  .footer {
-    border-top:1px solid rgba(255,255,255,0.05); margin-top:32px;
-    padding:14px 24px; display:flex; justify-content:space-between;
-    max-width:1400px; margin:32px auto 0;
+  .fav-btn:hover { transform: scale(1.15); }
+  .fav-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; transition: 0.2s;}
+  .fav-btn.active svg { fill: #ef4444; stroke: #ef4444; }
+  .empty-state { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 14px; }
+  @media (max-width: 960px) {
+    .container { flex-direction: column; overflow-y: auto; }
+    .list-section { width: 100%; border-left: none; border-top: 1px solid var(--border-color); flex: none; }
+    .channel-list { overflow: visible; padding-bottom: 40px; }
+    .player-section { padding: 16px; flex: none; }
   }
-  .footer span { font-size:11px; color:rgba(255,255,255,0.2); }
 </style>
 </head>
 <body>
 
-<div class="hero-glow"></div>
+<!-- 
+========================================================================================
+🚨 KANAL EKLEME BÖLÜMÜ 🚨
+KANAL ADI | KATEGORİ | KALİTE | YAYIN LİNKİ | LOGO LİNKİ (OPSİYONEL)
+======================================================================================== 
+-->
+<script id="kolay-kanal-listesi" type="text/plain">
 
-<!-- HEADER -->
-<header class="header">
+Bein Sports 1 | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 2 | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 3 | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-3.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 4 | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-4.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 5 | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-5.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 1 | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-max-1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 2 | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-max-2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+S SPORT | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport.m3u8 | https://yt3.googleusercontent.com/gvJvmHjz_AD2oWOrKpMHrc6PkrPaf9ZJn714gU1hOYxOh7XWqLbSjwniRy9wXxs0R6vyIFsCivA=s900-c-k-c0x00ffffff-no-rj
+S SPORT 2 | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport-2.m3u8 | https://yt3.googleusercontent.com/gvJvmHjz_AD2oWOrKpMHrc6PkrPaf9ZJn714gU1hOYxOh7XWqLbSjwniRy9wXxs0R6vyIFsCivA=s900-c-k-c0x00ffffff-no-rj
+Tivibu Spor | Spor | HD | https://andro.5172948.xyz/checklist/androstreamlivets.m3u8 | data:image/png;base64,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
+Tivibu Spor 1 | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/tivibu-spor-1.m3u8 | data:image/png;base64,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
+Tivibu Spor 2 | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/tivibu-spor-2.m3u8 | data:image/png;base64,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
+Tivibu Spor 3 | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/tivibu-spor-3.m3u8 | data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAABEVBMVEUAAAD///8Agsr8/PwBAQMDAAABMkwBhdORkZEBgszV1dXl5eXh4eE2NjYAhs4BHSwAgsfLy8t8fHy/v78AJjcBW5OZmZmLi4tvb29eXl7Q0NCDg4MBh9CsrKygoKDa2toNDQ0hISG7u7tWVlYzMzPt7e13d3c8PDwpKSlMTEwWFhZbW1tRUVEAaKJnZ2cAAAkFPWUkJCQCIzsDL1EDgb0AUIABQWIAd7gIDhpvfAmJmga0JR0bAQaZHxpYFQ9lbwLU6gHH3AD3OyLgNCB4GQ2bqQY7QQUgBgBPXQBGUwCxAACcAABgAAACGh8Ff9ACbqYEWIUAMUMCg9oEFSsAAxsAIUYDS3IBO1kEYJ0BbZ8AjcvGxSiKAAAK50lEQVR4nO2bi3/aOBLHZQvXGBJicMPbvAIh0AJJmiy5vb3bu733Y+m2vevu7f//h5xGtmVZfmBIUko+8/20JNjY6OeRZkYjhRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQRAEQfJRMNj/wqFb8ayAPOPQjXhGmD4DrHjodjwfrJPeGi/YhIWC8e7OtO+ZxoLxIu1YMAxLty3T/sYwVi9U4WvTtizdrKxfvdC+apzZuq3rtml116+fUmJhleS9vnw3KZCzis5hluwuHrgdn6QZhd98WwDE+wL57Xe/+/3Kdd3eU9w/dzuEQsu22Yg8J8bqcZYc9+q9C/Zz9f0f/vgtM2T4TasfvvvTn4mmaZNHNnonQoU6U7gxTfuz8bjwf8EkNAhX+Je/FlZCInPWP/zNU1h+dLN3gCnsil5qg8ru+vZRCqdMQg1++fs/1FP/JP/69yEUBjYMsM3Fj4bBguNe8bFTYhJOnB5xR47jkJ7jVAdkUHWc+pvqyBktCdW0fqdfrkJPZp/okRr7yJun1hUSV7ixbdM8Z6eMvRT2NE6bgFKNXLKXJmnCK7xoHUIZmvcr4R+EK5ZPrSskrtDesN5q6fcwcPa4oespLJG+plFaGGhUG5EReyU1dgAUalwh+z8He1ZJ/Usr1LlPNX/dXO+VAQzBavXxmMz7TMqAmZJOyIQyJaTBDQfinHGVvdYPpdCLHZZtvr/lw3FHU7Z8XwrdlCkEWRee87kMFFJCrkDngRXqumn+8sDcjVHYyZbLqEKQAiNvDgqhl7IXiIdc3CEVgkTrzjJ/AoezkxFbXAcJFMJ45OMytKGmXZHZ12BDm3lVvWLd7zgcoZeOmj0uDRQWuUKwquil2kln4nkdRoMN0oPY0NfJklX7mttRzjGzuOKKqsKGV9xxzn2FNT4Oebhgo7ENfhXetA6nkKWremX9weC1gHy91fV7JXRPppCU2c8+nKhxW0JeygXOvPxHAxs2D6WQq2S99ePiDMyYs7u2em6dNf+y0WiAwhb7CQkMmbJfZqTRKJ62XJc7IzKvu0VSazROn0keyaNQBzta3fM9M4CDk8OGPhWe5bD4eGQ68ytkCSuv5RTylo/nNzfzvds1vBnufW2UHL007KxdXsvJY8WmWwYHQumkWhd+slaM0nibfHFnNAFvSydOJ/qIOsoNis0cjyG/QkhXrcr6k7HdhkUvGkAc4El21XOVXuyXoaOxeu3U8a71X6oz6Vw5dgMWWbdrPAPr5IIL7Z4PeOhI96vjidd6KjVkUpwTbz6lotRsRr40SoM7OOHJk6QbTKbZ+pgN88kTGrv6vZHlb6ZeDI+YSuMRL1EhmyCGXKhX8qvF9DhR4bZgWjDOurspNO2P4HJSFfpdM9JGygsXyQoh/fG5jF3pcZmpkG7LF/7T1StmDrqWaYG/sU2WkKfXcnpBUhalkarQz9MJz2gTroS7vclQCHnfINaMKdRQfHr//fAqF+8+2yaL/TbUHW1z8clIzAGo32zRWm5TSkKFygPwT/opnKZe7nEqK4wPA0dtxUw+W8q9eGjc2hvIU3Xwqjas5rBkfBX9TMdrHRWtoLwu04srFPUa/yyZyPqiv/jVuRPlBqGIK6Wpjny2RPyJwxbIqmCsbV5x5BKZyOv4cBz5CpmPc4udulvyvmguKYwr4BViV7Igrbq9kdSp/YcQVShrbCjNqMpfkteGzFzGAlJUXscBgZvu+p16aT+4reg4F27wpiTONSBc90JTsE44lpTXvSsHbthK/oxEL3V5vJeeSVtpRlWTKOWR57NQ8jnbfP/aICvDECOyHDT0QrqsMZMValrROzwUkjqB8bnfCIP8MpTtEsnT+MnQWyFCrTE/mcK7zcZcPIDHCWZW5aD/JARiodC3Ea9fBAeCabFoPieMH1RWGETIQAhVV0KeTKFu37FM7idpH0BbeBqtqpYmYgqL4YGmGFRuSlNbCQpHwYFnU2hDFsBiyGfhcvyStz/EqrVBkkK/l7IW+6pqQSdlr9FkOuyIboJC0c376QppbJBm8d72s1Nl1tFdf2ATK7BjS1NohwmH8DT1wXA4nM/a4kPTsPFqW0UMaUueZjmHG7TCTNxVrpIVxk5msbATBELebpvrH72qYzT/h4c8CXKWWMSXooU4pq6eOlr4oZPoZRLqyk6kl8bmL/soZCFkzTdXSd3KF8P+ladRhTTyk1tAXKLOhnriXlI8VG8QW65zRKcPR30eeDxMUsinx352I9yHzFJSqEBhdWMg3taU7xT+lqbnpfFyq/Sci+o5AaQxBSkZYEHvzNKTxqHvdYKY2OFZSaQrUW2WrpC3QbzNYcOYwlG89RdOG6jWb4IjMyAawliMMz69Drm9voPemKjPtsyfRfV/2o+1gbvzrNmTeKeOQxEQ0hRqSQJV3gbfPZFcNfONxuJjpdIVwOwprpCPQvP8Qa6nLtvRNlCeOSYr9KaHwkGprl2c6EcVhu4qvRsKOurXeSYk5Nq0TSu004bNmnSll/IKSHdxZih7OK6Kfc98QUtKUuYtqjBU2KwaHFXmemPRNDeaeYsbV8lWZtKgkZ1SgZyL6kwKtgmLNym7qQY12WfTxPmhE3jyonB+UZOIYQgTfREt+o4j4mQsUsQpSdORuMIsgSBxwxOatJpGJ2zIVRjxq3VOUVqPudFEBJAriDfh4yBSL216y5QeJ1sVyl4vpjBdnFe5qSwMZZI4jcSfG3H3cTxrk+mLkXWSeLQqK4SQUhZW37Y0F/b0BIUZ5uP63t/yASvb0NEmdWnKLYx4Fc+8ZS7DntQP/N1AdC/KZxwRhU2/SkAp3aLwNENhxYpHeO47mYNhXihpAM75o+3XlzDCri7DJC5hbhGhHPYl6raGZNhyqVhq9PxJRCE5oYHL2ZJ4ZinUkxTy8WdbFesa6h9KnYa4CUkVN8w2hRehwOCFUqFwHFe4DJ3yTdIN91bIBeoVNitkCU+8bJpc8eRRIVuh9GwicJVeHSaqUFoliNXaHqWQB0XzlwHfpRHbilJMyvyhNDHcqtBb805SGGQtisI34YdmyXfcTSF3nTbsX2ARPnWv7SSxLu9FuW0K09I6kZYpCqXPZ07jd1LoTQVvDZKyJ7yjBQtOUZxIg1LnM07sQkA4ElWhqPtmF/Z3Uci6aFe/Jn4HTZRI/XpwsMDGf/HaWAq0p8/YLqlUKvY2akzCvECqeniIXC9zU+6ONvzs7TxJv1+nr8kVfbip38bMiO8zcKN9gMpzjZNg01+gcBp+NuOeqQoJObd9hXyxwjJ1E8pqW/fVnDbaYbI2GYm8cdQvlfp99i9zVXPQaYsksh2dDzv8Bv3+ieiTbt+/Z0mt7+RQyCZD9x/9yRLfj1nZ/O8TP55nHX84a3Y6nebFfqvx0yW7eLll6TM3qQoN8upXy58tWfadBfW03TbxfSWkKiSGsQ6GoVXZfAN7v/bbN3xgMsahcQbLaWwsdu37YzSeT4ZCYjysu7rd7Z4f9R8oZikEjdf3P5Pj/ouoLIUr/ueXPME+wvEXkG3DlwAqPH5Q4fETUZiRvx4vEYXZBY8jJaLwGffMHw6hkGpba6vHSWhDGts89TKQbLjLtowj4tSXt9vOmmNCbOvcZdvJUTH39LWfqiryFQLLrOVn/OOxr4BW70WGQQRBEARBEARBEARBEARBEARBEARBEARBEARBEARBEARBEARBEARBEARBEARBkC/D/wE9bb9Yy6vz+QAAAABJRU5ErkJggg==
+Tivibu Spor 4 | Spor | HD | https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/tivibu-spor-4.m3u8 | data:image/png;base64,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
+Tabii Spor | Spor | HD | https://kl9mr2vxw7nq5py1sh4tj3gb6.medya.trt.com.tr/master_1080p.m3u8 | data:image/png;base64,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
+Tabii Spor 1 | Spor | HD | https://Pz4qT7nW1mR9sH2vL5xK8jG3y.medya.trt.com.tr/master_1440p.m3u8 | data:image/png;base64,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
+Tabii Spor 2 | Spor | HD | https://mr8bv4kl1nq7sh9tw2xp5zj6g.medya.trt.com.tr/master_1440p.m3u8 | data:image/png;base64,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
+Tabii Spor 3 | Spor | HD | https://mR4vL7nQ2sH9tW5xP1zK3gJ8b.medya.trt.com.tr/master_1440p.m3u8 | data:image/png;base64,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
+Tabii Spor 4 | Spor | HD | https://sh7tq2nw5mr1vl9xp4zk3gj8k.medya.trt.com.tr/master_1440p.m3u8 | data:image/png;base64,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
+Tabii Spor 5 | Spor | HD | https://andro.5172948.xyz/checklist/androstreamlivetb5.m3u8 | data:image/png;base64,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
+Tabii Spor 6 | Spor | HD | https://nw5mr1vl9xp4zk2sh7tq3gj6b.medya.trt.com.tr/master_1440p.m3u8 | data:image/png;base64,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
+Tabii Spor 7 | Spor | HD | https://andro.5172948.xyz/checklist/androstreamlivetb7.m3u8 | data:image/png;base64,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
+TRT 1 | Ulusal | HD | https://tv-trt1-dash.medya.trt.com.tr/master.mpd | https://www.gazetegercek.com.tr/images/media/2025/10/trt-1-sinyal-yok-hatasi-cozumu_68f9070f92ee2.webp
+TRT 1 (Yurt Dışı) | Ulusal | HD | https://andro.5172948.xyz/checklist/androstreamlivetrt1.m3u8 | https://www.gazetegercek.com.tr/images/media/2025/10/trt-1-sinyal-yok-hatasi-cozumu_68f9070f92ee2.webp
+TRT SPOR | Ulusal | HD | https://tv-trtspor1.medya.trt.com.tr/master_1080.m3u8 | https://www.gazetegercek.com.tr/images/media/2025/10/trt-1-sinyal-yok-hatasi-cozumu_68f9070f92ee2.webp
+</script>
+
+<header>
   <div class="logo">
-    <div class="logo-icon">⚡</div>
-    <div class="logo-text">Panzer<span>Sports</span></div>
-    <div class="live-pill"><span class="live-dot"></span> Canlı</div>
+    <div class="logo-icon">▶</div>
+    <div>
+      <span class="logo-text-panzer">Panzer</span><span class="logo-text-sports">Sports</span>
+    </div>
   </div>
-  <div class="social-links">
-    <a class="social-btn" href="https://t.me/xpanzerrbeyy" target="_blank" rel="noopener">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.247-2.022 9.531c-.148.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.885.69z"/></svg>
-      <span class="social-label">Telegram</span>
-    </a>
-    <a class="social-btn" href="https://x.com/panzerrbeyyx" target="_blank" rel="noopener">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-      <span class="social-label">@xpanzerrbeyy</span>
-    </a>
+  <div class="header-actions">
+    <google-cast-launcher id="castBtn" style="display:none;" title="TV'ye Yansıt"></google-cast-launcher>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" aria-label="Tema Değiştir"></button>
   </div>
 </header>
 
-<!-- MAIN -->
-<div class="main">
-
-  <!-- Player -->
-  <div class="player-side">
-    <div class="player-wrap" id="playerWrap">
-      <div class="player-placeholder" id="placeholder">
-        <div class="placeholder-icon">▶</div>
-        <p class="placeholder-text">Bir kanal veya maç seçin</p>
+<div class="container">
+  <div class="player-section">
+    <div class="player-wrapper">
+      <div class="placeholder" id="placeholder">
+        <div class="placeholder-icon">📺</div>
+        <p>İzlemek istediğiniz kanalı listeden seçin</p>
       </div>
-      <iframe id="playerFrame" style="display:none"
-        allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
-      <div class="player-loader hidden" id="playerLoader"><div class="spinner"></div></div>
-      <div class="player-cover" id="playerCover" style="display:none"></div>
+      <video id="videoPlayer" controls crossorigin playsinline></video>
     </div>
-
-    <div class="now-playing" id="nowPlaying" style="display:none">
-      <div class="np-left">
-        <div class="live-pill"><span class="live-dot"></span> Canlı</div>
-        <div class="np-info">
-          <p id="npTitle"></p>
-          <small id="npSub"></small>
-          <div class="np-note" id="npNote" style="display:none">⚠ <span id="npNoteText"></span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="stats">
-      <div class="stat-card"><div class="stat-label">Canlı Kanal</div><div class="stat-value accent">26</div></div>
-      <div class="stat-card"><div class="stat-label">Kalite</div><div class="stat-value">HD/FHD</div></div>
-      <div class="stat-card"><div class="stat-label">Platform</div><div class="stat-value">HLS</div></div>
-      <div class="stat-card"><div class="stat-label">Kategori</div><div class="stat-value">5</div></div>
-    </div>
-
-    <div class="welcome" id="welcomeBanner">
-      <div class="welcome-icon">⚡</div>
+    <div class="now-playing" id="nowPlaying">
+      <div class="np-badge"><div class="np-dot"></div> CANLI</div>
       <div>
-        <h2>PanzerSports'e Hoşgeldiniz</h2>
-        <p>Sağ panelden bir maç veya canlı kanal seçerek yayına başlayın. Bein Sports, S Sport, Tabii Spor, Tivibu Spor ve TRT kanallarına erişin.</p>
-        <div class="welcome-pills">
-          <span class="welcome-pill"><span style="color:var(--red)">●</span> Canlı yayın</span>
-          <span class="welcome-pill"><span style="color:#4ade80">●</span> FHD kalite</span>
-          <span class="welcome-pill">🔒 Güvenli</span>
-        </div>
+        <div class="np-title" id="npTitle">Kanal Adı</div>
+        <div class="np-sub" id="npSub">Kategori • Kalite</div>
       </div>
     </div>
   </div>
 
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="sidebar-inner">
-      <div class="tabs">
-        <button class="tab-btn active" id="tabMatches" onclick="switchTab('matches')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-          Maçlar
+  <div class="list-section">
+    <div class="list-header">
+      <div class="list-title">
+        <span>Canlı Kanallar</span>
+        <span class="channel-count" id="channelCount">0</span>
+      </div>
+      <div class="search-row">
+        <input type="text" class="search-box" id="searchInput" placeholder="Kanal veya Kategori ara..." onkeyup="renderChannels()">
+        <button class="view-btn" id="viewToggleBtn" onclick="toggleView()" title="Görünümü Değiştir">
+          <svg viewBox="0 0 24 24" id="viewIconList"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
         </button>
-        <button class="tab-btn" id="tabChannels" onclick="switchTab('channels')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
-          Kanallar
-        </button>
       </div>
-
-      <!-- Matches tab -->
-      <div class="tab-content" id="panelMatches">
-        <div class="section-header">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e63030" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-          <h2>Maçlar</h2>
-          <span class="count-badge" id="matchCount">0</span>
-        </div>
-        <div class="card-list" id="matchList"></div>
-      </div>
-
-      <!-- Channels tab -->
-      <div class="tab-content" id="panelChannels" style="display:none">
-        <div class="section-header">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e63030" stroke-width="2"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
-          <h2>Canlı Kanallar</h2>
-          <span class="count-badge" id="channelCount">0</span>
-        </div>
-        <div class="search-wrap">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input class="search-input" id="searchInput" type="text" placeholder="Kanal ara..." oninput="renderChannels()" />
-        </div>
-        <div class="cats" id="catList"></div>
-        <div class="card-list" id="channelList"></div>
-      </div>
+      <div class="categories" id="categoryList"></div>
     </div>
+    <div class="channel-list" id="channelList"></div>
   </div>
 </div>
 
-<footer>
-  <div class="footer">
-    <span>© 2025 PanzerSports · Tüm hakları saklıdır</span>
-    <span>Yalnızca eğitim amaçlıdır</span>
-  </div>
-</footer>
+<script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.3.5/hls.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/4.7.4/dash.all.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plyr/3.7.8/plyr.min.js" crossorigin="anonymous"></script>
 
 <script>
-/* =========================================================
-   YAYIN LİNKLERİ — Sadece bu bölümü düzenle
-   =========================================================
+  function getSafeItem(key) { try { return localStorage.getItem(key); } catch(e){ return null; } }
+  function setSafeItem(key, val) { try { localStorage.setItem(key, val); } catch(e){} }
 
-   ── MAÇLAR ──────────────────────────────────────────────
-   Yeni maç eklemek veya mevcut linki güncellemek için
-   aşağıdaki "matches" listesini düzenle.
+  let favorites = [];
+  try { favorites = JSON.parse(getSafeItem('panzer_favs') || '[]'); } catch(e){}
 
-   Alan adları ve anlamları:
-     id       → Sistemin tanıması için eşsiz bir kısa isim.
-                Örnek: 'm2', 'mac_fb_gs'
-                ⚠ Var olan id'lere dokunma, her maçta farklı olmalı.
+  let isGridView = getSafeItem('panzer_view') === 'grid';
 
-     title    → Ekranda gösterilecek maç adı.
-                Örnek: 'Süper Lig | Fenerbahçe - Galatasaray'
+  const sunIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+  const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+  const listIcon = `<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>`;
+  const gridIcon = `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`;
 
-     channel  → Maçın yayınlandığı kanal adı (sadece bilgi amaçlı).
-                Örnek: 'Bein Sports 1'
+  if (getSafeItem('theme') === 'light') {
+    document.documentElement.removeAttribute('data-theme'); document.getElementById('themeBtn').innerHTML = moonIcon;
+  } else { document.getElementById('themeBtn').innerHTML = sunIcon; }
 
-     isLive   → Maç şu an canlı mı?
-                Canlıysa: true  |  Değilse: false
+  const rawData = document.getElementById('kolay-kanal-listesi').textContent;
+  const lines = rawData.split('\n');
+  const allChannels = [];
+  const uniqueCategories = new Set(['Tümü']);
 
-     note     → Oynatıcının altında sarı renkte gösterilecek uyarı.
-                Örnek: 'Biraz geç açılabilir'
-                Gerekmiyorsa boş bırak: ''
+  lines.forEach((line, index) => {
+    if (!line.trim()) return; 
+    const parts = line.split('|').map(p => p.trim());
+    const len = parts.length;
+    
+    if (len >= 2) {
+      let name = parts[0], cat = "Diğer", quality = "HD", url = "", logo = null;
+      if(len === 2) { url = parts[1]; }
+      else if(len === 3) { cat = parts[1] || "Diğer"; url = parts[2]; }
+      else if(len === 4) { cat = parts[1] || "Diğer"; quality = parts[2] || "HD"; url = parts[3]; }
+      else if(len >= 5) { cat = parts[1] || "Diğer"; quality = parts[2] || "HD"; url = parts[3]; logo = parts[4]; }
+      allChannels.push({ id: 'kanal_' + index, name, cat, quality, url, logo });
+      uniqueCategories.add(cat); 
+    }
+  });
 
-     url      → Maçın yayın linki. .m3u8 veya .mpd uzantılı olmalı.
-                ⚠ Link süre sınırlıysa (exp= içeriyorsa) otomatik
-                  olarak "Süresi Doldu" gösterilir ve buton devre dışı kalır.
+  let activeCategory = 'Tümü';
+  let activeChannelId = null;
 
-   ── KANALLAR ────────────────────────────────────────────
-   Yeni kanal eklemek veya mevcut linki güncellemek için
-   aşağıdaki "channels" listesini düzenle.
+  window.__onGCastApiAvailable = function(isAvailable) {
+    if (isAvailable) {
+      cast.framework.CastContext.getInstance().setOptions({
+        receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+        autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+      });
+      document.getElementById('castBtn').style.display = 'block';
+    }
+  };
 
-   Alan adları ve anlamları:
-     id   → Sistemin tanıması için eşsiz bir kısa isim.
-            Örnek: 'bein6', 'ssport3'
-            ⚠ Var olan id'lere dokunma, her kanalda farklı olmalı.
-
-     name → Ekranda gösterilecek kanal adı.
-            Örnek: 'Bein Sports 6'
-
-     cat  → Kanalın ait olduğu kategori. Filtre butonlarında görünür.
-            Seçenekler: 'BeIN Sports' | 'S Sport' | 'Tabii Spor' | 'Tivibu Spor' | 'TRT'
-
-     q    → Yayın kalitesi. Kanal kartının sağında rozet olarak gösterilir.
-            Seçenekler: 'HD' | 'FHD'
-
-     icon → Kanal kartında görünecek renk emojisi.
-            Öneriler: 🔴 BeIN  |  🟡 S Sport  |  🔵 Tabii  |  🟢 Tivibu  |  ⚪ TRT
-
-     note → Kanal adının altında sarı renkte gösterilecek uyarı.
-            Örnek: 'Biraz geç açılabilir'
-            Gerekmiyorsa boş bırak: ''
-
-     url  → Kanalın yayın linki. .m3u8 veya .mpd uzantılı olmalı.
-   ========================================================= */
-
-const matches = [
-  {
-    id: 'm1',
-    title: 'Maç Adı',
-    channel: 'Bein Sports 1 FHD',
-    isLive: true,
-    note: 'Biraz geç açılabilir',
-    url: '',
-  },
-  // Yeni maç eklemek için buraya kopyala:
-  // { id:'m2', title:'Maç Adı', channel:'Kanal', isLive:true, note:'', url:'https://...' },
-];
-
-const channels = [
-  // ── BeIN Sports ──────────────────────────────────────────
-  { id:'bein1fhd', name:'Bein Sports 1 FHD', cat:'BeIN Sports', q:'FHD', icon:'🔴', note:'Biraz geç açılabilir', url:'https://panzerrbeyy1-deneme.hf.space/proxy/m3u?url=http://mc3.268904.xyz:80/live/fransa1801/18h01c22/366154.m3u8' },
-  { id:'bein1',    name:'Bein Sports 1',     cat:'BeIN Sports', q:'HD',  icon:'🔴', note:'', url:'https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-1.m3u8' },
-  { id:'bein2',    name:'Bein Sports 2',     cat:'BeIN Sports', q:'HD',  icon:'🔴', note:'', url:'https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-2.m3u8' },
-  { id:'bein3',    name:'Bein Sports 3',     cat:'BeIN Sports', q:'HD',  icon:'🔴', note:'', url:'https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-3.m3u8' },
-  { id:'bein4',    name:'Bein Sports 4',     cat:'BeIN Sports', q:'HD',  icon:'🔴', note:'', url:'https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-4.m3u8' },
-  { id:'bein5',    name:'Bein Sports 5',     cat:'BeIN Sports', q:'HD',  icon:'🔴', note:'', url:'https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-5.m3u8' },
-  { id:'beinm1',   name:'Bein Sports Max 1', cat:'BeIN Sports', q:'HD',  icon:'🔴', note:'', url:'https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-2.m3u8' },
-  { id:'beinm2',   name:'Bein Sports Max 2', cat:'BeIN Sports', q:'HD',  icon:'🔴', note:'', url:'https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-max-2.m3u8' },
-  // ── S Sport ──────────────────────────────────────────────
-  { id:'ss1', name:'S Sport',   cat:'S Sport', q:'HD', icon:'🟡', note:'', url:'https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport.m3u8' },
-  { id:'ss2', name:'S Sport 2', cat:'S Sport', q:'HD', icon:'🟡', note:'', url:'https://noisy-cake-8ebc.yedekligbitti.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport-2.m3u8' },
-  // ── Tabii Spor ───────────────────────────────────────────
-  { id:'tb0', name:'Tabii Spor',   cat:'Tabii Spor', q:'HD',  icon:'🔵', note:'', url:'https://kl9mr2vxw7nq5py1sh4tj3gb6.medya.trt.com.tr/master_1080p.m3u8' },
-  { id:'tb1', name:'Tabii Spor 1', cat:'Tabii Spor', q:'FHD', icon:'🔵', note:'', url:'https://Pz4qT7nW1mR9sH2vL5xK8jG3y.medya.trt.com.tr/master_1440p.m3u8' },
-  { id:'tb2', name:'Tabii Spor 2', cat:'Tabii Spor', q:'FHD', icon:'🔵', note:'', url:'https://mr8bv4kl1nq7sh9tw2xp5zj6g.medya.trt.com.tr/master_1440p.m3u8' },
-  { id:'tb3', name:'Tabii Spor 3', cat:'Tabii Spor', q:'FHD', icon:'🔵', note:'', url:'https://mR4vL7nQ2sH9tW5xP1zK3gJ8b.medya.trt.com.tr/master_1440p.m3u8' },
-  { id:'tb4', name:'Tabii Spor 4', cat:'Tabii Spor', q:'FHD', icon:'🔵', note:'', url:'https://sh7tq2nw5mr1vl9xp4zk3gj8k.medya.trt.com.tr/master_1440p.m3u8' },
-  { id:'tb5', name:'Tabii Spor 5', cat:'Tabii Spor', q:'FHD', icon:'🔵', note:'', url:'https://z3mmimwz148csv0vaxtphqspf.medya.trt.com.tr/master_1080p.m3u8' },
-  { id:'tb6', name:'Tabii Spor 6', cat:'Tabii Spor', q:'FHD', icon:'🔵', note:'', url:'https://nw5mr1vl9xp4zk2sh7tq3gj6b.medya.trt.com.tr/master_1440p.m3u8' },
-  { id:'tb7', name:'Tabii Spor 7', cat:'Tabii Spor', q:'HD',  icon:'🔵', note:'', url:'https://rxne77juptdeyke3tytvgqwyh.medya.trt.com.tr/master_720p.m3u8' },
-  // ── Tivibu Spor ──────────────────────────────────────────
-  { id:'tv0', name:'Tivibu Spor',   cat:'Tivibu Spor', q:'HD', icon:'🟢', note:'', url:'https://andro.5172948.xyz/checklist/androstreamlivets.m3u8' },
-  { id:'tv1', name:'Tivibu Spor 1', cat:'Tivibu Spor', q:'HD', icon:'🟢', note:'', url:'https://andro.5172948.xyz/checklist/androstreamlivets1.m3u8' },
-  { id:'tv2', name:'Tivibu Spor 2', cat:'Tivibu Spor', q:'HD', icon:'🟢', note:'', url:'https://andro.5172948.xyz/checklist/androstreamlivets2.m3u8' },
-  { id:'tv3', name:'Tivibu Spor 3', cat:'Tivibu Spor', q:'HD', icon:'🟢', note:'', url:'https://andro.5172948.xyz/checklist/androstreamlivets3.m3u8' },
-  { id:'tv4', name:'Tivibu Spor 4', cat:'Tivibu Spor', q:'HD', icon:'🟢', note:'', url:'https://andro.5172948.xyz/checklist/androstreamlivets4.m3u8' },
-  // ── TRT ──────────────────────────────────────────────────
-  { id:'trt1',  name:'TRT 1',           cat:'TRT', q:'HD',  icon:'⚪', note:'', url:'https://tv-trt1-dash.medya.trt.com.tr/master.mpd' },
-  { id:'trt1y', name:'TRT 1 Yurt Dışı', cat:'TRT', q:'HD',  icon:'⚪', note:'', url:'https://andro.5172948.xyz/checklist/androstreamlivetrt1.m3u8' },
-  { id:'trts',  name:'TRT Spor',         cat:'TRT', q:'FHD', icon:'⚪', note:'', url:'https://tv-trtspor1.medya.trt.com.tr/master_1080.m3u8' },
-  // Yeni kanal eklemek için buraya kopyala:
-  // { id:'yeni1', name:'Kanal Adı', cat:'BeIN Sports', q:'HD', icon:'🔴', note:'', url:'https://...' },
-];
-
-/* =========================================================
-   UYGULAMA KODU — Bu bölümü değiştirmene gerek yok
-   ========================================================= */
-
-function buildPlayerSrc(url) {
-  return `https://hlsplayer.net/embed?type=m3u8&src=${encodeURIComponent(url)}`;
-}
-
-const cats = ['Tümü','BeIN Sports','S Sport','Tabii Spor','Tivibu Spor','TRT'];
-let activeCat = 'Tümü';
-let activeId = null;
-
-// Play
-function play(item, type) {
-  activeId = item.id;
-  const frame = document.getElementById('playerFrame');
-  const placeholder = document.getElementById('placeholder');
-  frame.src = buildPlayerSrc(item.url);
-  frame.style.display = 'block';
-  placeholder.style.display = 'none';
-
-  // Show loader, fade out after stream has time to start
-  const loader = document.getElementById('playerLoader');
-  loader.classList.remove('hidden', 'fade-out');
-  clearTimeout(window._loaderTimer);
-  window._loaderTimer = setTimeout(() => {
-    loader.classList.add('fade-out');
-    setTimeout(() => loader.classList.add('hidden'), 650);
-  }, 4000);
-  document.getElementById('welcomeBanner').style.display = 'none';
-  // Now playing
-  const np = document.getElementById('nowPlaying');
-  np.style.display = 'flex';
-  document.getElementById('npTitle').textContent = type === 'match' ? item.title : item.name;
-  document.getElementById('npSub').textContent = type === 'match'
-    ? item.channel
-    : (item.q || '') + (item.cat ? ' · ' + item.cat : '');
-  const noteEl = document.getElementById('npNote');
-  if (item.note) {
-    noteEl.style.display = 'flex';
-    document.getElementById('npNoteText').textContent = item.note;
-  } else {
-    noteEl.style.display = 'none';
+  function castCurrentVideo(url, title) {
+    if(typeof cast === 'undefined') return;
+    const session = cast.framework.CastContext.getInstance().getCurrentSession();
+    if (session) {
+      const mediaInfo = new chrome.cast.media.MediaInfo(url, url.includes('.mpd') ? 'application/dash+xml' : 'application/x-mpegurl');
+      mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+      mediaInfo.metadata.title = title;
+      const request = new chrome.cast.media.LoadRequest(mediaInfo);
+      session.loadMedia(request).catch(err => console.log('Cast Hatası:', err));
+    }
   }
-  // Re-render active state
-  renderMatches();
+
+  function renderCategories() {
+    const catContainer = document.getElementById('categoryList');
+    let catArray = Array.from(uniqueCategories);
+    const digerIndex = catArray.indexOf("Diğer");
+    if (digerIndex > -1) { catArray.splice(digerIndex, 1); catArray.push("Diğer"); }
+    if (favorites.length > 0) { catArray.unshift('❤️ Favorilerim'); }
+    if (!catArray.includes(activeCategory)) activeCategory = 'Tümü';
+
+    catContainer.innerHTML = catArray.map(cat => `
+      <button class="cat-btn ${activeCategory === cat ? 'active' : ''}" onclick="selectCategory('${cat}')">
+        ${cat}
+      </button>
+    `).join('');
+  }
+
+  function selectCategory(cat) { activeCategory = cat; renderCategories(); renderChannels(); }
+
+  function toggleFav(id, event) {
+    event.stopPropagation();
+    if(favorites.includes(id)) { favorites = favorites.filter(f => f !== id); } 
+    else { favorites.push(id); }
+    setSafeItem('panzer_favs', JSON.stringify(favorites));
+    renderCategories();
+    renderChannels();
+  }
+
+  function getHighlightedText(text, search) {
+    if (!search) return text;
+    const regex = new RegExp(`(${search})`, 'gi');
+    return text.replace(regex, '<span class="highlight">$1</span>');
+  }
+
+  function toggleView() {
+    isGridView = !isGridView;
+    setSafeItem('panzer_view', isGridView ? 'grid' : 'list');
+    renderChannels();
+  }
+
+  function renderChannels() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const listContainer = document.getElementById('channelList');
+    const viewBtn = document.getElementById('viewToggleBtn');
+    
+    if (isGridView) {
+      listContainer.classList.add('grid-view');
+      viewBtn.innerHTML = listIcon;
+    } else {
+      listContainer.classList.remove('grid-view');
+      viewBtn.innerHTML = gridIcon;
+    }
+
+    const filteredChannels = allChannels.filter(c => {
+      if (activeCategory === '❤️ Favorilerim' && !favorites.includes(c.id)) return false;
+      const matchCat = (activeCategory === 'Tümü' || activeCategory === '❤️ Favorilerim' || c.cat === activeCategory);
+      const matchSearch = c.name.toLowerCase().includes(searchTerm) || c.cat.toLowerCase().includes(searchTerm);
+      return matchCat && matchSearch;
+    });
+
+    document.getElementById('channelCount').textContent = filteredChannels.length;
+
+    if (filteredChannels.length === 0) {
+      listContainer.innerHTML = '<div class="empty-state">Kanal bulunamadı.</div>';
+      return;
+    }
+
+    listContainer.innerHTML = filteredChannels.map(c => {
+      const isFav = favorites.includes(c.id);
+      const logoHtml = c.logo 
+        ? `<img src="${c.logo}" alt="logo" onerror="this.outerHTML='<span>${c.name.charAt(0)}</span>'"/>` 
+        : `<span>${c.name.charAt(0)}</span>`;
+
+      return `
+      <div class="channel-card ${activeChannelId === c.id ? 'active' : ''}" onclick="playChannel('${c.id}')">
+        <div style="display:flex; align-items:center; flex:1; min-width:0; flex-direction: ${isGridView ? 'column' : 'row'};">
+          <div class="cc-logo">${logoHtml}</div>
+          <div class="cc-info">
+            <div class="cc-name">${getHighlightedText(c.name, searchTerm)}</div>
+            <div class="cc-cat">${getHighlightedText(c.cat, searchTerm)}</div>
+          </div>
+        </div>
+        <div class="cc-actions">
+          <div class="cc-quality">${c.quality}</div>
+          <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav('${c.id}', event)" title="Favorilere Ekle">
+            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          </button>
+        </div>
+      </div>
+    `}).join('');
+  }
+
+  renderCategories();
   renderChannels();
-}
 
-// Tab switch
-function switchTab(tab) {
-  document.getElementById('panelMatches').style.display = tab === 'matches' ? 'block' : 'none';
-  document.getElementById('panelChannels').style.display = tab === 'channels' ? 'block' : 'none';
-  document.getElementById('tabMatches').className = 'tab-btn' + (tab === 'matches' ? ' active' : '');
-  document.getElementById('tabChannels').className = 'tab-btn' + (tab === 'channels' ? ' active' : '');
-}
+  const videoElement = document.getElementById('videoPlayer');
+  let player;
+  try {
+    if (typeof Plyr !== 'undefined') {
+      player = new Plyr(videoElement, {
+        controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
+        settings: ['quality', 'speed'],
+        fullscreen: { enabled: true, fallback: true, iosNative: true },
+        i18n: { speed: 'Hız', normal: 'Normal', quality: 'Kalite', play: 'Oynat', pause: 'Duraklat', mute: 'Sessiz', unmute: 'Sesi Aç', enterFullscreen: 'Tam Ekran', exitFullscreen: 'Tam Ekrandan Çık' }
+      });
+    }
+  } catch(e) {}
 
-// Check if a URL has an expired token (parses exp= from hdnts or query params)
-function isExpired(url) {
-  const match = url.match(/[?&~]exp=(\d+)/);
-  if (!match) return false;
-  return Date.now() / 1000 > parseInt(match[1], 10);
-}
+  let hls = null;
+  let dashPlayer = null;
 
-// Render matches
-function renderMatches() {
-  const list = document.getElementById('matchList');
-  document.getElementById('matchCount').textContent = matches.length;
-  if (!matches.length) {
-    list.innerHTML = '<div class="empty-state"><div>🏆</div>Aktif maç bulunmuyor</div>';
-    return;
+  function playChannel(id) {
+    activeChannelId = id;
+    const channel = allChannels.find(c => c.id === id);
+    renderChannels();
+
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('nowPlaying').style.display = 'flex';
+    document.getElementById('npTitle').textContent = channel.name;
+    document.getElementById('npSub').textContent = `${channel.cat} • ${channel.quality}`;
+
+    const url = channel.url;
+    castCurrentVideo(url, channel.name); 
+
+    if (hls) { hls.destroy(); }
+    if (dashPlayer) { dashPlayer.destroy(); dashPlayer = null; }
+
+    if (url.includes('.m3u8')) {
+      if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+        hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(videoElement);
+        hls.on(Hls.Events.MANIFEST_PARSED, function() { if(player) player.play().catch(e=>{}); });
+        
+        hls.on(Hls.Events.ERROR, function (event, data) {
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                console.warn("Ağ bağlantısı koptu, yeniden bağlanılıyor...");
+                setTimeout(() => { hls.startLoad(); }, 3000);
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                console.warn("Medya hatası kurtarılıyor...");
+                hls.recoverMediaError();
+                break;
+              default:
+                hls.destroy();
+                break;
+            }
+          }
+        });
+      } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+        videoElement.src = url;
+        videoElement.addEventListener('loadedmetadata', function() { if(player) player.play().catch(e=>{}); });
+      }
+    } else if (url.includes('.mpd')) {
+      if (typeof dashjs !== 'undefined') {
+        dashPlayer = dashjs.MediaPlayer().create();
+        dashPlayer.initialize(videoElement, url, true);
+        if(player) player.play().catch(e=>{});
+      }
+    } else {
+      videoElement.src = url;
+      if(player) player.play().catch(e=>{});
+    }
   }
-  list.innerHTML = matches.map(m => {
-    const expired = isExpired(m.url);
-    return `
-    <button class="card${activeId === m.id ? ' active' : ''}${expired ? ' expired' : ''}"
-      data-id="${m.id}" data-type="match" ${expired ? 'disabled' : ''}>
-      <div class="card-icon">${m.isLive && !expired ? '<span class="live-dot" style="width:8px;height:8px"></span>' : '🕐'}</div>
-      <div class="card-body">
-        <div class="card-name">${m.title}</div>
-        <div class="card-sub">${m.channel}</div>
-        ${expired
-          ? '<div class="card-note" style="color:rgba(239,68,68,0.7)">⛔ Link süresi doldu</div>'
-          : m.note ? `<div class="card-note">⚠ ${m.note}</div>` : ''}
-      </div>
-      ${expired ? '<span class="live-badge-pill" style="background:rgba(239,68,68,0.1);color:rgba(239,68,68,0.6);border-color:rgba(239,68,68,0.2)">SÜRESİ DOLDU</span>' : m.isLive ? '<span class="live-badge-pill">CANLI</span>' : ''}
-    </button>`;
-  }).join('');
-}
 
-// Render channels
-function renderChannels() {
-  const search = (document.getElementById('searchInput').value || '').toLowerCase();
-  const filtered = channels.filter(c =>
-    (activeCat === 'Tümü' || c.cat === activeCat) &&
-    c.name.toLowerCase().includes(search)
-  );
-  document.getElementById('channelCount').textContent = filtered.length;
-  const list = document.getElementById('channelList');
-  if (!filtered.length) {
-    list.innerHTML = '<div class="empty-state"><div>📺</div>Kanal bulunamadı</div>';
-    return;
+  function toggleTheme() {
+    const html = document.documentElement;
+    const btn = document.getElementById('themeBtn');
+    if (html.getAttribute('data-theme') === 'dark') {
+      html.removeAttribute('data-theme'); btn.innerHTML = moonIcon; setSafeItem('theme', 'light');
+    } else {
+      html.setAttribute('data-theme', 'dark'); btn.innerHTML = sunIcon; setSafeItem('theme', 'dark');
+    }
   }
-  list.innerHTML = filtered.map(c => `
-    <button class="card${activeId === c.id ? ' active' : ''}" data-id="${c.id}" data-type="channel">
-      <div class="card-icon">${c.icon}</div>
-      <div class="card-body">
-        <div class="card-name">${c.name}</div>
-        ${c.note ? `<div class="card-note">⚠ ${c.note}</div>` : ''}
-      </div>
-      <span class="quality-badge${c.q==='FHD'?' fhd':''}">${c.q}</span>
-    </button>
-  `).join('');
-}
-
-// Event delegation for card clicks
-document.addEventListener('click', function(e) {
-  const btn = e.target.closest('button[data-id][data-type]');
-  if (!btn) return;
-  const id = btn.dataset.id;
-  const type = btn.dataset.type;
-  if (type === 'match') {
-    const item = matches.find(m => m.id === id);
-    if (item) play(item, 'match');
-  } else {
-    const item = channels.find(c => c.id === id);
-    if (item) play(item, 'channel');
-  }
-});
-
-// Render category pills
-function renderCats() {
-  const el = document.getElementById('catList');
-  el.innerHTML = cats.map(c => `
-    <button class="cat-btn${activeCat===c?' active':''}" onclick="setcat('${c}')">${c}</button>
-  `).join('');
-}
-function setcat(c) { activeCat = c; renderCats(); renderChannels(); }
-
-// Init
-renderMatches();
-renderCats();
-renderChannels();
 </script>
 </body>
 </html>
