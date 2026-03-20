@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
@@ -398,6 +398,46 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
   function getSafeItem(key) { try { return localStorage.getItem(key); } catch(e){ return null; } }
   function setSafeItem(key, val) { try { localStorage.setItem(key, val); } catch(e){} }
 
+  // iOS in-app browser (Twitter, Instagram vb.) için yatay kilit
+  function lockLandscape() {
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').catch(() => {});
+    } else if (screen.lockOrientation) {
+      screen.lockOrientation('landscape');
+    } else if (screen.mozLockOrientation) {
+      screen.mozLockOrientation('landscape');
+    } else if (screen.msLockOrientation) {
+      screen.msLockOrientation('landscape');
+    }
+  }
+
+  function unlockOrientation() {
+    if (screen.orientation && screen.orientation.unlock) {
+      screen.orientation.unlock();
+    } else if (screen.unlockOrientation) {
+      screen.unlockOrientation();
+    } else if (screen.mozUnlockOrientation) {
+      screen.mozUnlockOrientation();
+    } else if (screen.msUnlockOrientation) {
+      screen.msUnlockOrientation();
+    }
+  }
+
+  // Tam ekran ve webkitfullscreen olaylarını dinle
+  document.addEventListener('fullscreenchange', function() {
+    if (document.fullscreenElement) { lockLandscape(); } else { unlockOrientation(); }
+  });
+  document.addEventListener('webkitfullscreenchange', function() {
+    if (document.webkitFullscreenElement) { lockLandscape(); } else { unlockOrientation(); }
+  });
+
+  // iOS native video fullscreen (özellikle in-app browser için kritik)
+  function attachIOSOrientationFix(videoEl) {
+    if (!videoEl) return;
+    videoEl.addEventListener('webkitbeginfullscreen', function() { lockLandscape(); });
+    videoEl.addEventListener('webkitendfullscreen', function() { unlockOrientation(); });
+  }
+
   let favorites = [];
   try { favorites = JSON.parse(getSafeItem('panzer_favs') || '[]'); } catch(e){}
 
@@ -598,6 +638,7 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
     const videoContainer = document.getElementById('videoContainer');
     videoContainer.innerHTML = '<video id="videoPlayer" controls crossorigin playsinline></video>';
     const videoElement = document.getElementById('videoPlayer');
+    attachIOSOrientationFix(videoElement);
 
     if (url.includes('.m3u8')) {
       if (typeof Hls !== 'undefined' && Hls.isSupported()) {
@@ -607,6 +648,7 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
           
           videoContainer.innerHTML = '<video id="videoPlayer" controls crossorigin playsinline></video>';
           const vElement = document.getElementById('videoPlayer');
+          attachIOSOrientationFix(vElement);
           
           hls = new Hls({ maxMaxBufferLength: 30 });
           
