@@ -398,44 +398,173 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
   function getSafeItem(key) { try { return localStorage.getItem(key); } catch(e){ return null; } }
   function setSafeItem(key, val) { try { localStorage.setItem(key, val); } catch(e){} }
 
-  // iOS in-app browser (Twitter, Instagram vb.) için yatay kilit
-  function lockLandscape() {
+  // ============================================================
+  // iOS IN-APP BROWSER LANDSCAPE FIX
+  // Twitter/Instagram gibi uygulamalarda screen.orientation.lock
+  // tamamen engelli. Çözüm: tam ekranda videoyu CSS ile 90° döndürüp
+  // ekranı kaplayacak şekilde scale etmek.
+  // ============================================================
+
+  var iosFullscreenOverlay = null;
+
+  function createIOSLandscapeOverlay(videoEl) {
+    // Varsa temizle
+    removeIOSLandscapeOverlay();
+
+    // Overlay: tam ekran siyah zemin
+    var overlay = document.createElement('div');
+    overlay.id = 'ios-landscape-overlay';
+    overlay.style.cssText = [
+      'position:fixed',
+      'top:0','left:0',
+      'width:100vw','height:100vh',
+      'background:#000',
+      'z-index:99999',
+      'display:flex',
+      'align-items:center',
+      'justify-content:center',
+      'overflow:hidden'
+    ].join(';');
+
+    // Video klonu değil — orijinal videoyu taşıyoruz
+    // Kapatma butonu
+    var closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '&#x2715;';
+    closeBtn.style.cssText = [
+      'position:absolute',
+      'top:16px','right:16px',
+      'z-index:100001',
+      'background:rgba(0,0,0,0.6)',
+      'color:white',
+      'border:none',
+      'border-radius:50%',
+      'width:40px','height:40px',
+      'font-size:20px',
+      'cursor:pointer',
+      'display:flex','align-items:center','justify-content:center'
+    ].join(';');
+    closeBtn.addEventListener('click', removeIOSLandscapeOverlay);
+
+    // Video wrapper — döndürme burada yapılıyor
+    var vw = document.createElement('div');
+    vw.id = 'ios-video-wrapper';
+
+    var sw = window.screen.width;
+    var sh = window.screen.height;
+    var longSide  = Math.max(sw, sh);
+    var shortSide = Math.min(sw, sh);
+
+    // Portre modunda: video 90° döner, genişlik=ekran yüksekliği, yükseklik=ekran genişliği
+    vw.style.cssText = [
+      'width:'  + longSide  + 'px',
+      'height:' + shortSide + 'px',
+      'transform:rotate(90deg)',
+      'transform-origin:center center',
+      'position:absolute',
+      'top:50%','left:50%',
+      'margin-top:-' + (shortSide/2) + 'px',
+      'margin-left:-' + (longSide/2) + 'px'
+    ].join(';');
+
+    // Plyr container'ı veya video elementini wrapper'a taşı
+    var playerContainer = videoEl.closest('.plyr') || videoEl.parentElement || videoEl;
+    var originalParent  = playerContainer.parentNode;
+    var originalNext    = playerContainer.nextSibling;
+    overlay._originalParent = originalParent;
+    overlay._originalNext   = originalNext;
+    overlay._movedEl        = playerContainer;
+
+    // Video boyutunu wrapper'a uydur
+    playerContainer.style.width  = '100%';
+    playerContainer.style.height = '100%';
+    if (videoEl !== playerContainer) {
+      videoEl.style.width  = '100%';
+      videoEl.style.height = '100%';
+    }
+
+    vw.appendChild(playerContainer);
+    overlay.appendChild(vw);
+    overlay.appendChild(closeBtn);
+    document.body.appendChild(overlay);
+    iosFullscreenOverlay = overlay;
+
+    // Ekran kilidini yine de dene (Safari'de çalışıyor)
     if (screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock('landscape').catch(() => {});
-    } else if (screen.lockOrientation) {
-      screen.lockOrientation('landscape');
-    } else if (screen.mozLockOrientation) {
-      screen.mozLockOrientation('landscape');
-    } else if (screen.msLockOrientation) {
-      screen.msLockOrientation('landscape');
+      screen.orientation.lock('landscape').catch(function(){});
     }
   }
 
-  function unlockOrientation() {
+  function removeIOSLandscapeOverlay() {
+    var overlay = iosFullscreenOverlay || document.getElementById('ios-landscape-overlay');
+    if (!overlay) return;
+    var movedEl = overlay._movedEl;
+    if (movedEl && overlay._originalParent) {
+      if (overlay._originalNext) {
+        overlay._originalParent.insertBefore(movedEl, overlay._originalNext);
+      } else {
+        overlay._originalParent.appendChild(movedEl);
+      }
+      // Boyutu sıfırla
+      movedEl.style.width  = '';
+      movedEl.style.height = '';
+      var vid = movedEl.querySelector('video') || movedEl;
+      if (vid && vid.tagName === 'VIDEO') { vid.style.width = ''; vid.style.height = ''; }
+    }
+    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    iosFullscreenOverlay = null;
     if (screen.orientation && screen.orientation.unlock) {
       screen.orientation.unlock();
-    } else if (screen.unlockOrientation) {
-      screen.unlockOrientation();
-    } else if (screen.mozUnlockOrientation) {
-      screen.mozUnlockOrientation();
-    } else if (screen.msUnlockOrientation) {
-      screen.msUnlockOrientation();
     }
   }
 
-  // Tam ekran ve webkitfullscreen olaylarını dinle
-  document.addEventListener('fullscreenchange', function() {
-    if (document.fullscreenElement) { lockLandscape(); } else { unlockOrientation(); }
-  });
-  document.addEventListener('webkitfullscreenchange', function() {
-    if (document.webkitFullscreenElement) { lockLandscape(); } else { unlockOrientation(); }
-  });
+  // iOS in-app browser tespiti
+  function isIOSInAppBrowser() {
+    var ua = navigator.userAgent;
+    var isIOS = /iPad|iPhone|iPod/.test(ua);
+    if (!isIOS) return false;
+    // Safari'nin kendi tarayıcısı "Safari" içerir, in-app browser içermez
+    var isSafari = /Safari/.test(ua) && !/CriOS/.test(ua) && !/FxiOS/.test(ua);
+    // Twitter in-app: "Twitter" veya standalone WebView belirtisi
+    var isInApp = !isSafari || /FBAN|FBAV|Twitter|Instagram|Line|MicroMessenger/.test(ua) || (window.navigator.standalone === false && !/Safari/.test(ua));
+    return isInApp || (!window.navigator.standalone && /WebKit/.test(ua) && !/Safari/.test(ua));
+  }
 
-  // iOS native video fullscreen (özellikle in-app browser için kritik)
+  // Tam ekran butonu tıklandığında iOS in-app browser'da overlay aç
   function attachIOSOrientationFix(videoEl) {
     if (!videoEl) return;
-    videoEl.addEventListener('webkitbeginfullscreen', function() { lockLandscape(); });
-    videoEl.addEventListener('webkitendfullscreen', function() { unlockOrientation(); });
+
+    // webkitbeginfullscreen: iOS native player tam ekrana geçince
+    videoEl.addEventListener('webkitbeginfullscreen', function() {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(function(){});
+      }
+    });
+    videoEl.addEventListener('webkitendfullscreen', function() {
+      if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock();
+      }
+    });
+  }
+
+  // Plyr'ın fullscreen butonuna tıklandığında iOS in-app için özel davranış
+  function patchPlyrFullscreenForIOS(plyrInstance, videoEl) {
+    if (!plyrInstance || !videoEl) return;
+    plyrInstance.on('enterfullscreen', function() {
+      if (isIOSInAppBrowser()) {
+        // Plyr'ın kendi fullscreen'ini iptal et, bizimkini aç
+        setTimeout(function() { createIOSLandscapeOverlay(videoEl); }, 50);
+      } else {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function(){});
+        }
+      }
+    });
+    plyrInstance.on('exitfullscreen', function() {
+      removeIOSLandscapeOverlay();
+      if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock();
+      }
+    });
   }
 
   let favorites = [];
@@ -594,7 +723,7 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
   const basicPlyrOptions = {
     controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
     settings: ['quality', 'speed'],
-    fullscreen: { enabled: true, fallback: true, iosNative: true },
+    fullscreen: { enabled: true, fallback: true, iosNative: false },
     i18n: { 
       speed: 'Hız', 
       normal: 'Normal', 
@@ -701,6 +830,7 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
             };
             
             player = new Plyr(vElement, options);
+            patchPlyrFullscreenForIOS(player, vElement);
             player.play().catch(e => {});
           });
           
@@ -733,6 +863,7 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
       } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
         videoElement.src = url;
         player = new Plyr(videoElement, basicPlyrOptions);
+        patchPlyrFullscreenForIOS(player, videoElement);
         videoElement.addEventListener('loadedmetadata', function() { 
           if(player) player.play().catch(e=>{}); 
         }, {once: true});
@@ -769,6 +900,7 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
           };
           
           player = new Plyr(videoElement, options);
+          patchPlyrFullscreenForIOS(player, videoElement);
           player.play().catch(e => {});
         });
       }
@@ -776,6 +908,7 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
     } else {
       videoElement.src = url;
       player = new Plyr(videoElement, basicPlyrOptions);
+      patchPlyrFullscreenForIOS(player, videoElement);
       if(player) player.play().catch(e=>{});
     }
   }
