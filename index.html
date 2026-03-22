@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
@@ -394,68 +394,129 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
   function getSafeItem(key) { try { return localStorage.getItem(key); } catch(e){ return null; } }
   function setSafeItem(key, val) { try { localStorage.setItem(key, val); } catch(e){} }
 
-  // iOS yön kilidi — webkitbeginfullscreen ile native player'da çalışır
+  // iOS yatay mod + tam ekran fix
+  // in-app browser'da (Twitter vb.) screen.orientation.lock engelli olduğu için
+  // CSS rotate overlay kullanıyoruz.
+
+  function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent);
+  }
+
+  function isIOSInApp() {
+    if (!isIOS()) return false;
+    return !/Safari\//.test(navigator.userAgent);
+  }
+
+  // --- CSS Rotate Overlay ---
+  var _rotateOverlay = null;
+
+  function showRotateOverlay(videoEl) {
+    if (_rotateOverlay) return;
+
+    // Önce screen.orientation.lock dene (bazı tarayıcılarda çalışır)
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').catch(function() {
+        // Başarısız olursa CSS overlay aç
+        _buildRotateOverlay(videoEl);
+      });
+      return;
+    }
+    _buildRotateOverlay(videoEl);
+  }
+
+  function _buildRotateOverlay(videoEl) {
+    var overlay = document.createElement('div');
+    overlay.id = '_rot_overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:99999;overflow:hidden;';
+
+    // Kapat butonu
+    var closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '&#x2715;';
+    closeBtn.style.cssText = 'position:absolute;top:12px;right:12px;z-index:100001;background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+    closeBtn.onclick = hideRotateOverlay;
+
+    // Video wrapper — 90° döndürülüp ekranı kaplayacak şekilde scale edilir
+    var vw = document.createElement('div');
+    var sw = Math.min(screen.width, screen.height);   // kısa kenar
+    var sh = Math.max(screen.width, screen.height);   // uzun kenar
+    // Döndükten sonra: genişlik=sh, yükseklik=sw olacak
+    // Merkezi sabit tutmak için margin hesabı:
+    vw.style.cssText = [
+      'position:absolute',
+      'width:'  + sh + 'px',
+      'height:' + sw + 'px',
+      'top:50%',
+      'left:50%',
+      'margin-top:-' + (sw / 2) + 'px',
+      'margin-left:-' + (sh / 2) + 'px',
+      'transform:rotate(90deg)',
+      'transform-origin:center center',
+    ].join(';');
+
+    // Plyr container'ı veya video'yu wrapper'a taşı
+    var plyrEl = videoEl.closest('.plyr') || videoEl.parentElement || videoEl;
+    var origParent = plyrEl.parentNode;
+    var origNext   = plyrEl.nextSibling;
+
+    plyrEl.style.width  = '100%';
+    plyrEl.style.height = '100%';
+
+    overlay._origParent = origParent;
+    overlay._origNext   = origNext;
+    overlay._movedEl    = plyrEl;
+
+    vw.appendChild(plyrEl);
+    overlay.appendChild(vw);
+    overlay.appendChild(closeBtn);
+    document.body.appendChild(overlay);
+    _rotateOverlay = overlay;
+  }
+
+  function hideRotateOverlay() {
+    if (!_rotateOverlay) return;
+    var el = _rotateOverlay._movedEl;
+    if (el && _rotateOverlay._origParent) {
+      el.style.width  = '';
+      el.style.height = '';
+      if (_rotateOverlay._origNext) {
+        _rotateOverlay._origParent.insertBefore(el, _rotateOverlay._origNext);
+      } else {
+        _rotateOverlay._origParent.appendChild(el);
+      }
+    }
+    if (_rotateOverlay.parentNode) _rotateOverlay.parentNode.removeChild(_rotateOverlay);
+    _rotateOverlay = null;
+    if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+  }
+
+  // Video elementi oluşturulunca çağrılır
   function attachIOSOrientationFix(videoEl) {
-    if (!videoEl) return;
+    if (!videoEl || !isIOS()) return;
+
+    // Safari native player (doğrudan Safari'de çalışır)
     videoEl.addEventListener('webkitbeginfullscreen', function() {
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('landscape').catch(function(){});
       }
     });
     videoEl.addEventListener('webkitendfullscreen', function() {
-      if (screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock();
+      if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+      hideRotateOverlay();
+    });
+  }
+
+  // Plyr instance oluşturulunca çağrılır
+  function attachPlyrFullscreenFix(plyrInstance, videoEl) {
+    if (!plyrInstance || !isIOS()) return;
+    plyrInstance.on('enterfullscreen', function() {
+      if (isIOSInApp()) {
+        setTimeout(function() { showRotateOverlay(videoEl); }, 50);
       }
     });
-  }
-
-  // iOS in-app browser tespiti (Twitter, Instagram vb.)
-  function isIOSInAppBrowser() {
-    var ua = navigator.userAgent;
-    if (!/iPad|iPhone|iPod/.test(ua)) return false;
-    // Gerçek Safari'de "Safari/" token'ı bulunur
-    return !/Safari\//.test(ua);
-  }
-
-  // Safari'de Aç — iOS'ta çalışan tek güvenilir yöntem
-  function openInSafari() {
-    // x-safari-https:// scheme — iOS'ta Safari'yi doğrudan açar
-    var url = window.location.href;
-    var safariUrl = url.replace(/^https?:\/\//, 'x-safari-https://');
-    window.location.href = safariUrl;
-    // Scheme çalışmazsa fallback: normal href ile dene
-    setTimeout(function() {
-      window.open(url, '_blank');
-    }, 1000);
-  }
-
-  // Safari Banner — sadece iOS in-app browser'da, 24 saatte bir
-  (function() {
-    if (!isIOSInAppBrowser()) return;
-    var KEY = 'panzer_safari_banner_closed';
-    try {
-      var t = localStorage.getItem(KEY);
-      if (t && Date.now() - parseInt(t) < 86400000) return;
-    } catch(e) {}
-
-    var style = document.createElement('style');
-    style.textContent = '#safari-banner{position:fixed;bottom:0;left:0;right:0;z-index:99998;transform:translateY(110%);transition:transform .4s cubic-bezier(.34,1.56,.64,1);padding-bottom:env(safe-area-inset-bottom,0px)}#safari-banner.show{transform:translateY(0)}#safari-banner-inner{display:flex;align-items:center;gap:10px;background:rgba(15,15,15,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.1);padding:12px 14px}#safari-banner-icon{flex-shrink:0;width:36px;height:36px;background:#006CFF;border-radius:10px;display:flex;align-items:center;justify-content:center}#safari-banner-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}#safari-banner-title{font-size:13px;font-weight:700;color:#fff}#safari-banner-sub{font-size:11px;color:rgba(255,255,255,.5)}#safari-banner-btn{flex-shrink:0;background:#006CFF;color:#fff;border:none;border-radius:18px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}#safari-banner-close{flex-shrink:0;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.5);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}';
-    document.head.appendChild(style);
-
-    var banner = document.createElement('div');
-    banner.id = 'safari-banner';
-    banner.innerHTML = '<div id="safari-banner-inner"><div id="safari-banner-icon"><svg width="22" height="22" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="45" stroke="white" stroke-width="8"/><line x1="50" y1="5" x2="50" y2="95" stroke="white" stroke-width="6"/><line x1="5" y1="50" x2="95" y2="50" stroke="white" stroke-width="6"/><polygon points="50,10 62,38 50,30 38,38" fill="white"/></svg></div><div id="safari-banner-text"><span id="safari-banner-title">Safari\'de daha iyi çalışır</span><span id="safari-banner-sub">Tam ekran ve yatay mod için</span></div><button id="safari-banner-btn">Safari\'de Aç</button><button id="safari-banner-close"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>';
-    document.body.appendChild(banner);
-
-    setTimeout(function() { banner.classList.add('show'); }, 900);
-
-    document.getElementById('safari-banner-btn').addEventListener('click', openInSafari);
-
-    document.getElementById('safari-banner-close').addEventListener('click', function() {
-      banner.classList.remove('show');
-      try { localStorage.setItem(KEY, Date.now().toString()); } catch(e) {}
+    plyrInstance.on('exitfullscreen', function() {
+      hideRotateOverlay();
     });
-  })();
+  }
 
   let favorites = [];
   try { favorites = JSON.parse(getSafeItem('panzer_favs') || '[]'); } catch(e){}
@@ -722,6 +783,7 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
             };
             
             player = new Plyr(vElement, options);
+            attachPlyrFullscreenFix(player, vElement);
             player.play().catch(e => {});
           });
           
@@ -754,6 +816,7 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
       } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
         videoElement.src = url;
         player = new Plyr(videoElement, basicPlyrOptions);
+        attachPlyrFullscreenFix(player, videoElement);
         videoElement.addEventListener('loadedmetadata', function() { 
           if(player) player.play().catch(e=>{}); 
         }, {once: true});
@@ -790,6 +853,7 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
           };
           
           player = new Plyr(videoElement, options);
+          attachPlyrFullscreenFix(player, videoElement);
           player.play().catch(e => {});
         });
       }
@@ -797,6 +861,7 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
     } else {
       videoElement.src = url;
       player = new Plyr(videoElement, basicPlyrOptions);
+      attachPlyrFullscreenFix(player, videoElement);
       if(player) player.play().catch(e=>{});
     }
   }
