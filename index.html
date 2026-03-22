@@ -394,162 +394,9 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
   function getSafeItem(key) { try { return localStorage.getItem(key); } catch(e){ return null; } }
   function setSafeItem(key, val) { try { localStorage.setItem(key, val); } catch(e){} }
 
-  // ============================================================
-  // iOS IN-APP BROWSER LANDSCAPE FIX
-  // Twitter/Instagram gibi uygulamalarda screen.orientation.lock
-  // tamamen engelli. Çözüm: tam ekranda videoyu CSS ile 90° döndürüp
-  // ekranı kaplayacak şekilde scale etmek.
-  // ============================================================
-
-  var iosFullscreenOverlay = null;
-
-  function createIOSLandscapeOverlay(videoEl) {
-    // Varsa temizle
-    removeIOSLandscapeOverlay();
-
-    // Overlay: tam ekran siyah zemin
-    var overlay = document.createElement('div');
-    overlay.id = 'ios-landscape-overlay';
-    overlay.style.cssText = [
-      'position:fixed',
-      'top:0','left:0',
-      'width:100%','height:100%',
-      'background:#000',
-      'z-index:99999',
-      'display:flex',
-      'align-items:center',
-      'justify-content:center',
-      'overflow:hidden',
-      /* iOS safe area — notch ve status bar alanını da kapla */
-      'padding-top:env(safe-area-inset-top,0px)',
-      'padding-bottom:env(safe-area-inset-bottom,0px)',
-      'padding-left:env(safe-area-inset-left,0px)',
-      'padding-right:env(safe-area-inset-right,0px)'
-    ].join(';');
-
-    // Video klonu değil — orijinal videoyu taşıyoruz
-    // Kapatma butonu
-    var closeBtn = document.createElement('button');
-    closeBtn.innerHTML = '&#x2715;';
-    closeBtn.style.cssText = [
-      'position:absolute',
-      'top:16px','right:16px',
-      'z-index:100001',
-      'background:rgba(0,0,0,0.6)',
-      'color:white',
-      'border:none',
-      'border-radius:50%',
-      'width:40px','height:40px',
-      'font-size:20px',
-      'cursor:pointer',
-      'display:flex','align-items:center','justify-content:center'
-    ].join(';');
-    closeBtn.addEventListener('click', removeIOSLandscapeOverlay);
-
-    // Video wrapper — döndürme burada yapılıyor
-    var vw = document.createElement('div');
-    vw.id = 'ios-video-wrapper';
-
-    var sw = window.screen.width;
-    var sh = window.screen.height;
-    var longSide  = Math.max(sw, sh);
-    var shortSide = Math.min(sw, sh);
-
-    // Portre modunda: video 90° döner, genişlik=ekran yüksekliği, yükseklik=ekran genişliği
-    vw.style.cssText = [
-      'width:'  + longSide  + 'px',
-      'height:' + shortSide + 'px',
-      'transform:rotate(90deg)',
-      'transform-origin:center center',
-      'position:absolute',
-      'top:50%','left:50%',
-      'margin-top:-' + (shortSide/2) + 'px',
-      'margin-left:-' + (longSide/2) + 'px'
-    ].join(';');
-
-    // Plyr container'ı veya video elementini wrapper'a taşı
-    var playerContainer = videoEl.closest('.plyr') || videoEl.parentElement || videoEl;
-    var originalParent  = playerContainer.parentNode;
-    var originalNext    = playerContainer.nextSibling;
-    overlay._originalParent = originalParent;
-    overlay._originalNext   = originalNext;
-    overlay._movedEl        = playerContainer;
-
-    // Video boyutunu wrapper'a uydur
-    playerContainer.style.width  = '100%';
-    playerContainer.style.height = '100%';
-    if (videoEl !== playerContainer) {
-      videoEl.style.width  = '100%';
-      videoEl.style.height = '100%';
-    }
-
-    vw.appendChild(playerContainer);
-    overlay.appendChild(vw);
-    overlay.appendChild(closeBtn);
-    document.body.appendChild(overlay);
-    iosFullscreenOverlay = overlay;
-
-    // Tarayıcı UI gizleme (adres çubuğu, sekmeler)
-    // 1) Overlay üzerinde fullscreen API iste
-    var fsEl = overlay;
-    if (fsEl.requestFullscreen) {
-      fsEl.requestFullscreen().catch(function(){});
-    } else if (fsEl.webkitRequestFullscreen) {
-      try { fsEl.webkitRequestFullscreen(); } catch(e){}
-    } else if (fsEl.mozRequestFullScreen) {
-      try { fsEl.mozRequestFullScreen(); } catch(e){}
-    }
-    // 2) Scroll hilesi — iOS Safari adres çubuğunu aşağı iter
-    setTimeout(function() {
-      window.scrollTo(0, 1);
-      setTimeout(function() { window.scrollTo(0, 0); }, 80);
-    }, 120);
-    // 3) Yön kilidi dene
-    if (screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock('landscape').catch(function(){});
-    }
-  }
-
-  function removeIOSLandscapeOverlay() {
-    var overlay = iosFullscreenOverlay || document.getElementById('ios-landscape-overlay');
-    if (!overlay) return;
-    var movedEl = overlay._movedEl;
-    if (movedEl && overlay._originalParent) {
-      if (overlay._originalNext) {
-        overlay._originalParent.insertBefore(movedEl, overlay._originalNext);
-      } else {
-        overlay._originalParent.appendChild(movedEl);
-      }
-      // Boyutu sıfırla
-      movedEl.style.width  = '';
-      movedEl.style.height = '';
-      var vid = movedEl.querySelector('video') || movedEl;
-      if (vid && vid.tagName === 'VIDEO') { vid.style.width = ''; vid.style.height = ''; }
-    }
-    if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-    iosFullscreenOverlay = null;
-    if (screen.orientation && screen.orientation.unlock) {
-      screen.orientation.unlock();
-    }
-  }
-
-  // iOS in-app browser tespiti
-  function isIOSInAppBrowser() {
-    var ua = navigator.userAgent;
-    var isIOS = /iPad|iPhone|iPod/.test(ua);
-    if (!isIOS) return false;
-    // Safari'nin kendi tarayıcısı "Safari" içerir, in-app browser içermez
-    var isSafari = /Safari/.test(ua) && !/CriOS/.test(ua) && !/FxiOS/.test(ua);
-    // Twitter in-app: "Twitter" veya standalone WebView belirtisi
-    var isInApp = !isSafari || /FBAN|FBAV|Twitter|Instagram|Line|MicroMessenger/.test(ua) || (window.navigator.standalone === false && !/Safari/.test(ua));
-    return isInApp || (!window.navigator.standalone && /WebKit/.test(ua) && !/Safari/.test(ua));
-  }
-
-  // Tam ekran butonu tıklandığında iOS in-app browser'da overlay aç
+  // iOS yön kilidi — webkitbeginfullscreen ile native player'da çalışır
   function attachIOSOrientationFix(videoEl) {
     if (!videoEl) return;
-
-    // webkitbeginfullscreen: iOS native player tam ekrana geçince
     videoEl.addEventListener('webkitbeginfullscreen', function() {
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('landscape').catch(function(){});
@@ -562,54 +409,55 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
     });
   }
 
-  // Plyr'ın fullscreen butonuna tıklandığında iOS in-app için özel davranış
-  function patchPlyrFullscreenForIOS(plyrInstance, videoEl) {
-    if (!plyrInstance || !videoEl) return;
-    plyrInstance.on('enterfullscreen', function() {
-      if (isIOSInAppBrowser()) {
-        // Plyr'ın kendi fullscreen'ini iptal et, bizimkini aç
-        setTimeout(function() { createIOSLandscapeOverlay(videoEl); }, 50);
-      } else {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape').catch(function(){});
-        }
-      }
-    });
-    plyrInstance.on('exitfullscreen', function() {
-      removeIOSLandscapeOverlay();
-      if (screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock();
-      }
-    });
+  // iOS in-app browser tespiti (Twitter, Instagram vb.)
+  function isIOSInAppBrowser() {
+    var ua = navigator.userAgent;
+    if (!/iPad|iPhone|iPod/.test(ua)) return false;
+    // Gerçek Safari'de "Safari/" token'ı bulunur
+    return !/Safari\//.test(ua);
   }
 
-  // Tam ekran event dinleyicileri
-  document.addEventListener('fullscreenchange', function() {
-    if (document.fullscreenElement) {
-      document.body.style.overflow = 'hidden';
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(function(){});
-      }
-    } else {
-      document.body.style.overflow = '';
-      if (screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock();
-      }
-    }
-  });
-  document.addEventListener('webkitfullscreenchange', function() {
-    if (document.webkitFullscreenElement) {
-      document.body.style.overflow = 'hidden';
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(function(){});
-      }
-    } else {
-      document.body.style.overflow = '';
-      if (screen.orientation && screen.orientation.unlock) {
-        screen.orientation.unlock();
-      }
-    }
-  });
+  // Safari'de Aç — iOS'ta çalışan tek güvenilir yöntem
+  function openInSafari() {
+    // x-safari-https:// scheme — iOS'ta Safari'yi doğrudan açar
+    var url = window.location.href;
+    var safariUrl = url.replace(/^https?:\/\//, 'x-safari-https://');
+    window.location.href = safariUrl;
+    // Scheme çalışmazsa fallback: normal href ile dene
+    setTimeout(function() {
+      window.open(url, '_blank');
+    }, 1000);
+  }
+
+  // Safari Banner — sadece iOS in-app browser'da, 24 saatte bir
+  (function() {
+    if (!isIOSInAppBrowser()) return;
+    var KEY = 'panzer_safari_banner_closed';
+    try {
+      var t = localStorage.getItem(KEY);
+      if (t && Date.now() - parseInt(t) < 86400000) return;
+    } catch(e) {}
+
+    var style = document.createElement('style');
+    style.textContent = '#safari-banner{position:fixed;bottom:0;left:0;right:0;z-index:99998;transform:translateY(110%);transition:transform .4s cubic-bezier(.34,1.56,.64,1);padding-bottom:env(safe-area-inset-bottom,0px)}#safari-banner.show{transform:translateY(0)}#safari-banner-inner{display:flex;align-items:center;gap:10px;background:rgba(15,15,15,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.1);padding:12px 14px}#safari-banner-icon{flex-shrink:0;width:36px;height:36px;background:#006CFF;border-radius:10px;display:flex;align-items:center;justify-content:center}#safari-banner-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}#safari-banner-title{font-size:13px;font-weight:700;color:#fff}#safari-banner-sub{font-size:11px;color:rgba(255,255,255,.5)}#safari-banner-btn{flex-shrink:0;background:#006CFF;color:#fff;border:none;border-radius:18px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}#safari-banner-close{flex-shrink:0;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.5);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}';
+    document.head.appendChild(style);
+
+    var banner = document.createElement('div');
+    banner.id = 'safari-banner';
+    banner.innerHTML = '<div id="safari-banner-inner"><div id="safari-banner-icon"><svg width="22" height="22" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="45" stroke="white" stroke-width="8"/><line x1="50" y1="5" x2="50" y2="95" stroke="white" stroke-width="6"/><line x1="5" y1="50" x2="95" y2="50" stroke="white" stroke-width="6"/><polygon points="50,10 62,38 50,30 38,38" fill="white"/></svg></div><div id="safari-banner-text"><span id="safari-banner-title">Safari\'de daha iyi çalışır</span><span id="safari-banner-sub">Tam ekran ve yatay mod için</span></div><button id="safari-banner-btn">Safari\'de Aç</button><button id="safari-banner-close"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>';
+    document.body.appendChild(banner);
+
+    setTimeout(function() { banner.classList.add('show'); }, 900);
+
+    document.getElementById('safari-banner-btn').addEventListener('click', openInSafari);
+
+    document.getElementById('safari-banner-close').addEventListener('click', function() {
+      banner.classList.remove('show');
+      try { localStorage.setItem(KEY, Date.now().toString()); } catch(e) {}
+    });
+  })();
+
+  let favorites = [];
   try { favorites = JSON.parse(getSafeItem('panzer_favs') || '[]'); } catch(e){}
 
   let isGridView = getSafeItem('panzer_view') === 'grid';
@@ -757,6 +605,8 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
         </div>
       </div>
     `}).join('');
+
+    listContainer.insertAdjacentHTML('beforeend', '<div style="text-align:center;padding:20px 16px;font-size:12px;color:var(--text-muted);border-top:1px solid var(--border-color);margin-top:8px;">Reklam ve işbirliği için yazın &nbsp;·&nbsp; <a href="mailto:panzerrbeyy@gmail.com" style="color:var(--primary);text-decoration:none;font-weight:600;">panzerrbeyy@gmail.com</a></div>');
   }
 
   renderCategories();
@@ -765,7 +615,7 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
   const basicPlyrOptions = {
     controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
     settings: ['quality', 'speed'],
-    fullscreen: { enabled: true, fallback: true, iosNative: false },
+    fullscreen: { enabled: true, fallback: true, iosNative: true },
     i18n: { 
       speed: 'Hız', 
       normal: 'Normal', 
@@ -872,7 +722,6 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
             };
             
             player = new Plyr(vElement, options);
-            patchPlyrFullscreenForIOS(player, vElement);
             player.play().catch(e => {});
           });
           
@@ -905,7 +754,6 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
       } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
         videoElement.src = url;
         player = new Plyr(videoElement, basicPlyrOptions);
-        patchPlyrFullscreenForIOS(player, videoElement);
         videoElement.addEventListener('loadedmetadata', function() { 
           if(player) player.play().catch(e=>{}); 
         }, {once: true});
@@ -942,7 +790,6 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
           };
           
           player = new Plyr(videoElement, options);
-          patchPlyrFullscreenForIOS(player, videoElement);
           player.play().catch(e => {});
         });
       }
@@ -950,7 +797,6 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
     } else {
       videoElement.src = url;
       player = new Plyr(videoElement, basicPlyrOptions);
-      patchPlyrFullscreenForIOS(player, videoElement);
       if(player) player.play().catch(e=>{});
     }
   }
@@ -978,102 +824,6 @@ TV8 (YEDEK) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://en
     modal.classList.remove('show');
     setTimeout(() => { modal.style.display = 'none'; }, 300);
   }
-
-  // ── Safari Banner ──────────────────────────────────────────────
-  // Sadece iOS in-app browser'da göster, kullanıcı kapatırsa bir
-  // daha çıkmasın (24 saat)
-  (function() {
-    if (!isIOSInAppBrowser()) return;
-
-    var STORAGE_KEY = 'panzer_safari_banner_closed';
-    try {
-      var closed = localStorage.getItem(STORAGE_KEY);
-      if (closed && (Date.now() - parseInt(closed)) < 86400000) return; // 24 saat
-    } catch(e) {}
-
-    // Banner elementi
-    var banner = document.createElement('div');
-    banner.id = 'safari-banner';
-    banner.innerHTML = [
-      '<div id="safari-banner-inner">',
-        '<div id="safari-banner-icon">',
-          '<svg width="28" height="28" viewBox="0 0 28 28" fill="none">',
-            '<circle cx="14" cy="14" r="14" fill="#006CFF"/>',
-            '<path d="M19.5 8.5L14 5l-5.5 3.5 1 6.5L14 18l4.5-3 1-6.5z" fill="white" opacity="0.9"/>',
-            '<circle cx="14" cy="14" r="2" fill="#006CFF"/>',
-            '<line x1="14" y1="5" x2="14" y2="23" stroke="white" stroke-width="1" opacity="0.4"/>',
-            '<line x1="5" y1="14" x2="23" y2="14" stroke="white" stroke-width="1" opacity="0.4"/>',
-          '</svg>',
-        '</div>',
-        '<div id="safari-banner-text">',
-          '<span id="safari-banner-title">Daha iyi deneyim için</span>',
-          '<span id="safari-banner-sub">Tam ekran ve yatay mod için Safari\'de aç</span>',
-        '</div>',
-        '<a id="safari-banner-btn" href="' + window.location.href + '" target="_blank" rel="noopener">',
-          'Safari\'de Aç',
-        '</a>',
-        '<button id="safari-banner-close" aria-label="Kapat">',
-          '<svg width="16" height="16" viewBox="0 0 16 16" fill="none">',
-            '<path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-          '</svg>',
-        '</button>',
-      '</div>'
-    ].join('');
-
-    // Stil
-    var style = document.createElement('style');
-    style.textContent = [
-      '#safari-banner {',
-        'position:fixed;bottom:0;left:0;right:0;z-index:999998;',
-        'padding:0 0 env(safe-area-inset-bottom,0px) 0;',
-        'transform:translateY(110%);',
-        'transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);',
-      '}',
-      '#safari-banner.show { transform:translateY(0); }',
-      '#safari-banner-inner {',
-        'display:flex;align-items:center;gap:12px;',
-        'background:rgba(18,18,18,0.97);',
-        'backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);',
-        'border-top:1px solid rgba(255,255,255,0.1);',
-        'padding:14px 16px;',
-      '}',
-      '#safari-banner-icon { flex-shrink:0; }',
-      '#safari-banner-text {',
-        'flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;',
-      '}',
-      '#safari-banner-title {',
-        'font-size:13px;font-weight:700;color:#fff;',
-      '}',
-      '#safari-banner-sub {',
-        'font-size:11px;color:rgba(255,255,255,0.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;',
-      '}',
-      '#safari-banner-btn {',
-        'flex-shrink:0;',
-        'background:#006CFF;color:#fff;',
-        'border:none;border-radius:20px;',
-        'padding:8px 14px;font-size:13px;font-weight:700;',
-        'text-decoration:none;white-space:nowrap;',
-        'cursor:pointer;',
-      '}',
-      '#safari-banner-close {',
-        'flex-shrink:0;background:rgba(255,255,255,0.1);border:none;',
-        'color:rgba(255,255,255,0.6);border-radius:50%;',
-        'width:30px;height:30px;display:flex;align-items:center;justify-content:center;',
-        'cursor:pointer;padding:0;',
-      '}',
-    ].join('');
-    document.head.appendChild(style);
-    document.body.appendChild(banner);
-
-    // Kısa gecikme ile göster (sayfa yüklendikten sonra kayarak gelsin)
-    setTimeout(function() { banner.classList.add('show'); }, 800);
-
-    // Kapat butonu
-    document.getElementById('safari-banner-close').addEventListener('click', function() {
-      banner.classList.remove('show');
-      try { localStorage.setItem(STORAGE_KEY, Date.now().toString()); } catch(e) {}
-    });
-  })();
 </script>
 </body>
 </html>
