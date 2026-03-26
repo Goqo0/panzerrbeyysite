@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
@@ -15,15 +15,16 @@
   :root {
     --bg-color: #f3f4f6; --surface-color: #ffffff; --text-main: #111827; --text-muted: #6b7280;
     --border-color: #e5e7eb; --primary: #16a34a; --primary-hover: #15803d; --primary-light: #dcfce7;
-    --player-bg: #000000;
+    --player-bg: #000000; --scroll-thumb: #cbd5e1;
   }
   [data-theme="dark"] {
     --bg-color: #0a0a0a; --surface-color: #171717; --text-main: #f9fafb; --text-muted: #9ca3af;
     --border-color: #262626; --primary: #22c55e; --primary-hover: #16a34a; --primary-light: #064e3b;
-    --player-bg: #000000;
+    --player-bg: #000000; --scroll-thumb: #404040;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-  body { background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s, color 0.3s; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+  
+  body { background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s, color 0.3s; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
   
   header { background-color: var(--surface-color); border-bottom: 1px solid var(--border-color); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; z-index: 1000; position: sticky; top: 0; }
   .logo { display: flex; align-items: center; gap: 10px; font-size: 22px; }
@@ -34,51 +35,61 @@
   .header-actions { display: flex; align-items: center; gap: 12px; }
   .theme-btn { background: var(--surface-color); border: 1px solid var(--border-color); color: var(--text-main); width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
   
-  .container { display: flex; flex: 1; max-width: 100%; margin: 0 auto; width: 100%; }
-  .player-section { flex: 1; padding: 24px; display: flex; flex-direction: column; }
+  .container { display: flex; flex: 1; max-width: 100%; margin: 0 auto; width: 100%; height: calc(100vh - 64px); }
+  .player-section { flex: 1; padding: 24px; display: flex; flex-direction: column; overflow-y: auto; }
   
   .player-wrapper { 
     background-color: var(--player-bg); border-radius: 16px; overflow: hidden;
     aspect-ratio: 16 / 9; position: relative; border: 1px solid var(--border-color);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; flex-shrink: 0;
   }
   
-  #main-player-container, #player, #ios-player-container, #embed-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+  #player, #ios-player-container, #embed-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
   #ios-player-container, #embed-container { z-index: 10; display: none; background: #000; }
   #ios-video, #embed-iframe { width: 100%; height: 100%; border: none; }
 
   .placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; gap: 16px; background: #0a0a0a; z-index: 20; }
 
-  .now-playing { margin-top: 20px; padding: 20px; background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 16px; display: none; align-items: center; gap: 16px; }
+  .now-playing { margin-top: 20px; padding: 20px; background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 16px; display: none; align-items: center; gap: 16px; flex-shrink: 0; }
   .np-badge { background-color: var(--primary-light); color: var(--primary); padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 12px; display: flex; align-items: center; gap: 6px; }
   .np-dot { width: 8px; height: 8px; background-color: var(--primary); border-radius: 50%; }
 
-  .list-section { width: 400px; background-color: var(--surface-color); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; }
-  .list-header { padding: 20px; border-bottom: 1px solid var(--border-color); }
-  .search-box { width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-main); margin-bottom: 12px; }
+  .banner-section { margin-top: 20px; text-align: center; flex-shrink: 0; }
+  .banner-section img { max-width: 100%; border-radius: 12px; }
+
+  /* KANAL LİSTESİ BÖLÜMÜ */
+  .list-section { width: 400px; background-color: var(--surface-color); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; height: 100%; }
+  .list-header { padding: 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+  .list-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+  .search-box { width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-main); outline: none; transition: 0.2s; }
+  .search-box:focus { border-color: var(--primary); }
   
-  .categories { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
-  .cat-btn { padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-muted); }
-  .cat-btn.active { background-color: var(--primary); color: white; }
+  /* SCROLLABLE ALAN */
+  .channel-list { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+
+  /* ÖZEL SCROLLBAR */
+  .channel-list::-webkit-scrollbar, .player-section::-webkit-scrollbar { width: 6px; }
+  .channel-list::-webkit-scrollbar-track, .player-section::-webkit-scrollbar-track { background: transparent; }
+  .channel-list::-webkit-scrollbar-thumb, .player-section::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 10px; }
   
-  .channel-list { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
   .channel-card { display: flex; align-items: center; padding: 12px; border-radius: 12px; cursor: pointer; background-color: var(--bg-color); border: 1px solid transparent; transition: 0.2s; }
+  .channel-card:hover { border-color: var(--border-color); transform: translateY(-1px); }
   .channel-card.active { background-color: var(--primary-light); border-color: var(--primary); }
   
-  .cc-logo { width: 44px; height: 44px; border-radius: 8px; flex-shrink: 0; margin-right: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .cc-logo { width: 44px; height: 44px; border-radius: 8px; flex-shrink: 0; margin-right: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #fff; }
   .cc-logo img { width: 100%; height: 100%; object-fit: contain; }
-  
-  .footer-contact { padding: 20px; border-top: 1px solid var(--border-color); text-align: center; }
-  .banner-section { margin-top: 20px; text-align: center; }
-  .banner-section img { max-width: 100%; border-radius: 12px; }
+
+  .footer-contact { padding: 15px; border-top: 1px solid var(--border-color); text-align: center; flex-shrink: 0; }
 
   .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
   .modal-content { background-color: var(--surface-color); border-radius: 20px; width: 90%; max-width: 380px; padding: 24px; position: relative; border: 1px solid var(--border-color); }
   .social-btn { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 600; color: white; margin-bottom: 12px; transition: 0.2s; }
 
   @media (max-width: 960px) {
-    .container { flex-direction: column; }
-    .list-section { width: 100%; border-left: none; }
+    body { height: auto; overflow: visible; }
+    .container { flex-direction: column; height: auto; }
+    .list-section { width: 100%; border-left: none; height: 600px; border-top: 1px solid var(--border-color); }
+    .player-section { padding: 16px; overflow-y: visible; }
   }
 </style>
 </head>
@@ -100,14 +111,14 @@ Bein Sports Max 1 (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.worke
 Bein Sports Max 1 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedebsm1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports Max 2 (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-max-2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports Max 2 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedebsm2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
-S SPORT (A) | Spor | HD | https://panzerrbeyy1-good.hf.space/proxy/m3u?url=http://pynhop.shop:8080/live/nr8/cn.0535/115598.m3u8 | https://yt3.googleusercontent.com/gvJvmHjz_AD2oWOrKpMHrc6PkrPaf9ZJn714gU1hOYxOh7XWqLbSjwniRy9wXxs0R6vyIFsCivA=s900-c-k-c0x00ffffff-no-rj
-S SPORT (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedess1.m3u8 | https://yt3.googleusercontent.com/gvJvmHjz_AD2oWOrKpMHrc6PkrPaf9ZJn714gU1hOYxOh7XWqLbSjwniRy9wXxs0R6vyIFsCivA=s900-c-k-c0x00ffffff-no-rj
-S SPORT (C) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/xssport/playlist.m3u8 | https://yt3.googleusercontent.com/gvJvmHjz_AD2oWOrKpMHrc6PkrPaf9ZJn714gU1hOYxOh7XWqLbSjwniRy9wXxs0R6vyIFsCivA=s900-c-k-c0x00ffffff-no-rj
-S SPORT 2 (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport-2.m3u8 | https://yt3.googleusercontent.com/gvJvmHjz_AD2oWOrKpMHrc6PkrPaf9ZJn714gU1hOYxOh7XWqLbSjwniRy9wXxs0R6vyIFsCivA=s900-c-k-c0x00ffffff-no-rj
-S SPORT 2 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedess2.m3u8 | https://yt3.googleusercontent.com/gvJvmHjz_AD2oWOrKpMHrc6PkrPaf9ZJn714gU1hOYxOh7XWqLbSjwniRy9wXxs0R6vyIFsCivA=s900-c-k-c0x00ffffff-no-rj
-S Sport Plus | Spor | HD | https://divine-sunset-3ced.hebelehubele3271.workers.dev/?url=https://andro.226503.xyz/checklist/androstreamlivessplus1.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
-S Sport Plus | Spor | HD | https://panzerrbeyy1-good.hf.space/proxy/m3u?url=http://xsoft25.online:8080/live/acado80/kcMq84KaFv/137717.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
-S Sport Plus | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn2.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
+S SPORT (A) | Spor | HD | https://panzerrbeyy1-good.hf.space/proxy/m3u?url=http://pynhop.shop:8080/live/nr8/cn.0535/115598.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedess1.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT (C) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/xssport/playlist.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT 2 (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport-2.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT 2 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedess2.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S Sport Plus 1 | Spor | HD | https://divine-sunset-3ced.hebelehubele3271.workers.dev/?url=https://andro.226503.xyz/checklist/androstreamlivessplus1.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S Sport Plus 2 | Spor | HD | https://panzerrbeyy1-good.hf.space/proxy/m3u?url=http://xsoft25.online:8080/live/acado80/kcMq84KaFv/137717.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
+S Sport Plus 3 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn2.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
 Tivibu Spor (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedets.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
 Tivibu Spor 1 (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/tivibu-spor-1.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
 Tivibu Spor 1 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedets1.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
@@ -118,33 +129,41 @@ Tivibu Spor 3 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreaml
 Tivibu Spor 4 (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/tivibu-spor-4.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
 Tivibu Spor 4 (B) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/stivibuspor-4/playlist.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
 Tivibu Spor 4 (C) | Spor | HD | https://twilight-art-b7fe.hebelehubele3271.workers.dev/?url=https://andro.1386503.xyz/checklist/androstreamlivets4.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
-Smart Spor (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedesm1.m3u8 | https://zdi2vdd5r0wt.merlincdn.net/content/7/lm/246003/logo.png?v=638671714024212390
-Smart Spor (B) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/ssmartspor/playlist.m3u8 | https://zdi2vdd5r0wt.merlincdn.net/content/7/lm/246003/logo.png?v=638671714024212390
-Smart Spor 2 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedesm2.m3u8 | https://zdi2vdd5r0wt.merlincdn.net/content/7/lm/246003/logo.png?v=638671714024212390
-Smart Spor 2 (B) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/ssmartspor2/playlist.m3u8 | https://zdi2vdd5r0wt.merlincdn.net/content/7/lm/246003/logo.png?v=638671714024212390
+Smart Spor (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedesm1.m3u8 | https://i.imgur.com/ZQPLmrx.jpeg
+Smart Spor (B) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/ssmartspor/playlist.m3u8 | https://i.imgur.com/ZQPLmrx.jpeg
+Smart Spor 2 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedesm2.m3u8 | https://i.imgur.com/ZQPLmrx.jpeg
+Smart Spor 2 (B) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/ssmartspor2/playlist.m3u8 | https://i.imgur.com/ZQPLmrx.jpeg
 Tabii Spor | Spor | HD | https://kl9mr2vxw7nq5py1sh4tj3gb6.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
 Tabii Spor 1 | Spor | HD | https://Pz4qT7nW1mR9sH2vL5xK8jG3y.medya.trt.com.tr/master_1440p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
 Tabii Spor 2 | Spor | HD | https://mr8bv4kl1nq7sh9tw2xp5zj6g.medya.trt.com.tr/master_1440p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
 Tabii Spor 3 | Spor | HD | https://mR4vL7nQ2sH9tW5xP1zK3gJ8b.medya.trt.com.tr/master_1440p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
 Tabii Spor 4 | Spor | HD | https://sh7tq2nw5mr1vl9xp4zk3gj8k.medya.trt.com.tr/master_1440p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
-Tabii Spor 5 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivetb5.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 5 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedetb5.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
 Tabii Spor 6 | Spor | HD | https://nw5mr1vl9xp4zk2sh7tq3gj6b.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
-Tabii Spor 7 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivetb7.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
-Eurosports 1 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedees1.m3u8 | https://logosandtypes.com/wp-content/uploads/2024/06/eurosport2.svg
-Eurosports 1 (B) | Spor | HD | https://api.hitnova.net/s/eu1/mono.m3u8 | https://logosandtypes.com/wp-content/uploads/2024/06/eurosport2.svg
-Eurosports 2 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedees2.m3u8 | https://logosandtypes.com/wp-content/uploads/2024/06/eurosport2.svg
-Eurosports 2 (B) | Spor | HD | https://api.hitnova.net/s/eu2/mono.m3u8 | https://logosandtypes.com/wp-content/uploads/2024/06/eurosport2.svg
-TRT 1 | Ulusal | HD | https://tv-trt1.medya.trt.com.tr/master_1080.m3u8 | https://www.gazetegercek.com.tr/images/media/2025/10/trt-1-sinyal-yok-hatasi-cozumu_68f9070f92ee2.webp
-TRT 1 (Yurt Dışı) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivedetrt1.m3u8 | https://www.gazetegercek.com.tr/images/media/2025/10/trt-1-sinyal-yok-hatasi-cozumu_68f9070f92ee2.webp
-TRT SPOR | Ulusal | HD | https://tv-trtspor1.medya.trt.com.tr/master_1080.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTigRzeHTAnyUkMDYh6vo-kpdiYSYmCDmxANw&s
-TV8 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivedetv8.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScd07m2xK5MgoZVYKgc4JmktKeJTHYJb5dJw&s
-TV8 (B) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScd07m2xK5MgoZVYKgc4JmktKeJTHYJb5dJw&s
-TV8.5 (A) | Ulusal | HD | https://panzerrbeyy1-deneme.hf.space/proxy/m3u?url=http://xsoft25.online:8080/live/acado80/kcMq84KaFv/6281.m3u8 | https://avatars.mds.yandex.net/i?id=62a31f1b66a4381bc1ff1ed5f602af8fb1fe9c4b-5905066-images-thumbs&n=13
-TV8.5 (B) | Ulusal | HD | https://api.hitnova.net/s/tv85/mono.m3u8 | https://avatars.mds.yandex.net/i?id=62a31f1b66a4381bc1ff1ed5f602af8fb1fe9c4b-5905066-images-thumbs&n=13
+Tabii Spor 7 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedetb7.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Exxen Spor 1 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn1.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 2 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn2.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 3 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn3.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 4 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn4.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 5 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn5.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 6 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn6.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 7 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn7.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 7 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn8.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Eurosports 1 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedees1.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
+Eurosports 1 (B) | Spor | HD | https://api.hitnova.net/s/eu1/mono.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
+Eurosports 2 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedees2.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
+Eurosports 2 (B) | Spor | HD | https://api.hitnova.net/s/eu2/mono.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
+TRT 1 | Ulusal | HD | https://tv-trt1.medya.trt.com.tr/master_1080.m3u8 | https://yt3.ggpht.com/ytc/AKedOLS5_OcuvYFIdd4BWpEeESX4dPF5GaQN_O4E7zCT9Q=s900-c-k-c0x00ffffff-no-rj
+TRT 1 (Yurt Dışı) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivedetrt1.m3u8 | https://yt3.ggpht.com/ytc/AKedOLS5_OcuvYFIdd4BWpEeESX4dPF5GaQN_O4E7zCT9Q=s900-c-k-c0x00ffffff-no-rj
+TRT SPOR | Ulusal | HD | https://tv-trtspor1.medya.trt.com.tr/master_1080.m3u8 | https://yt3.ggpht.com/FCzDc31AsTFzobw8Z4QBCc8AGtKgFP4mq28RgbcLJGdVNlE0RoremvEr1XntYHFc6G0dAwU-=s176-c-k-c0x00ffffff-no-rj-mo
+TV8 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivedetv8.m3u8 | https://yt3.googleusercontent.com/ytc/AIdro_mnwqLdHqFXbkm6QwloGNJ1EX5N3Z8klIpdSF59MRbbLxU=s176-c-k-c0x00ffffff-no-rj-mo
+TV8 (B) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://yt3.googleusercontent.com/ytc/AIdro_mnwqLdHqFXbkm6QwloGNJ1EX5N3Z8klIpdSF59MRbbLxU=s176-c-k-c0x00ffffff-no-rj-mo
+TV8.5 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivedetv85.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
+TV8.5 (B) | Ulusal | HD | https://api.hitnova.net/s/tv85/mono.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
 Test | Spor | HD |  | https://via.placeholder.com/44?text=T
 </script>
 
-<header id="page-top">
+<header>
   <div class="logo">
     <div class="logo-icon">▶</div>
     <div><span class="logo-text-panzer">Panzer</span><span class="logo-text-sports">Sports</span></div>
@@ -156,8 +175,8 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
 </header>
 
 <div class="container">
-  <div class="player-section" id="playerArea">
-    <div class="player-wrapper" id="playerWrapper">
+  <div class="player-section">
+    <div class="player-wrapper">
       <div class="placeholder" id="placeholder">
         <div style="font-size:40px; margin-bottom:10px">📺</div>
         <p>İzlemek istediğiniz kanalı listeden seçin</p>
@@ -174,15 +193,15 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
     </div>
     
     <div class="now-playing" id="nowPlaying">
-      <div class="np-badge"><div class="np-dot"></div> CANLI</div>
+      <div class="np-badge"><div class="np-dot"></div> CANLI YAYIN</div>
       <div><div id="npTitle" style="font-weight:700; font-size:18px">Kanal</div><div id="npSub" style="font-size:13px; color:var(--text-muted)">Kategori</div></div>
     </div>
   </div>
 
   <div class="list-section">
     <div class="list-header">
+      <div class="list-title"><span></span> Canlı Kanallar</div>
       <input type="text" class="search-box" id="searchInput" placeholder="Kanal ara..." onkeyup="renderChannels()">
-      <div class="categories" id="categoryList"></div>
     </div>
     <div class="channel-list" id="channelList"></div>
     <div class="footer-contact">
@@ -202,33 +221,21 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
 
 <script>
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  let activeCategory = 'Tümü';
   let activeChannelId = null;
   let clapprPlayer = null;
 
   const rawData = document.getElementById('kolay-kanal-listesi').textContent;
   const allChannels = [];
-  const uniqueCategories = new Set(['Tümü']);
-
   rawData.split('\n').filter(l => l.trim()).forEach((line, index) => {
     const parts = line.split('|').map(p => p.trim());
     if (parts.length >= 4) {
       allChannels.push({ id: 'chan_'+index, name: parts[0], cat: parts[1], quality: parts[2], url: parts[3], logo: parts[4] });
-      uniqueCategories.add(parts[1]);
     }
   });
 
-  function renderCategories() {
-    document.getElementById('categoryList').innerHTML = Array.from(uniqueCategories).map(c => 
-      `<button class="cat-btn ${activeCategory === c ? 'active' : ''}" onclick="selectCategory('${c}')">${c}</button>`
-    ).join('');
-  }
-
-  function selectCategory(c) { activeCategory = c; renderCategories(); renderChannels(); }
-
   function renderChannels() {
     const search = document.getElementById('searchInput').value.toLowerCase();
-    const filtered = allChannels.filter(c => (activeCategory === 'Tümü' || c.cat === activeCategory) && c.name.toLowerCase().includes(search));
+    const filtered = allChannels.filter(c => c.name.toLowerCase().includes(search));
     document.getElementById('channelList').innerHTML = filtered.map(c => `
       <div class="channel-card ${activeChannelId === c.id ? 'active' : ''}" onclick="playChannel('${c.id}')">
         <div class="cc-logo"><img src="${c.logo}" onerror="this.src='https://via.placeholder.com/44?text=P'"></div>
@@ -241,7 +248,6 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
     const channel = allChannels.find(c => c.id === id);
     renderChannels();
     
-    // YENİ SİSTEM: Sayfayı en tepeye sıfırlar (Hızlı ve pürüzsüz)
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     document.getElementById('placeholder').style.display = 'none';
@@ -284,7 +290,7 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
 
   window.onload = () => { 
     document.getElementById('themeBtn').innerHTML = sunIcon;
-    renderCategories(); renderChannels(); 
+    renderChannels(); 
   };
 </script>
 </body>
