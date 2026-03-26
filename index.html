@@ -57,17 +57,18 @@
   .banner-section { margin-top: 20px; text-align: center; flex-shrink: 0; }
   .banner-section img { max-width: 100%; border-radius: 12px; }
 
-  /* KANAL LİSTESİ BÖLÜMÜ */
   .list-section { width: 400px; background-color: var(--surface-color); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; height: 100%; }
-  .list-header { padding: 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
-  .list-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+  
+  .tabs-container { display: flex; padding: 10px 20px 0 20px; gap: 8px; border-bottom: 1px solid var(--border-color); }
+  .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; font-size: 14px; }
+  .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  .list-header { padding: 15px 20px; flex-shrink: 0; }
   .search-box { width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-main); outline: none; transition: 0.2s; }
   .search-box:focus { border-color: var(--primary); }
   
-  /* SCROLLABLE ALAN */
-  .channel-list { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+  .channel-list { flex: 1; padding: 0 20px 20px 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
 
-  /* ÖZEL SCROLLBAR */
   .channel-list::-webkit-scrollbar, .player-section::-webkit-scrollbar { width: 6px; }
   .channel-list::-webkit-scrollbar-track, .player-section::-webkit-scrollbar-track { background: transparent; }
   .channel-list::-webkit-scrollbar-thumb, .player-section::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 10px; }
@@ -88,8 +89,9 @@
   @media (max-width: 960px) {
     body { height: auto; overflow: visible; }
     .container { flex-direction: column; height: auto; }
-    .list-section { width: 100%; border-left: none; height: 600px; border-top: 1px solid var(--border-color); }
+    .list-section { width: 100%; border-left: none; height: auto; min-height: 500px; border-top: 1px solid var(--border-color); }
     .player-section { padding: 16px; overflow-y: visible; }
+    .channel-list { height: 400px; }
   }
 </style>
 </head>
@@ -111,13 +113,13 @@ Bein Sports Max 1 (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.worke
 Bein Sports Max 1 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedebsm1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports Max 2 (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-max-2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports Max 2 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedebsm2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
-S SPORT (A) | Spor | HD | https://panzerrbeyy1-good.hf.space/proxy/m3u?url=http://pynhop.shop:8080/live/nr8/cn.0535/115598.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport-1.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
 S SPORT (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedess1.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
 S SPORT (C) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/xssport/playlist.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
 S SPORT 2 (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport-2.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
 S SPORT 2 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedess2.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
-S Sport Plus 1 | Spor | HD | https://divine-sunset-3ced.hebelehubele3271.workers.dev/?url=https://andro.226503.xyz/checklist/androstreamlivessplus1.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
-S Sport Plus 2 | Spor | HD | https://panzerrbeyy1-good.hf.space/proxy/m3u?url=http://xsoft25.online:8080/live/acado80/kcMq84KaFv/137717.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
+S Sport Plus 1 | Spor | HD | https://divine-sunset-3ced.hebelehubele3271.workers.dev/?url=https://andro.226503.xyz/checklist/androstreamlivessplus1.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
+S Sport Plus 2 | Spor | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport-1.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
 S Sport Plus 3 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn2.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
 Tivibu Spor (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedets.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
 Tivibu Spor 1 (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/tivibu-spor-1.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
@@ -129,10 +131,10 @@ Tivibu Spor 3 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreaml
 Tivibu Spor 4 (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/tivibu-spor-4.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
 Tivibu Spor 4 (B) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/stivibuspor-4/playlist.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
 Tivibu Spor 4 (C) | Spor | HD | https://twilight-art-b7fe.hebelehubele3271.workers.dev/?url=https://andro.1386503.xyz/checklist/androstreamlivets4.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
-Smart Spor (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedesm1.m3u8 | https://i.imgur.com/ZQPLmrx.jpeg
-Smart Spor (B) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/ssmartspor/playlist.m3u8 | https://i.imgur.com/ZQPLmrx.jpeg
-Smart Spor 2 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedesm2.m3u8 | https://i.imgur.com/ZQPLmrx.jpeg
-Smart Spor 2 (B) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/ssmartspor2/playlist.m3u8 | https://i.imgur.com/ZQPLmrx.jpeg
+Smart Spor (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedesm1.m3u8 | https://i.imgur.com/8o1xKB5.jpeg
+Smart Spor (B) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/ssmartspor/playlist.m3u8 | https://i.imgur.com/8o1xKB5.jpeg
+Smart Spor 2 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedesm2.m3u8 | https://i.imgur.com/8o1xKB5.jpeg
+Smart Spor 2 (B) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/ssmartspor2/playlist.m3u8 | https://i.imgur.com/8o1xKB5.jpeg
 Tabii Spor | Spor | HD | https://kl9mr2vxw7nq5py1sh4tj3gb6.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
 Tabii Spor 1 | Spor | HD | https://Pz4qT7nW1mR9sH2vL5xK8jG3y.medya.trt.com.tr/master_1440p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
 Tabii Spor 2 | Spor | HD | https://mr8bv4kl1nq7sh9tw2xp5zj6g.medya.trt.com.tr/master_1440p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
@@ -160,7 +162,11 @@ TV8 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivedetv8
 TV8 (B) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://yt3.googleusercontent.com/ytc/AIdro_mnwqLdHqFXbkm6QwloGNJ1EX5N3Z8klIpdSF59MRbbLxU=s176-c-k-c0x00ffffff-no-rj-mo
 TV8.5 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivedetv85.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
 TV8.5 (B) | Ulusal | HD | https://api.hitnova.net/s/tv85/mono.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
-Test | Spor | HD |  | https://via.placeholder.com/44?text=T
+Test | Spor | HD | https://74betorspintv.live/channel?id=tv8 | https://via.placeholder.com/44?text=T
+</script>
+
+<script id="kolay-mac-listesi" type="text/plain">
+Türkiye - Romanya | Süper Lig | HD | https://andro.0638527.xyz/checklist/androstreamlivedetv8.m3u8
 </script>
 
 <header>
@@ -175,11 +181,11 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
 </header>
 
 <div class="container">
-  <div class="player-section">
+  <div class="player-section" id="topScroll">
     <div class="player-wrapper">
       <div class="placeholder" id="placeholder">
         <div style="font-size:40px; margin-bottom:10px">📺</div>
-        <p>İzlemek istediğiniz kanalı listeden seçin</p>
+        <p>İzlemek istediğiniz kanalı veya maçı seçin</p>
       </div>
       <div id="player"></div>
       <div id="ios-player-container"><video id="ios-video" playsinline controls></video></div>
@@ -199,11 +205,17 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
   </div>
 
   <div class="list-section">
-    <div class="list-header">
-      <div class="list-title"><span></span> Canlı Kanallar</div>
-      <input type="text" class="search-box" id="searchInput" placeholder="Kanal ara..." onkeyup="renderChannels()">
+    <div class="tabs-container">
+        <button class="tab-btn active" id="btn-channels" onclick="switchTab('channels')">CANLI KANALLAR</button>
+        <button class="tab-btn" id="btn-matches" onclick="switchTab('matches')">MAÇ LİSTESİ</button>
     </div>
+
+    <div class="list-header">
+      <input type="text" class="search-box" id="searchInput" placeholder="Ara..." onkeyup="renderCurrentList()">
+    </div>
+
     <div class="channel-list" id="channelList"></div>
+
     <div class="footer-contact">
       <p style="font-size:12px; color:var(--text-muted)">İletişim: <a href="mailto:panzerrbeyy@gmail.com" style="color:var(--primary); font-weight:700">panzerrbeyy@gmail.com</a></p>
     </div>
@@ -221,57 +233,95 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
 
 <script>
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  let activeChannelId = null;
+  let activeId = null;
   let clapprPlayer = null;
+  let currentTab = 'channels';
 
-  const rawData = document.getElementById('kolay-kanal-listesi').textContent;
-  const allChannels = [];
-  rawData.split('\n').filter(l => l.trim()).forEach((line, index) => {
-    const parts = line.split('|').map(p => p.trim());
-    if (parts.length >= 4) {
-      allChannels.push({ id: 'chan_'+index, name: parts[0], cat: parts[1], quality: parts[2], url: parts[3], logo: parts[4] });
-    }
-  });
+  const channelData = parseData('kolay-kanal-listesi', 'chan');
+  const matchData = parseData('kolay-mac-listesi', 'match');
 
-  function renderChannels() {
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    const filtered = allChannels.filter(c => c.name.toLowerCase().includes(search));
-    document.getElementById('channelList').innerHTML = filtered.map(c => `
-      <div class="channel-card ${activeChannelId === c.id ? 'active' : ''}" onclick="playChannel('${c.id}')">
-        <div class="cc-logo"><img src="${c.logo}" onerror="this.src='https://via.placeholder.com/44?text=P'"></div>
-        <div><div style="font-weight:600; font-size:14px">${c.name}</div><div style="font-size:11px; color:var(--text-muted)">${c.cat} • ${c.quality}</div></div>
-      </div>`).join('');
+  function parseData(scriptId, prefix) {
+    const raw = document.getElementById(scriptId).textContent;
+    const items = [];
+    raw.split('\n').filter(l => l.trim()).forEach((line, index) => {
+      const parts = line.split('|').map(p => p.trim());
+      if (parts.length >= 4) {
+        items.push({ id: prefix + '_' + index, name: parts[0], cat: parts[1], quality: parts[2], url: parts[3], logo: parts[4] || '' });
+      }
+    });
+    return items;
   }
 
-  function playChannel(id) {
-    activeChannelId = id;
-    const channel = allChannels.find(c => c.id === id);
-    renderChannels();
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('btn-channels').classList.toggle('active', tab === 'channels');
+    document.getElementById('btn-matches').classList.toggle('active', tab === 'matches');
+    document.getElementById('searchInput').value = "";
+    renderCurrentList();
+  }
+
+  function renderCurrentList() {
+    const list = currentTab === 'channels' ? channelData : matchData;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const filtered = list.filter(c => c.name.toLowerCase().includes(search));
     
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('channelList').innerHTML = filtered.map(c => {
+      // MAÇLAR KISMINDA LOGOYU KALDIRAN KOŞUL
+      const logoHtml = currentTab === 'channels' 
+        ? `<div class="cc-logo"><img src="${c.logo}" onerror="this.src='https://via.placeholder.com/44?text=P'"></div>` 
+        : '';
+
+      return `
+        <div class="channel-card ${activeId === c.id ? 'active' : ''}" onclick="playContent('${c.id}')">
+          ${logoHtml}
+          <div><div style="font-weight:600; font-size:14px">${c.name}</div><div style="font-size:11px; color:var(--text-muted)">${c.cat} • ${c.quality}</div></div>
+        </div>`;
+    }).join('');
+  }
+
+  function playContent(id) {
+    activeId = id;
+    const list = id.startsWith('chan') ? channelData : matchData;
+    const item = list.find(c => c.id === id);
+    
+    renderCurrentList();
+    
+    if (window.innerWidth <= 960) {
+        document.getElementById('topScroll').scrollIntoView({ behavior: 'smooth' });
+    } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     document.getElementById('placeholder').style.display = 'none';
     document.getElementById('nowPlaying').style.display = 'flex';
-    document.getElementById('npTitle').textContent = channel.name;
-    document.getElementById('npSub').textContent = `${channel.cat} • ${channel.quality}`;
+    document.getElementById('npTitle').textContent = item.name;
+    document.getElementById('npSub').textContent = `${item.cat} • ${item.quality}`;
     
     if (clapprPlayer) { clapprPlayer.destroy(); clapprPlayer = null; }
+    document.getElementById('player').innerHTML = ""; 
     document.getElementById('ios-player-container').style.display = 'none';
     document.getElementById('embed-container').style.display = 'none';
 
-    const isDirectStream = channel.url.includes('.m3u8') || channel.url.includes('.mpd');
+    const isDirectStream = item.url.includes('.m3u8') || item.url.includes('.mpd') || item.url.includes('proxy') || item.url.includes('checklist');
 
     if (!isDirectStream) {
         document.getElementById('embed-container').style.display = 'block';
-        document.getElementById('embed-iframe').src = channel.url;
+        document.getElementById('embed-iframe').src = item.url;
     } else if (isIOS) {
         document.getElementById('ios-player-container').style.display = 'block';
-        const v = document.getElementById('ios-video'); v.src = channel.url; v.play();
+        const v = document.getElementById('ios-video'); 
+        v.src = item.url; 
+        v.play();
     } else {
         clapprPlayer = new Clappr.Player({
-          source: channel.url, parentId: '#player', width: '100%', height: '100%', autoPlay: true,
+          source: item.url,
+          parentId: '#player',
+          width: '100%',
+          height: '100%',
+          autoPlay: true,
+          mimeType: "application/x-mpegURL",
           plugins: [HlsjsPlayback, LevelSelector],
-          playback: { playInline: true, crossOrigin: 'anonymous' }
+          playback: { playInline: true, hlsjsConfig: { enableWorker: true, lowLatencyMode: true } }
         });
     }
   }
@@ -290,7 +340,7 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
 
   window.onload = () => { 
     document.getElementById('themeBtn').innerHTML = sunIcon;
-    renderChannels(); 
+    renderCurrentList(); 
   };
 </script>
 </body>
