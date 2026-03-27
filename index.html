@@ -22,6 +22,7 @@
     --border-color: #e5e7eb; --primary: #16a34a; --primary-hover: #15803d; --primary-light: #dcfce7;
     --player-bg: #000000; --scroll-thumb: #cbd5e1;
   }
+  
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
   
   body { 
@@ -50,67 +51,71 @@
 
   .container { display: flex; flex: 1; width: 100%; overflow: hidden; }
 
-  /* SOL / PLAYER BÖLÜMÜ */
   .left-content { 
     flex: 1.5; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; gap: 20px;
+    background-color: var(--bg-color);
   }
   .player-wrapper { 
     background-color: var(--player-bg); border-radius: 16px; overflow: hidden;
     aspect-ratio: 16 / 9; position: relative; border: 1px solid var(--border-color);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4); width: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4); width: 100%; flex-shrink: 0;
   }
-  #player, #ios-player-container, #embed-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
   
-  /* Embed Player İçin Reklam Engelleyici & Tam Ekran Fix */
-  #embed-iframe { 
-    width: 100%; height: 100%; border: none; 
-    background: #000;
-  }
+  #player, #ios-player-container, #embed-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; }
+  #player { z-index: 5; }
+  #ios-player-container { z-index: 6; background: #000; }
+  #embed-container { z-index: 7; }
+  
+  #ios-video { width: 100%; height: 100%; object-fit: contain; }
+  #embed-iframe { width: 100%; height: 100%; border: none; background: #000; }
 
   .placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; background: #0a0a0a; z-index: 20; }
 
-  .banner-section { text-align: center; }
+  .banner-section { text-align: center; flex-shrink: 0; }
   .banner-section img { max-width: 100%; border-radius: 12px; border: 1px solid var(--border-color); }
 
-  /* SAĞ / KANAL LİSTESİ KUTUSU */
   .right-content { 
-    width: 420px; background-color: var(--surface-color); border-left: 1px solid var(--border-color); 
+    width: 420px; background-color: var(--bg-color); border-left: 1px solid var(--border-color); 
     display: flex; flex-direction: column; height: 100%; 
   }
   
-  .tabs-container { display: flex; padding: 10px 16px 0 16px; gap: 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+  .tabs-container { background-color: var(--surface-color); display: flex; padding: 10px 16px 0 16px; gap: 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
   .tab-btn { flex: 1; padding: 15px 5px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; cursor: pointer; border-bottom: 3px solid transparent; font-size: 13px; text-transform: uppercase; }
   .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
   
-  .list-header { padding: 16px; flex-shrink: 0; }
+  .list-header { background-color: var(--surface-color); padding: 16px; flex-shrink: 0; }
   .search-box { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-main); outline: none; }
   
-  /* Kendi içinde kayan liste kutusu */
-  .channel-list { flex: 1; padding: 0 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+  .channel-list { 
+    flex: 1; 
+    padding: 16px 16px 80px 16px;
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    overflow-y: auto; 
+    background-color: var(--bg-color);
+  }
   .channel-list::-webkit-scrollbar { width: 6px; }
   .channel-list::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 10px; }
 
-  .channel-card { display: flex; align-items: center; padding: 14px; border-radius: 12px; cursor: pointer; background-color: var(--bg-color); border: 1px solid var(--border-color); transition: 0.2s; }
+  .channel-card { display: flex; align-items: center; padding: 14px; border-radius: 12px; cursor: pointer; background-color: var(--surface-color); border: 1px solid var(--border-color); transition: 0.2s; flex-shrink: 0; }
   .channel-card:hover { transform: translateX(5px); border-color: var(--primary); }
   .channel-card.active { border-color: var(--primary); background-color: var(--primary-light); }
   
   .cc-logo { width: 42px; height: 42px; border-radius: 8px; flex-shrink: 0; margin-right: 12px; background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center; }
   .cc-logo img { width: 100%; height: 100%; object-fit: contain; }
 
-  .footer-contact { padding: 20px; text-align: center; border-top: 1px solid var(--border-color); flex-shrink: 0; background: var(--surface-color); }
-
-  /* MOBİL DÜZENLEMELERİ */
   @media (max-width: 960px) {
-    body { height: auto; overflow: visible; }
-    .container { flex-direction: column; height: auto; overflow: visible; }
-    .left-content { flex: none; height: auto; padding: 12px; overflow: visible; }
-    .right-content { width: 100%; height: auto; border-left: none; border-top: 1px solid var(--border-color); }
-    .channel-list { height: 450px; padding-bottom: 20px; } 
+    .container { flex-direction: column; overflow: hidden; }
+    .left-content { flex: none; padding: 12px; gap: 12px; height: auto; }
+    .right-content { width: 100%; flex: 1; border-left: none; border-top: 1px solid var(--border-color); min-height: 0; }
+    .channel-list { padding-bottom: 100px; }
   }
 
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
   .modal-content { background: var(--surface-color); border-radius: 20px; width: 90%; max-width: 360px; padding: 24px; border: 1px solid var(--border-color); text-align: center; }
-  .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; color: white; margin-bottom: 12px; }
+  .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; color: white; margin-bottom: 12px; font-size: 14px; }
+  .mail-area { background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px dashed var(--border-color); margin-bottom: 15px; }
 </style>
 </head>
 <body>
@@ -121,7 +126,7 @@
     <div><span class="logo-text-panzer">Panzer</span><span class="logo-text-sports">Sports</span></div>
   </div>
   <div class="header-actions">
-    <button class="theme-btn" onclick="openInfoModal()" title="İletişim">
+    <button class="theme-btn" onclick="openInfoModal()" title="İletişim & İşbirliği">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
     </button>
     <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">
@@ -137,13 +142,15 @@
         <div style="font-size:50px; margin-bottom:15px">📺</div>
         <p style="font-weight:700; font-size:18px">İzlemek istediğiniz içeriği seçin</p>
       </div>
+      
       <div id="player"></div>
-      <div id="ios-player-container"><video id="ios-video" playsinline controls></video></div>
+      
+      <div id="ios-player-container">
+        <video id="ios-video" playsinline webkit-playsinline controls autoplay muted></video>
+      </div>
+      
       <div id="embed-container">
-        <iframe id="embed-iframe" 
-                sandbox="allow-scripts allow-same-origin allow-forms" 
-                allow="autoplay; fullscreen; picture-in-picture" 
-                allowfullscreen></iframe>
+        <iframe id="embed-iframe" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
       </div>
     </div>
 	 
@@ -165,13 +172,6 @@
     </div>
 
     <div class="channel-list" id="channelList"></div>
-
-    <div class="footer-contact">
-      <p style="font-size:13px; color:var(--text-muted); font-weight:500;">
-        Reklam için ulaşabilirsiniz<br>
-        <span style="color:var(--primary); font-weight:800; font-size:15px; letter-spacing: 0.5px;">panzerrbeyy@gmail.com</span>
-      </p>
-    </div>
   </div>
 </div>
 
@@ -266,15 +266,19 @@ Hollanda - Norveç | Futbol 22.45 | HD | https://74betorspintv.live/channel?id=e
 
 <div class="modal-overlay" id="infoModal" onclick="closeInfoModal()">
   <div class="modal-content" onclick="event.stopPropagation()">
-    <h3 style="margin-bottom:20px;">Sosyal Medya</h3>
-    <a href="https://t.me/xpanzerrbeyy" target="_blank" class="social-btn" style="background:#229ED9;">Telegram</a>
-    <a href="https://x.com/panzerrbeyyx" target="_blank" class="social-btn" style="background:#000;">X (Twitter)</a>
-    <button onclick="closeInfoModal()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:700; margin-top:10px;">Kapat</button>
+    <h3 style="margin-bottom:15px;">İletişim & İşbirliği</h3>
+    <div class="mail-area">
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">Reklam ve İşbirliği İçin:</p>
+      <p style="font-weight:800; color:var(--primary); font-size:15px;">panzerrbeyy@gmail.com</p>
+    </div>
+    <a href="https://t.me/xpanzerrbeyy" target="_blank" class="social-btn" style="background:#229ED9;">Telegram'dan Yaz</a>
+    <a href="https://x.com/panzerrbeyyx" target="_blank" class="social-btn" style="background:#000;">X (Twitter) Profili</a>
+    <button onclick="closeInfoModal()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:700; margin-top:5px;">Kapat</button>
   </div>
 </div>
 
 <script>
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   let activeId = null, clapprPlayer = null, currentTab = 'channels';
 
   const parse = (id, pre) => document.getElementById(id).textContent.split('\n').filter(l => l.trim()).map((l, i) => {
@@ -295,7 +299,8 @@ Hollanda - Norveç | Futbol 22.45 | HD | https://74betorspintv.live/channel?id=e
   function renderCurrentList() {
     const list = currentTab === 'channels' ? channels : matches;
     const search = document.getElementById('searchInput').value.toLowerCase();
-    document.getElementById('channelList').innerHTML = list.filter(c => c.name.toLowerCase().includes(search)).map(c => `
+    const container = document.getElementById('channelList');
+    container.innerHTML = list.filter(c => c.name.toLowerCase().includes(search)).map(c => `
       <div class="channel-card ${activeId === c.id ? 'active' : ''}" onclick="play('${c.id}')">
         ${currentTab === 'channels' ? `<div class="cc-logo"><img src="${c.logo}" onerror="this.src='https://via.placeholder.com/42'"></div>` : ''}
         <div><div style="font-weight:700; font-size:14px">${c.name}</div><div style="font-size:11px; color:var(--text-muted)">${c.cat} • ${c.qual}</div></div>
@@ -307,22 +312,46 @@ Hollanda - Norveç | Futbol 22.45 | HD | https://74betorspintv.live/channel?id=e
     const item = [...channels, ...matches].find(c => c.id === id);
     renderCurrentList();
     
-    if(window.innerWidth <= 960) document.getElementById('playerTop').scrollIntoView({behavior: 'smooth'});
+    // UI Sıfırlama
     document.getElementById('placeholder').style.display = 'none';
-
-    if (clapprPlayer) clapprPlayer.destroy();
-    document.getElementById('player').innerHTML = "";
+    document.getElementById('player').style.display = 'none';
     document.getElementById('ios-player-container').style.display = 'none';
     document.getElementById('embed-container').style.display = 'none';
 
+    if (clapprPlayer) clapprPlayer.destroy();
+    document.getElementById('player').innerHTML = "";
+    document.getElementById('embed-iframe').src = "";
+    
+    const iosVideo = document.getElementById('ios-video');
+    iosVideo.pause();
+    iosVideo.src = "";
+    iosVideo.load();
+
+    // Link tipine ve cihaza göre oynatma
     if (!item.url.includes('.m3u8') && !item.url.includes('checklist')) {
+        // EMBED DURUMU
         document.getElementById('embed-container').style.display = 'block';
         document.getElementById('embed-iframe').src = item.url;
     } else if (isIOS) {
+        // IOS DURUMU
         document.getElementById('ios-player-container').style.display = 'block';
-        const v = document.getElementById('ios-video'); v.src = item.url; v.play();
+        iosVideo.src = item.url;
+        iosVideo.load();
+        // iOS'da otomatik oynatmayı garantiye almak için muted true yapıyoruz
+        iosVideo.muted = true;
+        iosVideo.play().catch(e => console.log("Otomatik oynatma engellendi, kullanıcı tıklaması bekleniyor."));
     } else {
-        clapprPlayer = new Clappr.Player({ source: item.url, parentId: '#player', width: '100%', height: '100%', autoPlay: true, plugins: [HlsjsPlayback, LevelSelector] });
+        // STANDART/ANDROID DURUMU
+        document.getElementById('player').style.display = 'block';
+        clapprPlayer = new Clappr.Player({ 
+            source: item.url, 
+            parentId: '#player', 
+            width: '100%', 
+            height: '100%', 
+            autoPlay: true, 
+            plugins: [HlsjsPlayback, LevelSelector],
+            hlsjsConfig: { enableWorker: true }
+        });
     }
   }
 
