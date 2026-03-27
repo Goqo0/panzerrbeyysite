@@ -13,89 +13,156 @@
 
 <style>
   :root {
-    --bg-color: #f3f4f6; --surface-color: #ffffff; --text-main: #111827; --text-muted: #6b7280;
-    --border-color: #e5e7eb; --primary: #16a34a; --primary-hover: #15803d; --primary-light: #dcfce7;
-    --player-bg: #000000; --scroll-thumb: #cbd5e1;
-  }
-  [data-theme="dark"] {
     --bg-color: #0a0a0a; --surface-color: #171717; --text-main: #f9fafb; --text-muted: #9ca3af;
     --border-color: #262626; --primary: #22c55e; --primary-hover: #16a34a; --primary-light: #064e3b;
     --player-bg: #000000; --scroll-thumb: #404040;
   }
+  [data-theme="light"] {
+    --bg-color: #f3f4f6; --surface-color: #ffffff; --text-main: #111827; --text-muted: #6b7280;
+    --border-color: #e5e7eb; --primary: #16a34a; --primary-hover: #15803d; --primary-light: #dcfce7;
+    --player-bg: #000000; --scroll-thumb: #cbd5e1;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
   
-  body { background-color: var(--bg-color); color: var(--text-main); transition: background-color 0.3s, color 0.3s; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+  body { 
+    background-color: var(--bg-color); color: var(--text-main); 
+    height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    -webkit-user-select: none; user-select: none; 
+  }
   
-  header { background-color: var(--surface-color); border-bottom: 1px solid var(--border-color); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; z-index: 1000; position: sticky; top: 0; }
-  .logo { display: flex; align-items: center; gap: 10px; font-size: 22px; }
-  .logo-icon { background-color: var(--primary); color: white; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; }
-  .logo-text-panzer { color: var(--text-main); font-weight: 800; letter-spacing: -0.5px; }
-  .logo-text-sports { color: var(--primary); font-weight: 800; letter-spacing: -0.5px; }
+  header { 
+    background-color: var(--surface-color); border-bottom: 1px solid var(--border-color); 
+    height: 64px; display: flex; align-items: center; justify-content: space-between; 
+    padding: 0 20px; flex-shrink: 0; z-index: 1000; 
+  }
+  .logo { display: flex; align-items: center; gap: 8px; font-size: 20px; }
+  .logo-icon { background-color: var(--primary); color: white; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .logo-text-panzer { color: var(--text-main); font-weight: 800; }
+  .logo-text-sports { color: var(--primary); font-weight: 800; }
   
-  .header-actions { display: flex; align-items: center; gap: 12px; }
-  .theme-btn { background: var(--surface-color); border: 1px solid var(--border-color); color: var(--text-main); width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
-  
-  .container { display: flex; flex: 1; max-width: 100%; margin: 0 auto; width: 100%; height: calc(100vh - 64px); }
-  .player-section { flex: 1; padding: 24px; display: flex; flex-direction: column; overflow-y: auto; }
-  
+  .header-actions { display: flex; align-items: center; gap: 10px; }
+  .theme-btn { 
+    background: var(--surface-color); border: 1px solid var(--border-color); color: var(--text-main); 
+    width: 40px; height: 40px; border-radius: 10px; cursor: pointer; 
+    display: flex; align-items: center; justify-content: center; transition: 0.2s;
+  }
+  .theme-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  .container { display: flex; flex: 1; width: 100%; overflow: hidden; }
+
+  /* SOL TARAF (PC) / ÜST TARAF (MOBİL) */
+  .left-content { 
+    flex: 1.5; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; gap: 20px;
+  }
   .player-wrapper { 
     background-color: var(--player-bg); border-radius: 16px; overflow: hidden;
     aspect-ratio: 16 / 9; position: relative; border: 1px solid var(--border-color);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; flex-shrink: 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4); width: 100%;
+  }
+  #player, #ios-player-container, #embed-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+  .placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; background: #0a0a0a; z-index: 20; }
+
+  .banner-section { text-align: center; }
+  .banner-section img { max-width: 100%; border-radius: 12px; border: 1px solid var(--border-color); }
+
+  /* SAĞ TARAF (PC) - İSTEDİĞİN KUTUCUK YAPISI */
+  .right-content { 
+    width: 420px; background-color: var(--surface-color); border-left: 1px solid var(--border-color); 
+    display: flex; flex-direction: column; height: 100%; 
   }
   
-  #player, #ios-player-container, #embed-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-  #ios-player-container, #embed-container { z-index: 10; display: none; background: #000; }
-  #ios-video, #embed-iframe { width: 100%; height: 100%; border: none; }
-
-  .placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; gap: 16px; background: #0a0a0a; z-index: 20; }
-
-  .now-playing { margin-top: 20px; padding: 20px; background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 16px; display: none; align-items: center; gap: 16px; flex-shrink: 0; }
-  .np-badge { background-color: var(--primary-light); color: var(--primary); padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 12px; display: flex; align-items: center; gap: 6px; }
-  .np-dot { width: 8px; height: 8px; background-color: var(--primary); border-radius: 50%; }
-
-  .banner-section { margin-top: 20px; text-align: center; flex-shrink: 0; }
-  .banner-section img { max-width: 100%; border-radius: 12px; }
-
-  .list-section { width: 400px; background-color: var(--surface-color); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; height: 100%; }
-  
-  .tabs-container { display: flex; padding: 10px 20px 0 20px; gap: 8px; border-bottom: 1px solid var(--border-color); }
-  .tab-btn { flex: 1; padding: 12px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; font-size: 14px; }
+  .tabs-container { display: flex; padding: 10px 16px 0 16px; gap: 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+  .tab-btn { flex: 1; padding: 15px 5px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; cursor: pointer; border-bottom: 3px solid transparent; font-size: 13px; text-transform: uppercase; }
   .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+  
+  .list-header { padding: 16px; flex-shrink: 0; }
+  .search-box { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-main); outline: none; }
+  
+  /* SADECE LİSTENİN OLDUĞU ALAN KAYAR */
+  .channel-list { flex: 1; padding: 0 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+  .channel-list::-webkit-scrollbar { width: 6px; }
+  .channel-list::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 10px; }
 
-  .list-header { padding: 15px 20px; flex-shrink: 0; }
-  .search-box { width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-main); outline: none; transition: 0.2s; }
-  .search-box:focus { border-color: var(--primary); }
-  
-  .channel-list { flex: 1; padding: 0 20px 20px 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
-
-  .channel-list::-webkit-scrollbar, .player-section::-webkit-scrollbar { width: 6px; }
-  .channel-list::-webkit-scrollbar-track, .player-section::-webkit-scrollbar-track { background: transparent; }
-  .channel-list::-webkit-scrollbar-thumb, .player-section::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 10px; }
-  
-  .channel-card { display: flex; align-items: center; padding: 12px; border-radius: 12px; cursor: pointer; background-color: var(--bg-color); border: 1px solid transparent; transition: 0.2s; }
-  .channel-card:hover { border-color: var(--border-color); transform: translateY(-1px); }
-  .channel-card.active { background-color: var(--primary-light); border-color: var(--primary); }
-  
-  .cc-logo { width: 44px; height: 44px; border-radius: 8px; flex-shrink: 0; margin-right: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #fff; }
+  .channel-card { display: flex; align-items: center; padding: 14px; border-radius: 12px; cursor: pointer; background-color: var(--bg-color); border: 1px solid var(--border-color); transition: 0.2s; }
+  .channel-card:hover { transform: translateX(5px); border-color: var(--primary); }
+  .channel-card.active { border-color: var(--primary); background-color: var(--primary-light); }
+  .cc-logo { width: 42px; height: 42px; border-radius: 8px; flex-shrink: 0; margin-right: 12px; background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center; }
   .cc-logo img { width: 100%; height: 100%; object-fit: contain; }
 
-  .footer-contact { padding: 15px; border-top: 1px solid var(--border-color); text-align: center; flex-shrink: 0; }
+  .footer-contact { padding: 20px; text-align: center; border-top: 1px solid var(--border-color); flex-shrink: 0; background: var(--surface-color); }
 
-  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-  .modal-content { background-color: var(--surface-color); border-radius: 20px; width: 90%; max-width: 380px; padding: 24px; position: relative; border: 1px solid var(--border-color); }
-  .social-btn { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 600; color: white; margin-bottom: 12px; transition: 0.2s; }
-
+  /* MOBİL AYARLAR */
   @media (max-width: 960px) {
     body { height: auto; overflow: visible; }
-    .container { flex-direction: column; height: auto; }
-    .list-section { width: 100%; border-left: none; height: auto; min-height: 500px; border-top: 1px solid var(--border-color); }
-    .player-section { padding: 16px; overflow-y: visible; }
-    .channel-list { height: 400px; }
+    .container { flex-direction: column; height: auto; overflow: visible; }
+    .left-content { flex: none; height: auto; padding: 12px; overflow: visible; }
+    .right-content { width: 100%; height: auto; border-left: none; border-top: 1px solid var(--border-color); }
+    .channel-list { height: 500px; padding-bottom: 20px; } /* Mobilde liste kutu boyutu */
   }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+  .modal-content { background: var(--surface-color); border-radius: 20px; width: 90%; max-width: 360px; padding: 24px; border: 1px solid var(--border-color); text-align: center; }
+  .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; color: white; margin-bottom: 12px; }
 </style>
 </head>
 <body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">▶</div>
+    <div><span class="logo-text-panzer">Panzer</span><span class="logo-text-sports">Sports</span></div>
+  </div>
+  <div class="header-actions">
+    <button class="theme-btn" onclick="openInfoModal()" title="İletişim">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </button>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>
+    </button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="left-content" id="playerTop">
+    <div class="player-wrapper">
+      <div class="placeholder" id="placeholder">
+        <div style="font-size:50px; margin-bottom:15px">📺</div>
+        <p style="font-weight:700; font-size:18px">İzlemek istediğiniz içeriği seçin</p>
+      </div>
+      <div id="player"></div>
+      <div id="ios-player-container"><video id="ios-video" playsinline controls></video></div>
+      <div id="embed-container"><iframe id="embed-iframe" sandbox="allow-scripts allow-same-origin" allowfullscreen></iframe></div>
+    </div>
+	 
+    <div class="banner-section">
+      <a href="https://cutt.ly/JtOydPNs" target="_blank">
+        <img src="https://i.imgur.com/iUgXGdJ.gif" alt="Reklam">
+      </a>
+    </div>
+  </div>
+
+  <div class="right-content">
+    <div class="tabs-container">
+        <button class="tab-btn active" id="btn-channels" onclick="switchTab('channels')">CANLI KANALLAR</button>
+        <button class="tab-btn" id="btn-matches" onclick="switchTab('matches')">MAÇ LİSTESİ</button>
+    </div>
+
+    <div class="list-header">
+      <input type="text" class="search-box" id="searchInput" placeholder="Kanal veya maç ara..." onkeyup="renderCurrentList()">
+    </div>
+
+    <div class="channel-list" id="channelList">
+        </div>
+
+    <div class="footer-contact">
+      <p style="font-size:13px; color:var(--text-muted); font-weight:500;">
+        Reklam için ulaşabilirsiniz<br>
+        <span style="color:var(--primary); font-weight:800; font-size:15px; letter-spacing: 0.5px;">panzerrbeyy@gmail.com</span>
+      </p>
+    </div>
+  </div>
+</div>
 
 <script id="kolay-kanal-listesi" type="text/plain">
 Bein Sports 1 (A) | Spor | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
@@ -171,189 +238,94 @@ Test | Spor | HD | https://74betorspintv.live/channel?id=tv8 | https://via.place
 </script>
 
 <script id="kolay-mac-listesi" type="text/plain">
-Çekya - İrlanda | 22.45 | HD | https://andro.0638527.xyz/checklist/androstreamliveexn2.m3u8
-Slovakya - Kosova | 22.45 | HD | https://andro.0638527.xyz/checklist/androstreamliveexn6.m3u8
-Galler - Bosna Hersek | 22.45 | HD | https://andro.0638527.xyz/checklist/androstreamliveexn3.m3u8
-İtalya - Kuzey İrlanda | 22.45 | HD | https://andro.0638527.xyz/checklist/androstreamliveexn4.m3u8
-Ukrayna - İsveç | 22.45 | HD | https://andro.0638527.xyz/checklist/androstreamliveexn7.m3u8
-Polonya - Arnavutluk | 22.45 | HD | https://embedsports.top/embed/admin/ppv-poland-vs-albania/2
-Danimarka - Kuzey Makedonya | 22.45 | HD | https://andro.0638527.xyz/checklist/androstreamliveexn1.m3u8
-Brezilya - Fransa | 23.00 | HD | https://tv-trtspor1.medya.trt.com.tr/master_1080.m3u8
+Fenerbahçe - Zalgiris | 20:45 | HD | https://andro.0638527.xyz/checklist/androstreamlivess1.m3u8
+Panathinaikos - Monaco | 22:15 | HD | https://noisy-cake-8ebc.travestigamzes.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport-2.m3u8
+Baskonia - Hapoel Tel Aviv | 22.30 | HD | https://embedsports.top/embed/echo/baskonia-vs-hapoel-tel-aviv-basketball-454616/2
+Partizan - Valencia | 22.30 | HD | https://embedsports.top/embed/echo/partizan-mozzart-bet-vs-valencia-basketball-454617/2  
+Barcelona - Kızılyıldız | 23.00 | HD | https://embedsports.top/embed/echo/barcelona-vs-crvena-zvezda-meridianbet-basketball-454615/2
+Memphis - Houston | 03.00 | HD | https://embedsports.top/embed/admin/ppv-houston-rockets-vs-memphis-grizzlies/2
 </script>
-
-<header>
-  <div class="logo">
-    <div class="logo-icon">▶</div>
-    <div><span class="logo-text-panzer">Panzer</span><span class="logo-text-sports">Sports</span></div>
-  </div>
-  <div class="header-actions">
-    <button class="theme-btn" onclick="openInfoModal()"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg></button>
-    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn"></button>
-  </div>
-</header>
-
-<div class="container">
-  <div class="player-section" id="topScroll">
-    <div class="player-wrapper">
-      <div class="placeholder" id="placeholder">
-        <div style="font-size:40px; margin-bottom:10px">📺</div>
-        <p>İzlemek istediğiniz kanalı veya maçı seçin</p>
-      </div>
-      <div id="player"></div>
-      <div id="ios-player-container"><video id="ios-video" playsinline controls></video></div>
-      <div id="embed-container">
-          <iframe id="embed-iframe" sandbox="allow-scripts allow-same-origin allow-forms" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-      </div>
-    </div>
-	 
-    <div class="banner-section">
-      <a href="https://cutt.ly/JtOydPNs" target="_blank"><img src="https://i.imgur.com/iUgXGdJ.gif" alt="Banner"></a>
-    </div>
-    
-    <div class="now-playing" id="nowPlaying">
-      <div class="np-badge"><div class="np-dot"></div> CANLI YAYIN</div>
-      <div><div id="npTitle" style="font-weight:700; font-size:18px">Kanal</div><div id="npSub" style="font-size:13px; color:var(--text-muted)">Kategori</div></div>
-    </div>
-  </div>
-
-  <div class="list-section">
-    <div class="tabs-container">
-        <button class="tab-btn active" id="btn-channels" onclick="switchTab('channels')">CANLI KANALLAR</button>
-        <button class="tab-btn" id="btn-matches" onclick="switchTab('matches')">MAÇ LİSTESİ</button>
-    </div>
-
-    <div class="list-header">
-      <input type="text" class="search-box" id="searchInput" placeholder="Ara..." onkeyup="renderCurrentList()">
-    </div>
-
-    <div class="channel-list" id="channelList"></div>
-
-    <div class="footer-contact">
-      <p style="font-size:12px; color:var(--text-muted)">İletişim: <a href="mailto:panzerrbeyy@gmail.com" style="color:var(--primary); font-weight:700">panzerrbeyy@gmail.com</a></p>
-    </div>
-  </div>
-</div>
 
 <div class="modal-overlay" id="infoModal" onclick="closeInfoModal()">
   <div class="modal-content" onclick="event.stopPropagation()">
-    <h3 style="margin-bottom:24px; text-align:center">İletişim & Sosyal Medya</h3>
-    <a href="https://t.me/xpanzerrbeyy" target="_blank" class="social-btn" style="background: #229ED9;">Telegram Kanalımız</a>
-    <a href="https://x.com/panzerrbeyyx" target="_blank" class="social-btn" style="background: #000;">X (Twitter) Hesabımız</a>
-    <button onclick="closeInfoModal()" style="width:100%; padding:12px; border:none; background:var(--primary); color:white; border-radius:10px; cursor:pointer; font-weight:700; margin-top:10px">Kapat</button>
+    <h3 style="margin-bottom:20px;">Sosyal Medya</h3>
+    <a href="https://t.me/xpanzerrbeyy" target="_blank" class="social-btn" style="background:#229ED9;">Telegram</a>
+    <a href="https://x.com/panzerrbeyyx" target="_blank" class="social-btn" style="background:#000;">X (Twitter)</a>
+    <button onclick="closeInfoModal()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:700; margin-top:10px;">Kapat</button>
   </div>
 </div>
 
 <script>
+  // GÜVENLİK
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.onkeydown = e => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) return false; };
+
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  let activeId = null;
-  let clapprPlayer = null;
-  let currentTab = 'channels';
+  let activeId = null, clapprPlayer = null, currentTab = 'channels';
 
-  const channelData = parseData('kolay-kanal-listesi', 'chan');
-  const matchData = parseData('kolay-mac-listesi', 'match');
+  const parse = (id, pre) => document.getElementById(id).textContent.split('\n').filter(l => l.trim()).map((l, i) => {
+    const p = l.split('|').map(x => x.trim());
+    return { id: pre + i, name: p[0], cat: p[1], qual: p[2], url: p[3], logo: p[4] || '' };
+  });
 
-  function parseData(scriptId, prefix) {
-    const raw = document.getElementById(scriptId).textContent;
-    const items = [];
-    raw.split('\n').filter(l => l.trim()).forEach((line, index) => {
-      const parts = line.split('|').map(p => p.trim());
-      if (parts.length >= 4) {
-        items.push({ id: prefix + '_' + index, name: parts[0], cat: parts[1], quality: parts[2], url: parts[3], logo: parts[4] || '' });
-      }
-    });
-    return items;
-  }
+  const channels = parse('kolay-kanal-listesi', 'ch');
+  const matches = parse('kolay-mac-listesi', 'mt');
 
-  function switchTab(tab) {
-    currentTab = tab;
-    document.getElementById('btn-channels').classList.toggle('active', tab === 'channels');
-    document.getElementById('btn-matches').classList.toggle('active', tab === 'matches');
-    document.getElementById('searchInput').value = "";
+  function switchTab(t) {
+    currentTab = t;
+    document.getElementById('btn-channels').classList.toggle('active', t === 'channels');
+    document.getElementById('btn-matches').classList.toggle('active', t === 'matches');
     renderCurrentList();
   }
 
   function renderCurrentList() {
-    const list = currentTab === 'channels' ? channelData : matchData;
+    const list = currentTab === 'channels' ? channels : matches;
     const search = document.getElementById('searchInput').value.toLowerCase();
-    const filtered = list.filter(c => c.name.toLowerCase().includes(search));
-    
-    document.getElementById('channelList').innerHTML = filtered.map(c => {
-      // MAÇLAR KISMINDA LOGOYU KALDIRAN KOŞUL
-      const logoHtml = currentTab === 'channels' 
-        ? `<div class="cc-logo"><img src="${c.logo}" onerror="this.src='https://via.placeholder.com/44?text=P'"></div>` 
-        : '';
-
-      return `
-        <div class="channel-card ${activeId === c.id ? 'active' : ''}" onclick="playContent('${c.id}')">
-          ${logoHtml}
-          <div><div style="font-weight:600; font-size:14px">${c.name}</div><div style="font-size:11px; color:var(--text-muted)">${c.cat} • ${c.quality}</div></div>
-        </div>`;
-    }).join('');
+    document.getElementById('channelList').innerHTML = list.filter(c => c.name.toLowerCase().includes(search)).map(c => `
+      <div class="channel-card ${activeId === c.id ? 'active' : ''}" onclick="play('${c.id}')">
+        ${currentTab === 'channels' ? `<div class="cc-logo"><img src="${c.logo}" onerror="this.src='https://via.placeholder.com/42'"></div>` : ''}
+        <div><div style="font-weight:700; font-size:14px">${c.name}</div><div style="font-size:11px; color:var(--text-muted)">${c.cat} • ${c.qual}</div></div>
+      </div>`).join('');
   }
 
-  function playContent(id) {
+  function play(id) {
     activeId = id;
-    const list = id.startsWith('chan') ? channelData : matchData;
-    const item = list.find(c => c.id === id);
-    
+    const item = [...channels, ...matches].find(c => c.id === id);
     renderCurrentList();
     
-    if (window.innerWidth <= 960) {
-        document.getElementById('topScroll').scrollIntoView({ behavior: 'smooth' });
-    } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    // Mobilde en üste kaydır
+    if(window.innerWidth <= 960) document.getElementById('playerTop').scrollIntoView({behavior: 'smooth'});
 
     document.getElementById('placeholder').style.display = 'none';
-    document.getElementById('nowPlaying').style.display = 'flex';
-    document.getElementById('npTitle').textContent = item.name;
-    document.getElementById('npSub').textContent = `${item.cat} • ${item.quality}`;
-    
-    if (clapprPlayer) { clapprPlayer.destroy(); clapprPlayer = null; }
-    document.getElementById('player').innerHTML = ""; 
+
+    if (clapprPlayer) clapprPlayer.destroy();
+    document.getElementById('player').innerHTML = "";
     document.getElementById('ios-player-container').style.display = 'none';
     document.getElementById('embed-container').style.display = 'none';
 
-    const isDirectStream = item.url.includes('.m3u8') || item.url.includes('.mpd') || item.url.includes('proxy') || item.url.includes('checklist');
-
-    if (!isDirectStream) {
+    if (!item.url.includes('.m3u8') && !item.url.includes('checklist')) {
         document.getElementById('embed-container').style.display = 'block';
         document.getElementById('embed-iframe').src = item.url;
     } else if (isIOS) {
         document.getElementById('ios-player-container').style.display = 'block';
-        const v = document.getElementById('ios-video'); 
-        v.src = item.url; 
-        v.play();
+        const v = document.getElementById('ios-video'); v.src = item.url; v.play();
     } else {
-        clapprPlayer = new Clappr.Player({
-          source: item.url,
-          parentId: '#player',
-          width: '100%',
-          height: '100%',
-          autoPlay: true,
-          mimeType: "application/x-mpegURL",
-          plugins: [HlsjsPlayback, LevelSelector],
-          playback: { playInline: true, hlsjsConfig: { enableWorker: true, lowLatencyMode: true } }
-        });
+        clapprPlayer = new Clappr.Player({ source: item.url, parentId: '#player', width: '100%', height: '100%', autoPlay: true, plugins: [HlsjsPlayback, LevelSelector] });
     }
   }
 
   function toggleTheme() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    document.getElementById('themeBtn').innerHTML = isDark ? moonIcon : sunIcon;
+    const d = document.documentElement;
+    const isDark = d.getAttribute('data-theme') === 'dark';
+    d.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('themeBtn').innerHTML = isDark ? 
+        '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>' : 
+        '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>';
   }
-  
-  const sunIcon = `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>`;
-  const moonIcon = `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>`;
 
   function openInfoModal() { document.getElementById('infoModal').style.display = 'flex'; }
   function closeInfoModal() { document.getElementById('infoModal').style.display = 'none'; }
-
-  window.onload = () => { 
-    document.getElementById('themeBtn').innerHTML = sunIcon;
-    renderCurrentList(); 
-  };
+  window.onload = renderCurrentList;
 </script>
 </body>
 </html>
