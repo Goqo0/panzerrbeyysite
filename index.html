@@ -186,7 +186,7 @@ Bein Sports 3 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://c
 Bein Sports 3 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs3.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports 3 (C) | Spor | HD | https://74betorspintv.live/channel?id=b3 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports 4 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-4.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
-Bein Sports 4 (B) | Spor | HD | https://maymunmatematigi.lol/static/bs4.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 4 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs4.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports 4 (C) | Spor | HD | https://74betorspintv.live/channel?id=b4 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports 5 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-5.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports 5 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs5.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
@@ -247,12 +247,13 @@ TV8 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivetv8.m
 TV8 (B) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://yt3.googleusercontent.com/ytc/AIdro_mnwqLdHqFXbkm6QwloGNJ1EX5N3Z8klIpdSF59MRbbLxU=s176-c-k-c0x00ffffff-no-rj-mo
 TV8.5 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivetv85.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
 TV8.5 (B) | Ulusal | HD | https://api.hitnova.net/s/tv85/mono.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
-Test | Spor | HD | https://74betorspintv.live/channel?id=tv8 | https://via.placeholder.com/44?text=T
+Test | Spor | HD |  | https://via.placeholder.com/44?text=T
+</script>
+UFC | 03.00 | https://panzerrbeyy1-good.hf.space/proxy/m3u?url=http://a4529.alfa48.xyz:80/live/yildirim241222-2/n6hb9Sab/184596.m3u8
+<script id="kolay-mac-listesi" type="text/plain">
+
 </script>
 
-<script id="kolay-mac-listesi" type="text/plain">
-UFC | 00.00 - 03.00 | Spor | https://panzerrbeyy1-deneme.hf.space/proxy/m3u?url=http://a4529.alfa48.xyz:80/live/yildirim241222-2/n6hb9Sab/184596.m3u8
-</script>
 <div class="modal-overlay" id="infoModal" onclick="closeInfoModal()">
   <div class="modal-content" onclick="event.stopPropagation()">
     <h3 style="margin-bottom:15px;">İletişim & İşbirliği</h3>
@@ -316,9 +317,11 @@ UFC | 00.00 - 03.00 | Spor | https://panzerrbeyy1-deneme.hf.space/proxy/m3u?url=
     iosVideo.src = "";
     iosVideo.load();
 
-    // Link tipine ve cihaza göre oynatma
-    if (!item.url.includes('.m3u8') && !item.url.includes('checklist')) {
-        // EMBED DURUMU
+    // ÖNEMLİ: HLS algılama mantığı (proxy ve m3u içermesi durumunda player tetiklenir)
+    const isHLS = item.url.includes('.m3u8') || item.url.includes('checklist') || item.url.includes('proxy') || item.url.includes('m3u');
+
+    if (!isHLS) {
+        // EMBED DURUMU (iFrame ile açılır)
         document.getElementById('embed-container').style.display = 'block';
         document.getElementById('embed-iframe').src = item.url;
     } else if (isIOS) {
@@ -326,14 +329,14 @@ UFC | 00.00 - 03.00 | Spor | https://panzerrbeyy1-deneme.hf.space/proxy/m3u?url=
         document.getElementById('ios-player-container').style.display = 'block';
         iosVideo.src = item.url;
         iosVideo.load();
-        // iOS'da otomatik oynatmayı garantiye almak için muted true yapıyoruz
         iosVideo.muted = true;
-        iosVideo.play().catch(e => console.log("Otomatik oynatma engellendi, kullanıcı tıklaması bekleniyor."));
+        iosVideo.play().catch(e => console.log("Oynatma hatası:", e));
     } else {
-        // STANDART/ANDROID DURUMU
+        // STANDART/ANDROID DURUMU (Clappr Player)
         document.getElementById('player').style.display = 'block';
         clapprPlayer = new Clappr.Player({ 
             source: item.url, 
+            mimeType: 'application/x-mpegURL', // Proxy linkleri için m3u8 formatını zorunlu tutuyoruz
             parentId: '#player', 
             width: '100%', 
             height: '100%', 
