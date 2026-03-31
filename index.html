@@ -59,6 +59,7 @@
     background-color: var(--player-bg); border-radius: 16px; overflow: hidden;
     aspect-ratio: 16 / 9; position: relative; border: 1px solid var(--border-color);
     box-shadow: 0 10px 30px rgba(0,0,0,0.4); width: 100%; flex-shrink: 0;
+    transition: all 0.2s ease; /* Odaklanma animasyonu için */
   }
   
   #player, #ios-player-container, #embed-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; }
@@ -117,13 +118,17 @@
   .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; color: white; margin-bottom: 12px; font-size: 14px; }
   .mail-area { background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px dashed var(--border-color); margin-bottom: 15px; }
 
-  /* === TV KUMANDA ODAKLANMA (FOCUS) STİLLERİ EKLENDİ === */
+  /* === TV KUMANDA ODAKLANMA (FOCUS) STİLLERİ === */
   .tv-focus {
     outline: 3px solid var(--primary) !important;
     box-shadow: 0 0 15px var(--primary) !important;
     transform: scale(1.02) !important;
     z-index: 100;
-    transition: all 0.2s ease;
+  }
+  /* Oynatıcı çok büyük olduğu için onun scale değerini biraz daha düşük tutuyoruz */
+  .player-wrapper.tv-focus {
+    transform: scale(1.01) !important;
+    outline: 4px solid var(--primary) !important;
   }
 </style>
 </head>
@@ -146,7 +151,7 @@
 
 <div class="container">
   <div class="left-content" id="playerTop">
-    <div class="player-wrapper">
+    <div class="player-wrapper" id="playerWrapper">
       <div class="placeholder" id="placeholder">
         <div style="font-size:50px; margin-bottom:15px">📺</div>
         <p style="font-weight:700; font-size:18px">İzlemek istediğiniz içeriği seçin</p>
@@ -332,26 +337,22 @@ LA Lakers - Washington | 05.00 | NBA | https://embedsports.top/embed/admin/ppv-w
     iosVideo.src = "";
     iosVideo.load();
 
-    // ÖNEMLİ: HLS algılama mantığı (proxy ve m3u içermesi durumunda player tetiklenir)
     const isHLS = item.url.includes('.m3u8') || item.url.includes('checklist') || item.url.includes('proxy') || item.url.includes('m3u');
 
     if (!isHLS) {
-        // EMBED DURUMU (iFrame ile açılır)
         document.getElementById('embed-container').style.display = 'block';
         document.getElementById('embed-iframe').src = item.url;
     } else if (isIOS) {
-        // IOS DURUMU
         document.getElementById('ios-player-container').style.display = 'block';
         iosVideo.src = item.url;
         iosVideo.load();
         iosVideo.muted = true;
         iosVideo.play().catch(e => console.log("Oynatma hatası:", e));
     } else {
-        // STANDART/ANDROID DURUMU (Clappr Player)
         document.getElementById('player').style.display = 'block';
         clapprPlayer = new Clappr.Player({ 
             source: item.url, 
-            mimeType: 'application/x-mpegURL', // Proxy linkleri için m3u8 formatını zorunlu tutuyoruz
+            mimeType: 'application/x-mpegURL',
             parentId: '#player', 
             width: '100%', 
             height: '100%', 
@@ -375,14 +376,28 @@ LA Lakers - Washington | 05.00 | NBA | https://embedsports.top/embed/admin/ppv-w
   function closeInfoModal() { document.getElementById('infoModal').style.display = 'none'; }
   window.onload = renderCurrentList;
 
-  // === TV / KUMANDA NAVİGASYON DESTEĞİ EKLENDİ ===
+  // === TV / KUMANDA NAVİGASYON DESTEĞİ VE TAM EKRAN EKLENTİSİ ===
   let tvFocusableElements = [];
   let tvFocusedIndex = -1;
 
+  // Tam Ekran Yapma/Çıkma Fonksiyonu
+  function toggleFullScreen(elem) {
+      if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+          if (elem.requestFullscreen) { elem.requestFullscreen(); }
+          else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+          else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
+          else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+      } else {
+          if (document.exitFullscreen) { document.exitFullscreen(); }
+          else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+          else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
+          else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+      }
+  }
+
   function updateTVFocusableElements() {
-      // Ekranda tıklanabilir olan tüm buton, sekme ve kanalları topla
-      tvFocusableElements = Array.from(document.querySelectorAll('.theme-btn, .tab-btn, #searchInput, .channel-card, .social-btn, .modal-content button')).filter(el => {
-          // Öğenin ekranda görünür olup olmadığını kontrol et
+      // Artık ".player-wrapper" sınıfı da odaklanılabilir öğeler listesine eklendi!
+      tvFocusableElements = Array.from(document.querySelectorAll('.theme-btn, .player-wrapper, .tab-btn, #searchInput, .channel-card, .social-btn, .modal-content button')).filter(el => {
           return el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).display !== 'none';
       });
   }
@@ -391,34 +406,36 @@ LA Lakers - Washington | 05.00 | NBA | https://embedsports.top/embed/admin/ppv-w
       const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'];
       if (!keys.includes(e.key)) return;
 
-      // Eğer kullanıcı arama kutusundaysa ve sağ/sol yapıyorsa, yazı imlecini hareket ettirmesine izin ver
       if (document.activeElement.tagName === 'INPUT' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
           return;
       }
 
-      e.preventDefault(); // Sayfanın varsayılan (çalışmayan) kaymasını engelle
+      e.preventDefault(); 
       updateTVFocusableElements();
 
       if (tvFocusableElements.length === 0) return;
 
-      // Kumandadan "OK" (Enter) tuşuna basılırsa
       if (e.key === 'Enter') {
           if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
-              tvFocusableElements[tvFocusedIndex].click();
-              // Eğer seçili olan arama kutusuysa, yazma modunu aktif et
-              if(tvFocusableElements[tvFocusedIndex].id === 'searchInput') {
-                  tvFocusableElements[tvFocusedIndex].focus();
+              const el = tvFocusableElements[tvFocusedIndex];
+              
+              // Eğer odaklanan şey "player-wrapper" (oynatıcı) ise, tıkla yerine TAM EKRAN yap
+              if (el.classList.contains('player-wrapper')) {
+                  toggleFullScreen(el);
+              } else {
+                  el.click();
+                  if (el.id === 'searchInput') {
+                      el.focus();
+                  }
               }
           }
           return;
       }
 
-      // Eski öğeden odağı kaldır
       if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
           tvFocusableElements[tvFocusedIndex].classList.remove('tv-focus');
       }
 
-      // Kumanda yönlerine göre index'i değiştir (Yukarı/Aşağı git)
       if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
           tvFocusedIndex++;
           if (tvFocusedIndex >= tvFocusableElements.length) tvFocusedIndex = tvFocusableElements.length - 1;
@@ -427,16 +444,13 @@ LA Lakers - Washington | 05.00 | NBA | https://embedsports.top/embed/admin/ppv-w
           if (tvFocusedIndex < 0) tvFocusedIndex = 0;
       }
 
-      // Yeni öğeye odağı ver ve EKRANI AŞAĞI KAYDIR (scrollIntoView)
       const target = tvFocusableElements[tvFocusedIndex];
       if (target) {
           target.classList.add('tv-focus');
-          // Bu satır sayesinde imleç aşağı indikçe ekran da otomatik olarak onu takip edecek
           target.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
   });
 
-  // Kullanıcı arama yaptığında veya sekmeleri değiştirdiğinde listeyi otomatik güncelle
   const tvObserver = new MutationObserver(() => { updateTVFocusableElements(); });
   window.addEventListener('DOMContentLoaded', () => {
       tvObserver.observe(document.body, { childList: true, subtree: true });
