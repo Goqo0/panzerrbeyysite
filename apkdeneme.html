@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>PanzerSports - Canlı Yayın</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/@clappr/player@0.11.16/dist/clappr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@1.8.3/dist/hlsjs-playback.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clappr-dash-shaka-playback@0.7.20/dist/dash-shaka-playback.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/level-selector/dist/level-selector.min.js"></script>
+
+<style>
+  :root {
+    --bg-color: #0a0a0a; --surface-color: #171717; --text-main: #f9fafb; --text-muted: #9ca3af;
+    --border-color: #262626; --primary: #22c55e; --primary-hover: #16a34a; --primary-light: #064e3b;
+    --player-bg: #000000; --scroll-thumb: #404040;
+  }
+  [data-theme="light"] {
+    --bg-color: #f3f4f6; --surface-color: #ffffff; --text-main: #111827; --text-muted: #6b7280;
+    --border-color: #e5e7eb; --primary: #16a34a; --primary-hover: #15803d; --primary-light: #dcfce7;
+    --player-bg: #000000; --scroll-thumb: #cbd5e1;
+  }
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+  
+  body { 
+    background-color: var(--bg-color); color: var(--text-main); 
+    height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    -webkit-user-select: none; user-select: none; 
+  }
+  
+  header { 
+    background-color: var(--surface-color); border-bottom: 1px solid var(--border-color); 
+    height: 64px; display: flex; align-items: center; justify-content: space-between; 
+    padding: 0 20px; flex-shrink: 0; z-index: 1000; 
+  }
+  .logo { display: flex; align-items: center; gap: 8px; font-size: 20px; }
+  .logo-icon { background-color: var(--primary); color: white; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .logo-text-panzer { color: var(--text-main); font-weight: 800; }
+  .logo-text-sports { color: var(--primary); font-weight: 800; }
+  
+  .header-actions { display: flex; align-items: center; gap: 10px; }
+  .theme-btn { 
+    background: var(--surface-color); border: 1px solid var(--border-color); color: var(--text-main); 
+    width: 40px; height: 40px; border-radius: 10px; cursor: pointer; 
+    display: flex; align-items: center; justify-content: center; transition: 0.2s;
+  }
+  .theme-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  .container { display: flex; flex: 1; width: 100%; overflow: hidden; }
+
+  .left-content { 
+    flex: 1.5; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; gap: 20px;
+    background-color: var(--bg-color);
+  }
+  .player-wrapper { 
+    background-color: var(--player-bg); border-radius: 16px; overflow: hidden;
+    aspect-ratio: 16 / 9; position: relative; border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4); width: 100%; flex-shrink: 0;
+  }
+  
+  #player, #ios-player-container, #embed-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; }
+  #player { z-index: 5; }
+  #ios-player-container { z-index: 6; background: #000; }
+  #embed-container { z-index: 7; }
+  
+  #ios-video { width: 100%; height: 100%; object-fit: contain; }
+  #embed-iframe { width: 100%; height: 100%; border: none; background: #000; }
+
+  .placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; background: #0a0a0a; z-index: 20; }
+
+  .banner-section { text-align: center; flex-shrink: 0; }
+  .banner-section img { max-width: 100%; border-radius: 12px; border: 1px solid var(--border-color); }
+
+  .right-content { 
+    width: 420px; background-color: var(--bg-color); border-left: 1px solid var(--border-color); 
+    display: flex; flex-direction: column; height: 100%; 
+  }
+  
+  .tabs-container { background-color: var(--surface-color); display: flex; padding: 10px 16px 0 16px; gap: 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+  .tab-btn { flex: 1; padding: 15px 5px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; cursor: pointer; border-bottom: 3px solid transparent; font-size: 13px; text-transform: uppercase; }
+  .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+  
+  .list-header { background-color: var(--surface-color); padding: 16px; flex-shrink: 0; }
+  .search-box { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-main); outline: none; }
+  
+  .channel-list { 
+    flex: 1; 
+    padding: 16px 16px 80px 16px;
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    overflow-y: auto; 
+    background-color: var(--bg-color);
+  }
+  .channel-list::-webkit-scrollbar { width: 6px; }
+  .channel-list::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 10px; }
+
+  .channel-card { display: flex; align-items: center; padding: 14px; border-radius: 12px; cursor: pointer; background-color: var(--surface-color); border: 1px solid var(--border-color); transition: 0.2s; flex-shrink: 0; }
+  .channel-card:hover { transform: translateX(5px); border-color: var(--primary); }
+  .channel-card.active { border-color: var(--primary); background-color: var(--primary-light); }
+  
+  .cc-logo { width: 42px; height: 42px; border-radius: 8px; flex-shrink: 0; margin-right: 12px; background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .cc-logo img { width: 100%; height: 100%; object-fit: contain; }
+
+  @media (max-width: 960px) {
+    .container { flex-direction: column; overflow: hidden; }
+    .left-content { flex: none; padding: 12px; gap: 12px; height: auto; }
+    .right-content { width: 100%; flex: 1; border-left: none; border-top: 1px solid var(--border-color); min-height: 0; }
+    .channel-list { padding-bottom: 100px; }
+  }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+  .modal-content { background: var(--surface-color); border-radius: 20px; width: 90%; max-width: 360px; padding: 24px; border: 1px solid var(--border-color); text-align: center; }
+  .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; color: white; margin-bottom: 12px; font-size: 14px; }
+  .mail-area { background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px dashed var(--border-color); margin-bottom: 15px; }
+
+  /* === TV KUMANDA ODAKLANMA (FOCUS) STİLLERİ EKLENDİ === */
+  .tv-focus {
+    outline: 3px solid var(--primary) !important;
+    box-shadow: 0 0 15px var(--primary) !important;
+    transform: scale(1.02) !important;
+    z-index: 100;
+    transition: all 0.2s ease;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">▶</div>
+    <div><span class="logo-text-panzer">Panzer</span><span class="logo-text-sports">Sports</span></div>
+  </div>
+  <div class="header-actions">
+    <button class="theme-btn" onclick="openInfoModal()" title="İletişim & İşbirliği">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </button>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>
+    </button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="left-content" id="playerTop">
+    <div class="player-wrapper">
+      <div class="placeholder" id="placeholder">
+        <div style="font-size:50px; margin-bottom:15px">📺</div>
+        <p style="font-weight:700; font-size:18px">İzlemek istediğiniz içeriği seçin</p>
+      </div>
+      
+      <div id="player"></div>
+      
+      <div id="ios-player-container">
+        <video id="ios-video" playsinline webkit-playsinline controls autoplay muted></video>
+      </div>
+      
+      <div id="embed-container">
+        <iframe id="embed-iframe" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+	 
+    <div class="banner-section">
+      <a href="https://refpa97757.com/L?tag=d_5396305m_65427c_&site=5396305&ad=65427" target="_blank">
+        <img src="https://i.imgur.com/iUgXGdJ.gif" alt="Reklam">
+      </a>
+    </div>
+  </div>
+
+  <div class="right-content">
+    <div class="tabs-container">
+        <button class="tab-btn active" id="btn-channels" onclick="switchTab('channels')">CANLI KANALLAR</button>
+        <button class="tab-btn" id="btn-matches" onclick="switchTab('matches')">MAÇ LİSTESİ</button>
+    </div>
+
+    <div class="list-header">
+      <input type="text" class="search-box" id="searchInput" placeholder="Kanal veya maç ara..." onkeyup="renderCurrentList()">
+    </div>
+
+    <div class="channel-list" id="channelList"></div>
+  </div>
+</div>
+
+<script id="kolay-kanal-listesi" type="text/plain">
+Bein Sports 1 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 1 (B)| Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 1 (C)| Spor | HD | https://74betorspintv.live/channel?id=zirve | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 2 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 2 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 2 (C) | Spor | HD | https://74betorspintv.live/channel?id=b2 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 3 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-3.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 3 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs3.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 3 (C) | Spor | HD | https://74betorspintv.live/channel?id=b3 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 4 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-4.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 4 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs4.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 4 (C) | Spor | HD | https://74betorspintv.live/channel?id=b4 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 5 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-5.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 5 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs5.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 5 (C) | Spor | HD | https://74betorspintv.live/channel?id=b5 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 1 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-max-1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 1 (B) | Spor | HD | https://74betorspintv.live/channel?id=bm1 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 1 (C) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebsm1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 2 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-max-2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 2 (B) | Spor | HD | https://74betorspintv.live/channel?id=bm2 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 2 (C) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebsm2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+S SPORT (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivess1.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT (C) | Spor | HD | https://74betorspintv.live/channel?id=ss | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT 2 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport-2.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT 2 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivess2.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT 2 (C) | Spor | HD | https://maymunmatematigi.lol/static/ss2.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S Sport Plus 1 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivessplus1.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
+S Sport Plus 2 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivessplus2.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
+S Sport Plus 3 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivessplus3.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
+Tivibu Spor (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivets.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 1 (A) | Spor | HD | https://74betorspintv.live/channel?id=t1 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 1 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivets1.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 2 (A) | Spor | HD | https://74betorspintv.live/channel?id=t2 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 2 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivets2.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 3 (A) | Spor | HD | https://74betorspintv.live/channel?id=t3 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 3 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivets3.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 4 (A) | Spor | HD | https://74betorspintv.live/channel?id=t4 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 4 (B) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/stivibuspor-4/playlist.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 4 (C) | Spor | HD | https://twilight-art-b7fe.hebelehubele3271.workers.dev/?url=https://andro.1386503.xyz/checklist/androstreamlivets4.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Smart Spor (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivesm1.m3u8 | https://i.imgur.com/8o1xKB5.jpeg
+Smart Spor (B) | Spor | HD | https://74betorspintv.live/channel?id=smarts | https://i.imgur.com/8o1xKB5.jpeg
+Smart Spor 2 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivesm2.m3u8 | https://i.imgur.com/8o1xKB5.jpeg
+Smart Spor 2 (B) | Spor | HD | https://74betorspintv.live/channel?id=sms2 | https://i.imgur.com/8o1xKB5.jpeg
+Tabii Spor | Spor | HD | https://kl9mr2vxw7nq5py1sh4tj3gb6.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 1 | Spor | HD | https://Pz4qT7nW1mR9sH2vL5xK8jG3y.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 2 | Spor | HD | https://mr8bv4kl1nq7sh9tw2xp5zj6g.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 3 | Spor | HD | https://mR4vL7nQ2sH9tW5xP1zK3gJ8b.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 4 | Spor | HD | https://sh7tq2nw5mr1vl9xp4zk3gj8k.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 5 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivetb5.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 6 | Spor | HD | https://nw5mr1vl9xp4zk2sh7tq3gj6b.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 7 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedetb7.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Exxen Spor 1 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn1.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 2 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn2.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 3 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn3.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 4 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn4.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 5 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn5.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 6 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn6.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 7 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn7.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 7 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn8.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Eurosports 1 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivees1.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
+Eurosports 1 (B) | Spor | HD | https://api.hitnova.net/s/eu1/mono.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
+Eurosports 2 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivees2.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
+Eurosports 2 (B) | Spor | HD | https://api.hitnova.net/s/eu2/mono.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
+TRT 1 | Ulusal | HD | https://tv-trt1.medya.trt.com.tr/master_1080.m3u8 | https://yt3.ggpht.com/ytc/AKedOLS5_OcuvYFIdd4BWpEeESX4dPF5GaQN_O4E7zCT9Q=s900-c-k-c0x00ffffff-no-rj
+TRT 1 (Yurt Dışı) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivetrt1.m3u8 | https://yt3.ggpht.com/ytc/AKedOLS5_OcuvYFIdd4BWpEeESX4dPF5GaQN_O4E7zCT9Q=s900-c-k-c0x00ffffff-no-rj
+TRT SPOR | Ulusal | HD | https://tv-trtspor1.medya.trt.com.tr/master_1080.m3u8 | https://yt3.ggpht.com/FCzDc31AsTFzobw8Z4QBCc8AGtKgFP4mq28RgbcLJGdVNlE0RoremvEr1XntYHFc6G0dAwU-=s176-c-k-c0x00ffffff-no-rj-mo
+TV8 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivetv8.m3u8 | https://yt3.googleusercontent.com/ytc/AIdro_mnwqLdHqFXbkm6QwloGNJ1EX5N3Z8klIpdSF59MRbbLxU=s176-c-k-c0x00ffffff-no-rj-mo
+TV8 (B) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://yt3.googleusercontent.com/ytc/AIdro_mnwqLdHqFXbkm6QwloGNJ1EX5N3Z8klIpdSF59MRbbLxU=s176-c-k-c0x00ffffff-no-rj-mo
+TV8.5 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivetv85.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
+TV8.5 (B) | Ulusal | HD | https://api.hitnova.net/s/tv85/mono.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
+Test | Spor | HD |  | https://via.placeholder.com/44?text=T
+</script>
+<script id="kolay-mac-listesi" type="text/plain">
+Miami - Philadelphia | 02.00 | NBA | https://embedsports.top/embed/admin/ppv-philadelphia-76-ers-vs-miami-heat/2
+Atlanta - Boston | 02.30 | NBA | https://embedsports.top/embed/admin/ppv-boston-celtics-vs-atlanta-hawks/2
+Memphis - Phoenix | 03.00 | NBA | https://embedsports.top/embed/admin/ppv-phoenix-suns-vs-memphis-grizzlies/2
+San Antonio - Chicago | 03.00 | NBA | https://embedsports.top/embed/admin/ppv-chicago-bulls-vs-san-antonio-spurs/2
+Dallas - Minnesota | 03.30 | NBA | https://embedsports.top/embed/admin/ppv-minnesota-timberwolves-vs-dallas-mavericks/2
+Utah - Cleveland | 04.00 | NBA | https://embedsports.top/embed/admin/ppv-cleveland-cavaliers-vs-utah-jazz/2
+Oklahoma - Detroit | 04.30 | NBA | https://embedsports.top/embed/admin/ppv-detroit-pistons-vs-oklahoma-city-thunder/2
+LA Lakers - Washington | 05.00 | NBA | https://embedsports.top/embed/admin/ppv-washington-wizards-vs-los-angeles-lakers/2
+</script>
+
+<div class="modal-overlay" id="infoModal" onclick="closeInfoModal()">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3 style="margin-bottom:15px;">İletişim & İşbirliği</h3>
+    <div class="mail-area">
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">Reklam ve İşbirliği İçin:</p>
+      <p style="font-weight:800; color:var(--primary); font-size:15px;">panzerrbeyy@gmail.com</p>
+    </div>
+    <a href="https://t.me/xpanzerrbeyy" target="_blank" class="social-btn" style="background:#229ED9;">Telegram'dan Yaz</a>
+    <a href="https://x.com/panzerrbeyyx" target="_blank" class="social-btn" style="background:#000;">X (Twitter) Profili</a>
+    <button onclick="closeInfoModal()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:700; margin-top:5px;">Kapat</button>
+  </div>
+</div>
+
+<script>
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  let activeId = null, clapprPlayer = null, currentTab = 'channels';
+
+  const parse = (id, pre) => document.getElementById(id).textContent.split('\n').filter(l => l.trim()).map((l, i) => {
+    const p = l.split('|').map(x => x.trim());
+    return { id: pre + i, name: p[0], cat: p[1], qual: p[2], url: p[3], logo: p[4] || '' };
+  });
+
+  const channels = parse('kolay-kanal-listesi', 'ch');
+  const matches = parse('kolay-mac-listesi', 'mt');
+
+  function switchTab(t) {
+    currentTab = t;
+    document.getElementById('btn-channels').classList.toggle('active', t === 'channels');
+    document.getElementById('btn-matches').classList.toggle('active', t === 'matches');
+    renderCurrentList();
+  }
+
+  function renderCurrentList() {
+    const list = currentTab === 'channels' ? channels : matches;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const container = document.getElementById('channelList');
+    container.innerHTML = list.filter(c => c.name.toLowerCase().includes(search)).map(c => `
+      <div class="channel-card ${activeId === c.id ? 'active' : ''}" onclick="play('${c.id}')">
+        ${currentTab === 'channels' ? `<div class="cc-logo"><img src="${c.logo}" onerror="this.src='https://via.placeholder.com/42'"></div>` : ''}
+        <div><div style="font-weight:700; font-size:14px">${c.name}</div><div style="font-size:11px; color:var(--text-muted)">${c.cat} • ${c.qual}</div></div>
+      </div>`).join('');
+  }
+
+  function play(id) {
+    activeId = id;
+    const item = [...channels, ...matches].find(c => c.id === id);
+    renderCurrentList();
+    
+    // UI Sıfırlama
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('player').style.display = 'none';
+    document.getElementById('ios-player-container').style.display = 'none';
+    document.getElementById('embed-container').style.display = 'none';
+
+    if (clapprPlayer) clapprPlayer.destroy();
+    document.getElementById('player').innerHTML = "";
+    document.getElementById('embed-iframe').src = "";
+    
+    const iosVideo = document.getElementById('ios-video');
+    iosVideo.pause();
+    iosVideo.src = "";
+    iosVideo.load();
+
+    // ÖNEMLİ: HLS algılama mantığı (proxy ve m3u içermesi durumunda player tetiklenir)
+    const isHLS = item.url.includes('.m3u8') || item.url.includes('checklist') || item.url.includes('proxy') || item.url.includes('m3u');
+
+    if (!isHLS) {
+        // EMBED DURUMU (iFrame ile açılır)
+        document.getElementById('embed-container').style.display = 'block';
+        document.getElementById('embed-iframe').src = item.url;
+    } else if (isIOS) {
+        // IOS DURUMU
+        document.getElementById('ios-player-container').style.display = 'block';
+        iosVideo.src = item.url;
+        iosVideo.load();
+        iosVideo.muted = true;
+        iosVideo.play().catch(e => console.log("Oynatma hatası:", e));
+    } else {
+        // STANDART/ANDROID DURUMU (Clappr Player)
+        document.getElementById('player').style.display = 'block';
+        clapprPlayer = new Clappr.Player({ 
+            source: item.url, 
+            mimeType: 'application/x-mpegURL', // Proxy linkleri için m3u8 formatını zorunlu tutuyoruz
+            parentId: '#player', 
+            width: '100%', 
+            height: '100%', 
+            autoPlay: true, 
+            plugins: [HlsjsPlayback, LevelSelector],
+            hlsjsConfig: { enableWorker: true }
+        });
+    }
+  }
+
+  function toggleTheme() {
+    const d = document.documentElement;
+    const isDark = d.getAttribute('data-theme') === 'dark';
+    d.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('themeBtn').innerHTML = isDark ? 
+        '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>' : 
+        '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>';
+  }
+
+  function openInfoModal() { document.getElementById('infoModal').style.display = 'flex'; }
+  function closeInfoModal() { document.getElementById('infoModal').style.display = 'none'; }
+  window.onload = renderCurrentList;
+
+  // === TV / KUMANDA NAVİGASYON DESTEĞİ EKLENDİ ===
+  let tvFocusableElements = [];
+  let tvFocusedIndex = -1;
+
+  function updateTVFocusableElements() {
+      // Ekranda tıklanabilir olan tüm buton, sekme ve kanalları topla
+      tvFocusableElements = Array.from(document.querySelectorAll('.theme-btn, .tab-btn, #searchInput, .channel-card, .social-btn, .modal-content button')).filter(el => {
+          // Öğenin ekranda görünür olup olmadığını kontrol et
+          return el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).display !== 'none';
+      });
+  }
+
+  document.addEventListener('keydown', function(e) {
+      const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'];
+      if (!keys.includes(e.key)) return;
+
+      // Eğer kullanıcı arama kutusundaysa ve sağ/sol yapıyorsa, yazı imlecini hareket ettirmesine izin ver
+      if (document.activeElement.tagName === 'INPUT' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+          return;
+      }
+
+      e.preventDefault(); // Sayfanın varsayılan (çalışmayan) kaymasını engelle
+      updateTVFocusableElements();
+
+      if (tvFocusableElements.length === 0) return;
+
+      // Kumandadan "OK" (Enter) tuşuna basılırsa
+      if (e.key === 'Enter') {
+          if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
+              tvFocusableElements[tvFocusedIndex].click();
+              // Eğer seçili olan arama kutusuysa, yazma modunu aktif et
+              if(tvFocusableElements[tvFocusedIndex].id === 'searchInput') {
+                  tvFocusableElements[tvFocusedIndex].focus();
+              }
+          }
+          return;
+      }
+
+      // Eski öğeden odağı kaldır
+      if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
+          tvFocusableElements[tvFocusedIndex].classList.remove('tv-focus');
+      }
+
+      // Kumanda yönlerine göre index'i değiştir (Yukarı/Aşağı git)
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          tvFocusedIndex++;
+          if (tvFocusedIndex >= tvFocusableElements.length) tvFocusedIndex = tvFocusableElements.length - 1;
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+          tvFocusedIndex--;
+          if (tvFocusedIndex < 0) tvFocusedIndex = 0;
+      }
+
+      // Yeni öğeye odağı ver ve EKRANI AŞAĞI KAYDIR (scrollIntoView)
+      const target = tvFocusableElements[tvFocusedIndex];
+      if (target) {
+          target.classList.add('tv-focus');
+          // Bu satır sayesinde imleç aşağı indikçe ekran da otomatik olarak onu takip edecek
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+  });
+
+  // Kullanıcı arama yaptığında veya sekmeleri değiştirdiğinde listeyi otomatik güncelle
+  const tvObserver = new MutationObserver(() => { updateTVFocusableElements(); });
+  window.addEventListener('DOMContentLoaded', () => {
+      tvObserver.observe(document.body, { childList: true, subtree: true });
+  });
+</script>
+</body>
+</html>
