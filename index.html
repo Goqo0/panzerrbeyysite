@@ -116,6 +116,15 @@
   .modal-content { background: var(--surface-color); border-radius: 20px; width: 90%; max-width: 360px; padding: 24px; border: 1px solid var(--border-color); text-align: center; }
   .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; color: white; margin-bottom: 12px; font-size: 14px; }
   .mail-area { background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px dashed var(--border-color); margin-bottom: 15px; }
+
+  /* === TV KUMANDA ODAKLANMA (FOCUS) STİLLERİ EKLENDİ === */
+  .tv-focus {
+    outline: 3px solid var(--primary) !important;
+    box-shadow: 0 0 15px var(--primary) !important;
+    transform: scale(1.02) !important;
+    z-index: 100;
+    transition: all 0.2s ease;
+  }
 </style>
 </head>
 <body>
@@ -365,6 +374,73 @@ LA Lakers - Washington | 05.00 | NBA | https://embedsports.top/embed/admin/ppv-w
   function openInfoModal() { document.getElementById('infoModal').style.display = 'flex'; }
   function closeInfoModal() { document.getElementById('infoModal').style.display = 'none'; }
   window.onload = renderCurrentList;
+
+  // === TV / KUMANDA NAVİGASYON DESTEĞİ EKLENDİ ===
+  let tvFocusableElements = [];
+  let tvFocusedIndex = -1;
+
+  function updateTVFocusableElements() {
+      // Ekranda tıklanabilir olan tüm buton, sekme ve kanalları topla
+      tvFocusableElements = Array.from(document.querySelectorAll('.theme-btn, .tab-btn, #searchInput, .channel-card, .social-btn, .modal-content button')).filter(el => {
+          // Öğenin ekranda görünür olup olmadığını kontrol et
+          return el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).display !== 'none';
+      });
+  }
+
+  document.addEventListener('keydown', function(e) {
+      const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'];
+      if (!keys.includes(e.key)) return;
+
+      // Eğer kullanıcı arama kutusundaysa ve sağ/sol yapıyorsa, yazı imlecini hareket ettirmesine izin ver
+      if (document.activeElement.tagName === 'INPUT' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+          return;
+      }
+
+      e.preventDefault(); // Sayfanın varsayılan (çalışmayan) kaymasını engelle
+      updateTVFocusableElements();
+
+      if (tvFocusableElements.length === 0) return;
+
+      // Kumandadan "OK" (Enter) tuşuna basılırsa
+      if (e.key === 'Enter') {
+          if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
+              tvFocusableElements[tvFocusedIndex].click();
+              // Eğer seçili olan arama kutusuysa, yazma modunu aktif et
+              if(tvFocusableElements[tvFocusedIndex].id === 'searchInput') {
+                  tvFocusableElements[tvFocusedIndex].focus();
+              }
+          }
+          return;
+      }
+
+      // Eski öğeden odağı kaldır
+      if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
+          tvFocusableElements[tvFocusedIndex].classList.remove('tv-focus');
+      }
+
+      // Kumanda yönlerine göre index'i değiştir (Yukarı/Aşağı git)
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          tvFocusedIndex++;
+          if (tvFocusedIndex >= tvFocusableElements.length) tvFocusedIndex = tvFocusableElements.length - 1;
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+          tvFocusedIndex--;
+          if (tvFocusedIndex < 0) tvFocusedIndex = 0;
+      }
+
+      // Yeni öğeye odağı ver ve EKRANI AŞAĞI KAYDIR (scrollIntoView)
+      const target = tvFocusableElements[tvFocusedIndex];
+      if (target) {
+          target.classList.add('tv-focus');
+          // Bu satır sayesinde imleç aşağı indikçe ekran da otomatik olarak onu takip edecek
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+  });
+
+  // Kullanıcı arama yaptığında veya sekmeleri değiştirdiğinde listeyi otomatik güncelle
+  const tvObserver = new MutationObserver(() => { updateTVFocusableElements(); });
+  window.addEventListener('DOMContentLoaded', () => {
+      tvObserver.observe(document.body, { childList: true, subtree: true });
+  });
 </script>
 </body>
 </html>
