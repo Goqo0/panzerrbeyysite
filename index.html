@@ -117,7 +117,7 @@
   .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; color: white; margin-bottom: 12px; font-size: 14px; }
   .mail-area { background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px dashed var(--border-color); margin-bottom: 15px; }
 
-  /* === SERBEST GEZEN SANAL İMLEÇ STİLLERİ (YENİ) === */
+  /* === SERBEST GEZEN SANAL İMLEÇ STİLLERİ === */
   #tv-cursor {
     position: fixed;
     width: 26px;
@@ -126,9 +126,9 @@
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 50%;
     z-index: 999999;
-    pointer-events: none; /* Bu çok önemli! Altındaki nesnelere tıklayabilmek için. */
+    pointer-events: none; 
     transform: translate(-50%, -50%);
-    display: none; /* Kumandaya basılana kadar gizli kalır */
+    display: none; 
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     transition: width 0.1s, height 0.1s, background-color 0.1s;
   }
@@ -271,7 +271,14 @@ TV8.5 (B) | Ulusal | HD | https://api.hitnova.net/s/tv85/mono.m3u8 | https://yt3
 Test | Spor | HD |  | https://via.placeholder.com/44?text=T
 </script>
 <script id="kolay-mac-listesi" type="text/plain">
-
+Miami - Philadelphia | 02.00 | NBA | https://embedsports.top/embed/admin/ppv-philadelphia-76-ers-vs-miami-heat/2
+Atlanta - Boston | 02.30 | NBA | https://embedsports.top/embed/admin/ppv-boston-celtics-vs-atlanta-hawks/2
+Memphis - Phoenix | 03.00 | NBA | https://embedsports.top/embed/admin/ppv-phoenix-suns-vs-memphis-grizzlies/2
+San Antonio - Chicago | 03.00 | NBA | https://embedsports.top/embed/admin/ppv-chicago-bulls-vs-san-antonio-spurs/2
+Dallas - Minnesota | 03.30 | NBA | https://embedsports.top/embed/admin/ppv-minnesota-timberwolves-vs-dallas-mavericks/2
+Utah - Cleveland | 04.00 | NBA | https://embedsports.top/embed/admin/ppv-cleveland-cavaliers-vs-utah-jazz/2
+Oklahoma - Detroit | 04.30 | NBA | https://embedsports.top/embed/admin/ppv-detroit-pistons-vs-oklahoma-city-thunder/2
+LA Lakers - Washington | 05.00 | NBA | https://embedsports.top/embed/admin/ppv-washington-wizards-vs-los-angeles-lakers/2
 </script>
 
 <div class="modal-overlay" id="infoModal" onclick="closeInfoModal()">
@@ -376,14 +383,14 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
   function closeInfoModal() { document.getElementById('infoModal').style.display = 'none'; }
   window.onload = renderCurrentList;
 
-  // === SERBEST GEZEN SANAL İMLEÇ (AIR MOUSE) SİSTEMİ (YENİ) ===
+  // === SERBEST GEZEN SANAL İMLEÇ (AIR MOUSE) SİSTEMİ ===
   const tvCursor = document.createElement('div');
   tvCursor.id = 'tv-cursor';
   document.body.appendChild(tvCursor);
 
   let cursorX = window.innerWidth / 2;
   let cursorY = window.innerHeight / 2;
-  let cursorSpeed = 16; // İmlecin hareket hızı (Piksel cinsinden)
+  let cursorSpeed = 16; 
   let keysPressed = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
   let loopRunning = false;
   let cursorActive = false;
@@ -391,7 +398,7 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
   function activateCursor() {
     if (!cursorActive) {
       cursorActive = true;
-      tvCursor.style.display = 'block'; // Kumandaya basıldığında görünür olur
+      tvCursor.style.display = 'block'; 
     }
   }
 
@@ -406,37 +413,44 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
     if (keysPressed.ArrowLeft) cursorX -= cursorSpeed;
     if (keysPressed.ArrowRight) cursorX += cursorSpeed;
 
-    // İmlecin ekrandan dışarı taşmasını engelleme
     cursorX = Math.max(10, Math.min(window.innerWidth - 10, cursorX));
     cursorY = Math.max(10, Math.min(window.innerHeight - 10, cursorY));
 
     tvCursor.style.left = cursorX + 'px';
     tvCursor.style.top = cursorY + 'px';
 
-    // Otomatik Scroll (Kaydırma) Mantığı
-    // İmleç ekranın altına veya üstüne yaklaştığında listeyi veya sayfayı kaydırır
-    const targetElement = document.elementFromPoint(cursorX, cursorY);
-    if (targetElement) {
-      const scrollableList = targetElement.closest('.channel-list') || targetElement.closest('.left-content');
-      const edgeThreshold = 50; // Kenara kaç piksel kala kaydırmaya başlasın
-      
-      if (scrollableList) {
-        const rect = scrollableList.getBoundingClientRect();
-        if (cursorY > rect.bottom - edgeThreshold) {
-          scrollableList.scrollBy({ top: cursorSpeed, behavior: 'instant' });
-        } else if (cursorY < rect.top + edgeThreshold) {
-          scrollableList.scrollBy({ top: -cursorSpeed, behavior: 'instant' });
+    // === GÜNCELLENMİŞ OTOMATİK SCROLL (KAYDIRMA) MANTIĞI ===
+    let scrollTarget = null;
+    const rightContent = document.querySelector('.right-content');
+    
+    // İmlecin sağ blokta mı sol blokta mı olduğunu kontrol et
+    if (window.innerWidth > 960) {
+        if (cursorX > window.innerWidth - rightContent.offsetWidth) {
+            scrollTarget = document.querySelector('.channel-list');
+        } else {
+            scrollTarget = document.querySelector('.left-content');
         }
-      }
+    } else {
+        // Mobilde tek bir akış var, sağ blok alta iniyor
+        scrollTarget = document.querySelector('.channel-list');
+    }
+
+    // Hedeflenen alanı TV'lerde çalışan direkt yöntemle (scrollTop) kaydır
+    if (scrollTarget) {
+        const edgeThreshold = 80; // İmleç ekranın kenarlarına 80px kala kaymaya başlar
+        if (cursorY > window.innerHeight - edgeThreshold) {
+            scrollTarget.scrollTop += (cursorSpeed + 5); // Aşağı
+        } else if (cursorY < edgeThreshold) {
+            scrollTarget.scrollTop -= (cursorSpeed + 5); // Yukarı
+        }
     }
 
     requestAnimationFrame(moveCursorLoop);
   }
 
-  // Kumanda Yön Tuşlarına Basılınca
   document.addEventListener('keydown', function(e) {
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-      e.preventDefault(); // Varsayılan sekme atlamasını engeller
+      e.preventDefault(); 
       activateCursor();
       keysPressed[e.key] = true;
       if (!loopRunning) {
@@ -445,23 +459,19 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
       }
     }
 
-    // Kumanda OK (Enter) Tuşuna Basılınca Tıklama Simülasyonu
     if (e.key === 'Enter') {
       e.preventDefault();
       activateCursor();
       
-      // Tıklama animasyonu
       tvCursor.classList.add('clicking');
       setTimeout(() => tvCursor.classList.remove('clicking'), 150);
 
-      // İmleci anlık gizleyip tam o noktadaki elementi tespit ediyoruz
       tvCursor.style.display = 'none';
       const targetElement = document.elementFromPoint(cursorX, cursorY);
       tvCursor.style.display = 'block';
 
       if (targetElement) {
-        targetElement.click(); // Tam altındaki elemente gerçek fare tıklaması yollar
-        // Eğer tıklanan yer arama çubuğu ise odakla
+        targetElement.click(); 
         if (targetElement.tagName === 'INPUT') {
            targetElement.focus();
         }
@@ -469,7 +479,6 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
     }
   });
 
-  // Kumanda Tuşu Bırakılınca
   document.addEventListener('keyup', function(e) {
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       keysPressed[e.key] = false;
