@@ -59,6 +59,7 @@
     background-color: var(--player-bg); border-radius: 16px; overflow: hidden;
     aspect-ratio: 16 / 9; position: relative; border: 1px solid var(--border-color);
     box-shadow: 0 10px 30px rgba(0,0,0,0.4); width: 100%; flex-shrink: 0;
+    transition: all 0.2s ease; /* Odaklanma animasyonu için */
   }
   
   #player, #ios-player-container, #embed-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; }
@@ -117,24 +118,17 @@
   .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; color: white; margin-bottom: 12px; font-size: 14px; }
   .mail-area { background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px dashed var(--border-color); margin-bottom: 15px; }
 
-  #tv-cursor {
-    position: fixed;
-    width: 26px;
-    height: 26px;
-    border: 3px solid rgba(255, 255, 255, 0.9);
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    z-index: 999999;
-    pointer-events: none; 
-    transform: translate(-50%, -50%);
-    display: none; 
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    transition: width 0.1s, height 0.1s, background-color 0.1s;
+  /* === TV KUMANDA ODAKLANMA (FOCUS) STİLLERİ === */
+  .tv-focus {
+    outline: 3px solid var(--primary) !important;
+    box-shadow: 0 0 15px var(--primary) !important;
+    transform: scale(1.02) !important;
+    z-index: 100;
   }
-  #tv-cursor.clicking {
-    width: 20px;
-    height: 20px;
-    background-color: rgba(255, 255, 255, 0.8);
+  /* Oynatıcı çok büyük olduğu için onun scale değerini biraz daha düşük tutuyoruz */
+  .player-wrapper.tv-focus {
+    transform: scale(1.01) !important;
+    outline: 4px solid var(--primary) !important;
   }
 </style>
 </head>
@@ -162,14 +156,18 @@
         <div style="font-size:50px; margin-bottom:15px">📺</div>
         <p style="font-weight:700; font-size:18px">İzlemek istediğiniz içeriği seçin</p>
       </div>
+      
       <div id="player"></div>
+      
       <div id="ios-player-container">
         <video id="ios-video" playsinline webkit-playsinline controls autoplay muted></video>
       </div>
+      
       <div id="embed-container">
         <iframe id="embed-iframe" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
       </div>
     </div>
+	 
     <div class="banner-section">
       <a href="https://refpa97757.com/L?tag=d_5396305m_65427c_&site=5396305&ad=65427" target="_blank">
         <img src="https://i.imgur.com/iUgXGdJ.gif" alt="Reklam">
@@ -182,9 +180,11 @@
         <button class="tab-btn active" id="btn-channels" onclick="switchTab('channels')">CANLI KANALLAR</button>
         <button class="tab-btn" id="btn-matches" onclick="switchTab('matches')">MAÇ LİSTESİ</button>
     </div>
+
     <div class="list-header">
       <input type="text" class="search-box" id="searchInput" placeholder="Kanal veya maç ara..." onkeyup="renderCurrentList()">
     </div>
+
     <div class="channel-list" id="channelList"></div>
   </div>
 </div>
@@ -192,20 +192,85 @@
 <script id="kolay-kanal-listesi" type="text/plain">
 Bein Sports 1 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports 1 (B)| Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 1 (C)| Spor | HD | https://74betorspintv.live/channel?id=zirve | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports 2 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 2 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 2 (C) | Spor | HD | https://74betorspintv.live/channel?id=b2 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports 3 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-3.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 3 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs3.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 3 (C) | Spor | HD | https://74betorspintv.live/channel?id=b3 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 4 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-4.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 4 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs4.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 4 (C) | Spor | HD | https://74betorspintv.live/channel?id=b4 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 5 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-5.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 5 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs5.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports 5 (C) | Spor | HD | https://74betorspintv.live/channel?id=b5 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 1 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-max-1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 1 (B) | Spor | HD | https://74betorspintv.live/channel?id=bm1 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 1 (C) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebsm1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 2 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-max-2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 2 (B) | Spor | HD | https://74betorspintv.live/channel?id=bm2 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
+Bein Sports Max 2 (C) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebsm2.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 S SPORT (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivess1.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT (C) | Spor | HD | https://74betorspintv.live/channel?id=ss | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
 S SPORT 2 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/s-sport-2.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
-Tivibu Spor 1 | Spor | HD | https://74betorspintv.live/channel?id=t1 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+S SPORT 2 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivess2.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S SPORT 2 (C) | Spor | HD | https://maymunmatematigi.lol/static/ss2.m3u8 | https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9cvySRQQUG8qBB4pJy8ojPyIGZmdfpikpdw&s
+S Sport Plus 1 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivessplus1.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
+S Sport Plus 2 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivessplus2.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
+S Sport Plus 3 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivessplus3.m3u8 | https://yt3.googleusercontent.com/0OgR0YApbDHxHT5eL04yjn8i76YNTCaGqvSfCeEuDizYIoWjBYS5MQ5s53wZ_IrgglBI1jRiHkA=s900-c-k-c0x00ffffff-no-rj
+Tivibu Spor (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivets.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 1 (A) | Spor | HD | https://74betorspintv.live/channel?id=t1 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 1 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivets1.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 2 (A) | Spor | HD | https://74betorspintv.live/channel?id=t2 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 2 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivets2.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 3 (A) | Spor | HD | https://74betorspintv.live/channel?id=t3 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 3 (B) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivets3.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 4 (A) | Spor | HD | https://74betorspintv.live/channel?id=t4 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 4 (B) | Spor | HD | https://dga1op10s1u3leo.ec876fd9240622.click/live/stivibuspor-4/playlist.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Tivibu Spor 4 (C) | Spor | HD | https://twilight-art-b7fe.hebelehubele3271.workers.dev/?url=https://andro.1386503.xyz/checklist/androstreamlivets4.m3u8 | https://upload.wikimedia.org/wikipedia/tr/thumb/3/36/Tivibu_spor_logosu.jpg/250px-Tivibu_spor_logosu.jpg
+Smart Spor (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivesm1.m3u8 | https://i.imgur.com/8o1xKB5.jpeg
+Smart Spor (B) | Spor | HD | https://74betorspintv.live/channel?id=smarts | https://i.imgur.com/8o1xKB5.jpeg
+Smart Spor 2 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivesm2.m3u8 | https://i.imgur.com/8o1xKB5.jpeg
+Smart Spor 2 (B) | Spor | HD | https://74betorspintv.live/channel?id=sms2 | https://i.imgur.com/8o1xKB5.jpeg
 Tabii Spor | Spor | HD | https://kl9mr2vxw7nq5py1sh4tj3gb6.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 1 | Spor | HD | https://Pz4qT7nW1mR9sH2vL5xK8jG3y.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 2 | Spor | HD | https://mr8bv4kl1nq7sh9tw2xp5zj6g.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 3 | Spor | HD | https://mR4vL7nQ2sH9tW5xP1zK3gJ8b.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 4 | Spor | HD | https://sh7tq2nw5mr1vl9xp4zk3gj8k.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 5 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivetb5.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 6 | Spor | HD | https://nw5mr1vl9xp4zk2sh7tq3gj6b.medya.trt.com.tr/master_1080p.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
+Tabii Spor 7 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivedetb7.m3u8 | https://files.sikayetvar.com/complaint/3057/30571363/tabii-spor-uyeligi-sorunu-1_768x768.jpg
 Exxen Spor 1 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn1.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 2 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn2.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 3 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn3.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 4 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn4.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 5 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn5.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 6 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn6.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 7 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn7.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 7 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn8.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Eurosports 1 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivees1.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
+Eurosports 1 (B) | Spor | HD | https://api.hitnova.net/s/eu1/mono.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
+Eurosports 2 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivees2.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
+Eurosports 2 (B) | Spor | HD | https://api.hitnova.net/s/eu2/mono.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
 TRT 1 | Ulusal | HD | https://tv-trt1.medya.trt.com.tr/master_1080.m3u8 | https://yt3.ggpht.com/ytc/AKedOLS5_OcuvYFIdd4BWpEeESX4dPF5GaQN_O4E7zCT9Q=s900-c-k-c0x00ffffff-no-rj
-TV8.5 | Ulusal | HD | https://api.hitnova.net/s/tv85/mono.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
+TRT 1 (Yurt Dışı) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivetrt1.m3u8 | https://yt3.ggpht.com/ytc/AKedOLS5_OcuvYFIdd4BWpEeESX4dPF5GaQN_O4E7zCT9Q=s900-c-k-c0x00ffffff-no-rj
+TRT SPOR | Ulusal | HD | https://tv-trtspor1.medya.trt.com.tr/master_1080.m3u8 | https://yt3.ggpht.com/FCzDc31AsTFzobw8Z4QBCc8AGtKgFP4mq28RgbcLJGdVNlE0RoremvEr1XntYHFc6G0dAwU-=s176-c-k-c0x00ffffff-no-rj-mo
+TV8 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivetv8.m3u8 | https://yt3.googleusercontent.com/ytc/AIdro_mnwqLdHqFXbkm6QwloGNJ1EX5N3Z8klIpdSF59MRbbLxU=s176-c-k-c0x00ffffff-no-rj-mo
+TV8 (B) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://yt3.googleusercontent.com/ytc/AIdro_mnwqLdHqFXbkm6QwloGNJ1EX5N3Z8klIpdSF59MRbbLxU=s176-c-k-c0x00ffffff-no-rj-mo
+TV8.5 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivetv85.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
+TV8.5 (B) | Ulusal | HD | https://api.hitnova.net/s/tv85/mono.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
+Test | Spor | HD |  | https://via.placeholder.com/44?text=T
 </script>
 <script id="kolay-mac-listesi" type="text/plain">
 Miami - Philadelphia | 02.00 | NBA | https://embedsports.top/embed/admin/ppv-philadelphia-76-ers-vs-miami-heat/2
 Atlanta - Boston | 02.30 | NBA | https://embedsports.top/embed/admin/ppv-boston-celtics-vs-atlanta-hawks/2
 Memphis - Phoenix | 03.00 | NBA | https://embedsports.top/embed/admin/ppv-phoenix-suns-vs-memphis-grizzlies/2
+San Antonio - Chicago | 03.00 | NBA | https://embedsports.top/embed/admin/ppv-chicago-bulls-vs-san-antonio-spurs/2
+Dallas - Minnesota | 03.30 | NBA | https://embedsports.top/embed/admin/ppv-minnesota-timberwolves-vs-dallas-mavericks/2
+Utah - Cleveland | 04.00 | NBA | https://embedsports.top/embed/admin/ppv-cleveland-cavaliers-vs-utah-jazz/2
+Oklahoma - Detroit | 04.30 | NBA | https://embedsports.top/embed/admin/ppv-detroit-pistons-vs-oklahoma-city-thunder/2
 LA Lakers - Washington | 05.00 | NBA | https://embedsports.top/embed/admin/ppv-washington-wizards-vs-los-angeles-lakers/2
 </script>
 
@@ -256,25 +321,45 @@ LA Lakers - Washington | 05.00 | NBA | https://embedsports.top/embed/admin/ppv-w
     activeId = id;
     const item = [...channels, ...matches].find(c => c.id === id);
     renderCurrentList();
+    
+    // UI Sıfırlama
     document.getElementById('placeholder').style.display = 'none';
     document.getElementById('player').style.display = 'none';
     document.getElementById('ios-player-container').style.display = 'none';
     document.getElementById('embed-container').style.display = 'none';
+
     if (clapprPlayer) clapprPlayer.destroy();
     document.getElementById('player').innerHTML = "";
     document.getElementById('embed-iframe').src = "";
+    
     const iosVideo = document.getElementById('ios-video');
-    iosVideo.pause(); iosVideo.src = "";
-    const isHLS = item.url.includes('.m3u8') || item.url.includes('checklist');
+    iosVideo.pause();
+    iosVideo.src = "";
+    iosVideo.load();
+
+    const isHLS = item.url.includes('.m3u8') || item.url.includes('checklist') || item.url.includes('proxy') || item.url.includes('m3u');
+
     if (!isHLS) {
         document.getElementById('embed-container').style.display = 'block';
         document.getElementById('embed-iframe').src = item.url;
-    } else if (isHLS && isIOS) {
+    } else if (isIOS) {
         document.getElementById('ios-player-container').style.display = 'block';
-        iosVideo.src = item.url; iosVideo.play();
+        iosVideo.src = item.url;
+        iosVideo.load();
+        iosVideo.muted = true;
+        iosVideo.play().catch(e => console.log("Oynatma hatası:", e));
     } else {
         document.getElementById('player').style.display = 'block';
-        clapprPlayer = new Clappr.Player({ source: item.url, parentId: '#player', width: '100%', height: '100%', autoPlay: true, plugins: [HlsjsPlayback, LevelSelector] });
+        clapprPlayer = new Clappr.Player({ 
+            source: item.url, 
+            mimeType: 'application/x-mpegURL',
+            parentId: '#player', 
+            width: '100%', 
+            height: '100%', 
+            autoPlay: true, 
+            plugins: [HlsjsPlayback, LevelSelector],
+            hlsjsConfig: { enableWorker: true }
+        });
     }
   }
 
@@ -282,82 +367,94 @@ LA Lakers - Washington | 05.00 | NBA | https://embedsports.top/embed/admin/ppv-w
     const d = document.documentElement;
     const isDark = d.getAttribute('data-theme') === 'dark';
     d.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('themeBtn').innerHTML = isDark ? 
+        '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>' : 
+        '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>';
   }
 
   function openInfoModal() { document.getElementById('infoModal').style.display = 'flex'; }
   function closeInfoModal() { document.getElementById('infoModal').style.display = 'none'; }
   window.onload = renderCurrentList;
 
-  // === SERBEST GEZEN SANAL İMLEÇ SİSTEMİ (GÜNCELLENDİ) ===
-  const tvCursor = document.createElement('div');
-  tvCursor.id = 'tv-cursor';
-  document.body.appendChild(tvCursor);
+  // === TV / KUMANDA NAVİGASYON DESTEĞİ VE TAM EKRAN EKLENTİSİ ===
+  let tvFocusableElements = [];
+  let tvFocusedIndex = -1;
 
-  let cursorX = window.innerWidth / 2;
-  let cursorY = window.innerHeight / 2;
-  let cursorSpeed = 10; // Hız düşürüldü (Daha kontrollü)
-  let keysPressed = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
-  let loopRunning = false;
+  // Tam Ekran Yapma/Çıkma Fonksiyonu
+  function toggleFullScreen(elem) {
+      if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+          if (elem.requestFullscreen) { elem.requestFullscreen(); }
+          else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+          else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
+          else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+      } else {
+          if (document.exitFullscreen) { document.exitFullscreen(); }
+          else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+          else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
+          else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+      }
+  }
 
-  function moveCursorLoop() {
-    if (!keysPressed.ArrowUp && !keysPressed.ArrowDown && !keysPressed.ArrowLeft && !keysPressed.ArrowRight) {
-      loopRunning = false;
-      return;
-    }
-
-    if (keysPressed.ArrowUp) cursorY -= cursorSpeed;
-    if (keysPressed.ArrowDown) cursorY += cursorSpeed;
-    if (keysPressed.ArrowLeft) cursorX -= cursorSpeed;
-    if (keysPressed.ArrowRight) cursorX += cursorSpeed;
-
-    // Sınırları koru
-    cursorX = Math.max(5, Math.min(window.innerWidth - 5, cursorX));
-    cursorY = Math.max(5, Math.min(window.innerHeight - 5, cursorY));
-
-    tvCursor.style.left = cursorX + 'px';
-    tvCursor.style.top = cursorY + 'px';
-    tvCursor.style.display = 'block';
-
-    // === GELİŞTİRİLMİŞ OTOMATİK KAYDIRMA (SCROLL) ===
-    const scrollEdge = window.innerHeight * 0.15; // Ekranın alt/üst %15'i tetikleme alanı
-    let targetList = document.getElementById('channelList');
-    let leftContent = document.getElementById('playerTop');
-
-    // Hangi tarafta olduğumuzu anla
-    let activeScrollElement = (cursorX > window.innerWidth * 0.55) ? targetList : leftContent;
-
-    if (activeScrollElement) {
-        // Aşağı Kaydırma (İmleç en alttaysa veya alana yakınsa)
-        if (cursorY > window.innerHeight - scrollEdge) {
-            activeScrollElement.scrollTop += 15; 
-        } 
-        // Yukarı Kaydırma
-        else if (cursorY < scrollEdge) {
-            activeScrollElement.scrollTop -= 15;
-        }
-    }
-
-    requestAnimationFrame(moveCursorLoop);
+  function updateTVFocusableElements() {
+      // Artık ".player-wrapper" sınıfı da odaklanılabilir öğeler listesine eklendi!
+      tvFocusableElements = Array.from(document.querySelectorAll('.theme-btn, .player-wrapper, .tab-btn, #searchInput, .channel-card, .social-btn, .modal-content button')).filter(el => {
+          return el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).display !== 'none';
+      });
   }
 
   document.addEventListener('keydown', function(e) {
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-      e.preventDefault();
-      keysPressed[e.key] = true;
-      if (!loopRunning) { loopRunning = true; moveCursorLoop(); }
-    }
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      tvCursor.classList.add('clicking');
-      setTimeout(() => tvCursor.classList.remove('clicking'), 150);
-      tvCursor.style.display = 'none';
-      const el = document.elementFromPoint(cursorX, cursorY);
-      tvCursor.style.display = 'block';
-      if (el) el.click();
-    }
+      const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'];
+      if (!keys.includes(e.key)) return;
+
+      if (document.activeElement.tagName === 'INPUT' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+          return;
+      }
+
+      e.preventDefault(); 
+      updateTVFocusableElements();
+
+      if (tvFocusableElements.length === 0) return;
+
+      if (e.key === 'Enter') {
+          if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
+              const el = tvFocusableElements[tvFocusedIndex];
+              
+              // Eğer odaklanan şey "player-wrapper" (oynatıcı) ise, tıkla yerine TAM EKRAN yap
+              if (el.classList.contains('player-wrapper')) {
+                  toggleFullScreen(el);
+              } else {
+                  el.click();
+                  if (el.id === 'searchInput') {
+                      el.focus();
+                  }
+              }
+          }
+          return;
+      }
+
+      if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
+          tvFocusableElements[tvFocusedIndex].classList.remove('tv-focus');
+      }
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          tvFocusedIndex++;
+          if (tvFocusedIndex >= tvFocusableElements.length) tvFocusedIndex = tvFocusableElements.length - 1;
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+          tvFocusedIndex--;
+          if (tvFocusedIndex < 0) tvFocusedIndex = 0;
+      }
+
+      const target = tvFocusableElements[tvFocusedIndex];
+      if (target) {
+          target.classList.add('tv-focus');
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
   });
 
-  document.addEventListener('keyup', (e) => { if (keysPressed.hasOwnProperty(e.key)) keysPressed[e.key] = false; });
+  const tvObserver = new MutationObserver(() => { updateTVFocusableElements(); });
+  window.addEventListener('DOMContentLoaded', () => {
+      tvObserver.observe(document.body, { childList: true, subtree: true });
+  });
 </script>
 </body>
 </html>
