@@ -12,6 +12,9 @@
 <script src="https://cdn.jsdelivr.net/npm/level-selector/dist/level-selector.min.js"></script>
 
 <style>
+  /* =====================================================================
+     CSS DEĞIŞKENLERI (Renkler site ve APK'da aynı)
+  ===================================================================== */
   :root {
     --bg-color: #0a0a0a; --surface-color: #171717; --text-main: #f9fafb; --text-muted: #9ca3af;
     --border-color: #262626; --primary: #22c55e; --primary-hover: #16a34a; --primary-light: #064e3b;
@@ -35,9 +38,7 @@
     background-color: var(--surface-color); border-bottom: 1px solid var(--border-color); 
     height: 64px; display: flex; align-items: center; justify-content: space-between; 
     padding: 0 20px; flex-shrink: 0; z-index: 1000; 
-    /* TV performans: GPU katmanı */
-    transform: translateZ(0);
-    will-change: auto;
+    transform: translateZ(0); will-change: auto;
   }
   .logo { display: flex; align-items: center; gap: 8px; font-size: 20px; }
   .logo-icon { background-color: var(--primary); color: white; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
@@ -49,17 +50,18 @@
     background: var(--surface-color); border: 1px solid var(--border-color); color: var(--text-main); 
     width: 40px; height: 40px; border-radius: 10px; cursor: pointer; 
     display: flex; align-items: center; justify-content: center;
-    /* TV: animasyonu kaldır, sadece focus border değişsin */
     transition: border-color 0.15s, color 0.15s;
   }
   .theme-btn:hover { border-color: var(--primary); color: var(--primary); }
 
+  /* =====================================================================
+     SİTE GÖRÜNÜMÜ (isAPK = false)
+  ===================================================================== */
   .container { display: flex; flex: 1; width: 100%; overflow: hidden; }
 
   .left-content { 
     flex: 1.5; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; gap: 20px;
     background-color: var(--bg-color);
-    /* TV GPU hızlandırma */
     transform: translateZ(0);
     -webkit-overflow-scrolling: touch;
   }
@@ -67,7 +69,6 @@
     background-color: var(--player-bg); border-radius: 16px; overflow: hidden;
     aspect-ratio: 16 / 9; position: relative; border: 1px solid var(--border-color);
     box-shadow: 0 10px 30px rgba(0,0,0,0.4); width: 100%; flex-shrink: 0;
-    /* TV: transform kaldırıldı, sadece border geçişi */
     transition: border-color 0.15s ease;
   }
   
@@ -105,14 +106,12 @@
     gap: 10px; 
     overflow-y: auto; 
     background-color: var(--bg-color);
-    /* TV GPU hızlandırma */
     transform: translateZ(0);
     -webkit-overflow-scrolling: touch;
   }
   .channel-list::-webkit-scrollbar { width: 6px; }
   .channel-list::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 10px; }
 
-  /* TV: channel-card hover animasyonu kaldırıldı (yavaşlatıyordu) */
   .channel-card { display: flex; align-items: center; padding: 14px; border-radius: 12px; cursor: pointer; background-color: var(--surface-color); border: 1px solid var(--border-color);
     transition: border-color 0.1s; flex-shrink: 0; }
   .channel-card:hover { border-color: var(--primary); }
@@ -128,31 +127,31 @@
     .channel-list { padding-bottom: 100px; }
   }
 
+  /* =====================================================================
+     MODAL
+  ===================================================================== */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
   .modal-content { background: var(--surface-color); border-radius: 20px; width: 90%; max-width: 360px; padding: 24px; border: 1px solid var(--border-color); text-align: center; }
   .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; color: white; margin-bottom: 12px; font-size: 14px; }
   .mail-area { background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px dashed var(--border-color); margin-bottom: 15px; }
 
-  /* === TV KUMANDA ODAKLANMA (FOCUS) STİLLERİ === */
+  /* =====================================================================
+     TV FOCUS STİLLERİ
+  ===================================================================== */
   .tv-focus {
     outline: 3px solid var(--primary) !important;
     box-shadow: 0 0 15px var(--primary) !important;
-    /* TV: scale animasyonu kaldırıldı - yavaşlatıyordu */
     z-index: 100;
   }
   .player-wrapper.tv-focus {
     outline: 4px solid var(--primary) !important;
   }
 
-  /* ================================================
+  /* =====================================================================
      TV PLAYER KONTROL OVERLAY
-     Player'ın üzerine binen, TV kumandayla
-     fullscreen / ses aç-kapat / ses seviyesi
-     butonlarını sağlayan şeffaf katman.
-     Sadece isTV=true olduğunda gösterilir.
-  ================================================ */
+  ===================================================================== */
   #tv-player-controls {
-    display: none; /* JS ile açılacak */
+    display: none;
     position: absolute;
     bottom: 0; left: 0; right: 0;
     z-index: 30;
@@ -160,7 +159,7 @@
     padding: 12px 16px 14px;
     align-items: center;
     gap: 10px;
-    pointer-events: none; /* varsayılan: geçirgen, focuslanınca pointer-events: auto yapılacak */
+    pointer-events: none;
   }
   #tv-player-controls.tv-focus-active {
     display: flex !important;
@@ -177,7 +176,6 @@
     display: flex; align-items: center; justify-content: center;
     min-width: 46px; min-height: 46px;
     transition: background 0.1s, border-color 0.1s;
-    /* TV focus ring */
     outline: none;
   }
   .tv-ctrl-btn.tv-ctrl-focused {
@@ -185,18 +183,228 @@
     border-color: var(--primary);
     box-shadow: 0 0 10px var(--primary);
   }
-  .tv-volume-bar-wrap {
-    display: flex; align-items: center; gap: 6px; flex: 1;
+  .tv-volume-bar-wrap { display: flex; align-items: center; gap: 6px; flex: 1; }
+  .tv-volume-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; }
+  .tv-volume-bar-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.1s; }
+  .tv-volume-label { color: #fff; font-size: 12px; min-width: 28px; text-align: right; }
+
+  /* =====================================================================
+     APK GÖRÜNÜMÜ STİLLERİ
+     body.apk-mode olduğunda tüm site layoutu gizlenir,
+     APK layoutu aktif olur.
+  ===================================================================== */
+
+  /* APK modda site layoutunu gizle */
+  body.apk-mode .container { display: none !important; }
+  body.apk-mode header { display: flex !important; } /* header kalıyor */
+
+  /* APK ANA WRAPPER */
+  #apk-layout {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    background: var(--bg-color);
   }
-  .tv-volume-bar-bg {
-    flex: 1; height: 6px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;
+  body.apk-mode #apk-layout { display: flex; }
+
+  /* ---- APK KATEGORİ ÇUBUĞU ---- */
+  #apk-categories {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    overflow-x: auto;
+    background: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
-  .tv-volume-bar-fill {
-    height: 100%; background: var(--primary); border-radius: 4px;
-    transition: width 0.1s;
+  #apk-categories::-webkit-scrollbar { display: none; }
+  .apk-cat-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
   }
-  .tv-volume-label {
-    color: #fff; font-size: 12px; min-width: 28px; text-align: right;
+  .apk-cat-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+  .apk-cat-btn:hover:not(.active) {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  /* TV focus için kategori butonu */
+  .apk-cat-btn.tv-focus {
+    outline: 2px solid var(--primary) !important;
+    box-shadow: 0 0 10px var(--primary) !important;
+  }
+
+  /* ---- APK KANAL IZGARASI ---- */
+  #apk-channel-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 sütun */
+    gap: 10px;
+    -webkit-overflow-scrolling: touch;
+    transform: translateZ(0);
+  }
+  #apk-channel-grid::-webkit-scrollbar { width: 4px; }
+  #apk-channel-grid::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 10px; }
+
+  /* TV: Izgara kutucukları daha büyük ve odaklanabilir */
+  .apk-channel-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 10px;
+    border-radius: 14px;
+    background: var(--surface-color);
+    border: 2px solid var(--border-color);
+    cursor: pointer;
+    transition: border-color 0.1s, background 0.1s;
+    text-align: center;
+    gap: 10px;
+    min-height: 90px;
+    /* TV: GPU katmanı */
+    transform: translateZ(0);
+  }
+  .apk-channel-card:hover { border-color: var(--primary); }
+  .apk-channel-card.active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+  /* TV focus için kart */
+  .apk-channel-card.tv-focus {
+    outline: 3px solid var(--primary) !important;
+    box-shadow: 0 0 16px var(--primary) !important;
+    border-color: var(--primary) !important;
+  }
+
+  .apk-card-logo {
+    width: 52px; height: 52px;
+    border-radius: 10px;
+    background: #fff;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .apk-card-logo img { width: 100%; height: 100%; object-fit: contain; }
+
+  .apk-card-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.3;
+    word-break: break-word;
+  }
+  .apk-card-cat {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* ---- APK PLAYER OVERLAY (tam ekran) ---- */
+  #apk-player-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 5000;
+    flex-direction: column;
+  }
+  #apk-player-overlay.active { display: flex; }
+
+  /* Player içerik alanı */
+  #apk-player-area {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  #apk-player, #apk-ios-player-container, #apk-embed-container {
+    width: 100%; height: 100%;
+    position: absolute; top: 0; left: 0;
+    display: none;
+  }
+  #apk-player { z-index: 5; }
+  #apk-ios-player-container { z-index: 6; background: #000; }
+  #apk-embed-container { z-index: 7; }
+  #apk-ios-video { width: 100%; height: 100%; object-fit: contain; }
+  #apk-embed-iframe { width: 100%; height: 100%; border: none; background: #000; }
+
+  /* APK Player geri butonu */
+  #apk-back-btn {
+    position: absolute;
+    top: 14px; left: 14px;
+    z-index: 100;
+    background: rgba(0,0,0,0.65);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    border-radius: 10px;
+    width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    backdrop-filter: blur(4px);
+    transition: background 0.15s;
+  }
+  #apk-back-btn:hover { background: rgba(34,197,94,0.6); }
+
+  /* APK Player kanal adı göstergesi */
+  #apk-channel-label {
+    position: absolute;
+    top: 14px; left: 64px; right: 14px;
+    z-index: 100;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* =====================================================================
+     TV BÜYÜK EKRAN MODUNDA APK IZGARASI: 2 sütun daha büyük
+  ===================================================================== */
+  body.apk-mode.tv-device #apk-channel-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+  body.apk-mode.tv-device .apk-channel-card {
+    min-height: 130px;
+    padding: 20px 14px;
+    border-radius: 18px;
+    border-width: 2px;
+    gap: 12px;
+  }
+  body.apk-mode.tv-device .apk-card-logo {
+    width: 68px; height: 68px;
+  }
+  body.apk-mode.tv-device .apk-card-name {
+    font-size: 14px;
+  }
+  body.apk-mode.tv-device .apk-cat-btn {
+    font-size: 15px;
+    padding: 10px 24px;
+  }
+  body.apk-mode.tv-device #apk-categories {
+    padding: 14px 16px;
   }
 </style>
 </head>
@@ -217,6 +425,9 @@
   </div>
 </header>
 
+<!-- ================================================================
+     SİTE GÖRÜNÜMÜ (APK modunda gizlenir)
+================================================================ -->
 <div class="container">
   <div class="left-content" id="playerTop">
     <div class="player-wrapper" id="playerWrapper">
@@ -235,31 +446,25 @@
         <iframe id="embed-iframe" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
       </div>
 
-      <!-- TV KONTROL OVERLAY: Sadece TV modunda, player'a odaklanıldığında görünür -->
       <div id="tv-player-controls">
-        <!-- Tam Ekran -->
         <button class="tv-ctrl-btn" id="tv-btn-fullscreen" title="Tam Ekran">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"/>
           </svg>
         </button>
-        <!-- Ses Aç/Kapat -->
         <button class="tv-ctrl-btn" id="tv-btn-mute" title="Ses Aç/Kapat">
           <svg id="tv-vol-icon" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
           </svg>
         </button>
-        <!-- Ses Azalt -->
         <button class="tv-ctrl-btn" id="tv-btn-vol-down" title="Sesi Azalt" style="font-size:20px;">−</button>
-        <!-- Ses Çubuğu -->
         <div class="tv-volume-bar-wrap">
           <div class="tv-volume-bar-bg">
             <div class="tv-volume-bar-fill" id="tv-vol-bar" style="width:100%;"></div>
           </div>
           <span class="tv-volume-label" id="tv-vol-label">100</span>
         </div>
-        <!-- Ses Artır -->
         <button class="tv-ctrl-btn" id="tv-btn-vol-up" title="Sesi Artır" style="font-size:20px;">+</button>
       </div>
     </div>
@@ -285,6 +490,48 @@
   </div>
 </div>
 
+<!-- ================================================================
+     APK GÖRÜNÜMÜ (Yalnızca APK modunda aktif)
+================================================================ -->
+<div id="apk-layout">
+
+  <!-- KATEGORİ ÇUBUĞU
+       Yeni kategori eklemek için aşağıdaki pattern'i kullan:
+       <button class="apk-cat-btn" onclick="filterApkChannels('KATEGORİ_ADI')">KATEGORİ ETİKETİ</button>
+       KATEGORİ_ADI kanalların cat sütunundaki değerle birebir eşleşmeli (veya 'Tümü').
+  -->
+  <div id="apk-categories">
+    <button class="apk-cat-btn active" onclick="filterApkChannels('Tümü')">Tümü</button>
+    <button class="apk-cat-btn" onclick="filterApkChannels('Spor')">Spor</button>
+    <button class="apk-cat-btn" onclick="filterApkChannels('Ulusal')">Ulusal</button>
+    <!-- YENİ KATEGORİ EKLEMEK İÇİN BURAYA EKLE -->
+    <!-- <button class="apk-cat-btn" onclick="filterApkChannels('Haber')">Haber</button> -->
+    <!-- <button class="apk-cat-btn" onclick="filterApkChannels('Belgesel')">Belgesel</button> -->
+  </div>
+
+  <!-- KANAL IZGARASI (2 sütun) -->
+  <div id="apk-channel-grid"></div>
+</div>
+
+<!-- APK TAM EKRAN PLAYER OVERLAY -->
+<div id="apk-player-overlay">
+  <div id="apk-player-area">
+    <button id="apk-back-btn" onclick="closeApkPlayer()">&#8592;</button>
+    <span id="apk-channel-label"></span>
+
+    <div id="apk-player"></div>
+
+    <div id="apk-ios-player-container">
+      <video id="apk-ios-video" playsinline webkit-playsinline controls autoplay muted></video>
+    </div>
+
+    <div id="apk-embed-container">
+      <iframe id="apk-embed-iframe" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- KANAL LİSTESİ VERİSİ -->
 <script id="kolay-kanal-listesi" type="text/plain">
 Bein Sports 1 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports 1 (B)| Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
@@ -339,7 +586,7 @@ Exxen Spor 4 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveex
 Exxen Spor 5 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn5.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
 Exxen Spor 6 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn6.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
 Exxen Spor 7 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn7.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
-Exxen Spor 7 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn8.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
+Exxen Spor 8 | Spor | HD | https://andro.0638527.xyz/checklist/androstreamliveexn8.m3u8 | https://yt3.ggpht.com/UJrEza5owqpIQSdFredj9UqwNvPTEs1rLhfaf8lOxrojMcmM0QVrGm1dAl6bLv1We-3uC7Nq_g=s176-c-k-c0x00ffffff-no-rj-mo
 Eurosports 1 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivees1.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
 Eurosports 1 (B) | Spor | HD | https://api.hitnova.net/s/eu1/mono.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
 Eurosports 2 (A) | Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivees2.m3u8 | https://yt3.ggpht.com/c1czBFQIRI3AxywPD906-0gC1iaFrlyPR0knA6rcyCrBqkIjKXPfkuWrzajIkO9KNNcEXEYnyg=s176-c-k-c0x00ffffff-no-rj-mo
@@ -354,16 +601,18 @@ TV8.5 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivetv8
 TV8.5 (B) | Ulusal | HD | https://api.hitnova.net/s/tv85/mono.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
 Test | Spor | HD |  | https://via.placeholder.com/44?text=T
 </script>
+
 <script id="kolay-mac-listesi" type="text/plain">
 Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
 </script>
 
+<!-- İLETİŞİM MODALI -->
 <div class="modal-overlay" id="infoModal" onclick="closeInfoModal()">
   <div class="modal-content" onclick="event.stopPropagation()">
     <h3 style="margin-bottom:15px;">İletişim & İşbirliği</h3>
     <div class="mail-area">
       <p style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">Reklam ve İşbirliği İçin:</p>
-      <p style="font-weight:800; color:var(--primary); font-size:15px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="dcacbdb2a6b9aeaebeb9a5a59cbbb1bdb5b0f2bfb3b1">[email&#160;protected]</a></p>
+      <p style="font-weight:800; color:var(--primary); font-size:15px;">panzersports@proton.me</p>
     </div>
     <a href="https://t.me/xpanzerrbeyy" target="_blank" class="social-btn" style="background:#229ED9;">Telegram'dan Yaz</a>
     <a href="https://x.com/panzerrbeyyx" target="_blank" class="social-btn" style="background:#000;">X (Twitter) Profili</a>
@@ -371,14 +620,26 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
+  // =====================================================================
+  // CİHAZ TESPİTİ
+  // =====================================================================
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  // TV tespiti: Android TV, webOS, Tizen, Fire TV veya büyük ekran
   const isTV = /Android TV|SMART-TV|SmartTV|Tizen|webOS|NetCast|AFTS|AFTB|AFTMM|HbbTV/.test(navigator.userAgent)
     || (window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
 
-  let activeId = null, clapprPlayer = null, currentTab = 'channels';
+  // APK TESPİTİ: Median.co launch URL'ine ?apk=1 ekle
+  // Örnek: https://panzersports.onrender.com/?apk=1
+  const urlParams = new URLSearchParams(window.location.search);
+  const isAPK = urlParams.get('apk') === '1';
 
+  // APK ve TV sınıflarını ekle
+  if (isAPK) document.body.classList.add('apk-mode');
+  if (isTV) document.body.classList.add('tv-device');
+
+  // =====================================================================
+  // VERİ PARSE
+  // =====================================================================
   const parse = (id, pre) => document.getElementById(id).textContent.split('\n').filter(l => l.trim()).map((l, i) => {
     const p = l.split('|').map(x => x.trim());
     return { id: pre + i, name: p[0], cat: p[1], qual: p[2], url: p[3], logo: p[4] || '' };
@@ -386,6 +647,11 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
 
   const channels = parse('kolay-kanal-listesi', 'ch');
   const matches = parse('kolay-mac-listesi', 'mt');
+
+  // =====================================================================
+  // SİTE GÖRÜNÜMÜ FONKSİYONLARI (değiştirilmedi)
+  // =====================================================================
+  let activeId = null, clapprPlayer = null, currentTab = 'channels';
 
   function switchTab(t) {
     currentTab = t;
@@ -410,7 +676,6 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
     const item = [...channels, ...matches].find(c => c.id === id);
     renderCurrentList();
     
-    // UI Sıfırlama
     document.getElementById('placeholder').style.display = 'none';
     document.getElementById('player').style.display = 'none';
     document.getElementById('ios-player-container').style.display = 'none';
@@ -421,9 +686,7 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
     document.getElementById('embed-iframe').src = "";
     
     const iosVideo = document.getElementById('ios-video');
-    iosVideo.pause();
-    iosVideo.src = "";
-    iosVideo.load();
+    iosVideo.pause(); iosVideo.src = ""; iosVideo.load();
 
     const isHLS = item.url.includes('.m3u8') || item.url.includes('checklist') || item.url.includes('proxy') || item.url.includes('m3u');
 
@@ -432,25 +695,131 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
         document.getElementById('embed-iframe').src = item.url;
     } else if (isIOS) {
         document.getElementById('ios-player-container').style.display = 'block';
-        iosVideo.src = item.url;
-        iosVideo.load();
-        iosVideo.muted = true;
+        iosVideo.src = item.url; iosVideo.load(); iosVideo.muted = true;
         iosVideo.play().catch(e => console.log("Oynatma hatası:", e));
     } else {
         document.getElementById('player').style.display = 'block';
         clapprPlayer = new Clappr.Player({ 
-            source: item.url, 
-            mimeType: 'application/x-mpegURL',
-            parentId: '#player', 
-            width: '100%', 
-            height: '100%', 
-            autoPlay: true, 
+            source: item.url, mimeType: 'application/x-mpegURL',
+            parentId: '#player', width: '100%', height: '100%', autoPlay: true, 
             plugins: [HlsjsPlayback, LevelSelector],
             hlsjsConfig: { enableWorker: true }
         });
     }
   }
 
+  // =====================================================================
+  // APK GÖRÜNÜMÜ FONKSİYONLARI
+  // =====================================================================
+  let apkActiveCat = 'Tümü';
+  let apkClapprPlayer = null;
+  let apkActiveId = null;
+
+  // Kategori filtrele ve ızgarayı render et
+  function filterApkChannels(cat) {
+    apkActiveCat = cat;
+    // Kategori butonları
+    document.querySelectorAll('.apk-cat-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.trim() === cat);
+    });
+    renderApkGrid();
+  }
+
+  function renderApkGrid() {
+    const filtered = channels.filter(c => apkActiveCat === 'Tümü' || c.cat === apkActiveCat);
+    const grid = document.getElementById('apk-channel-grid');
+    grid.innerHTML = filtered.map(c => `
+      <div class="apk-channel-card ${apkActiveId === c.id ? 'active' : ''}" 
+           onclick="playApk('${c.id}')" 
+           data-id="${c.id}"
+           tabindex="0">
+        <div class="apk-card-logo">
+          <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/52?text=${encodeURIComponent(c.name[0])}'">
+        </div>
+        <div>
+          <div class="apk-card-name">${c.name}</div>
+          <div class="apk-card-cat">${c.qual}</div>
+        </div>
+      </div>`).join('');
+
+    // TV modunda focus listesini güncelle
+    if (isTV) updateTVFocusableElements();
+  }
+
+  // APK player aç
+  function playApk(id) {
+    apkActiveId = id;
+    const item = channels.find(c => c.id === id);
+    if (!item) return;
+
+    // Aktif kartı güncelle
+    renderApkGrid();
+
+    // Player overlay'i aç
+    const overlay = document.getElementById('apk-player-overlay');
+    overlay.classList.add('active');
+
+    // Kanal adını göster
+    document.getElementById('apk-channel-label').textContent = item.name;
+
+    // Tüm player alanlarını sıfırla
+    document.getElementById('apk-player').style.display = 'none';
+    document.getElementById('apk-ios-player-container').style.display = 'none';
+    document.getElementById('apk-embed-container').style.display = 'none';
+    if (apkClapprPlayer) { apkClapprPlayer.destroy(); apkClapprPlayer = null; }
+    document.getElementById('apk-player').innerHTML = '';
+    document.getElementById('apk-embed-iframe').src = '';
+    const apkVid = document.getElementById('apk-ios-video');
+    apkVid.pause(); apkVid.src = ''; apkVid.load();
+
+    // Oynat
+    const isHLS = item.url.includes('.m3u8') || item.url.includes('checklist') || item.url.includes('proxy') || item.url.includes('m3u');
+
+    if (!isHLS) {
+      document.getElementById('apk-embed-container').style.display = 'block';
+      document.getElementById('apk-embed-iframe').src = item.url;
+    } else if (isIOS) {
+      document.getElementById('apk-ios-player-container').style.display = 'block';
+      apkVid.src = item.url; apkVid.load(); apkVid.muted = false;
+      apkVid.play().catch(e => console.log('APK oynatma hatası:', e));
+    } else {
+      document.getElementById('apk-player').style.display = 'block';
+      apkClapprPlayer = new Clappr.Player({
+        source: item.url, mimeType: 'application/x-mpegURL',
+        parentId: '#apk-player', width: '100%', height: '100%', autoPlay: true,
+        plugins: [HlsjsPlayback, LevelSelector],
+        hlsjsConfig: { enableWorker: true }
+      });
+    }
+
+    // Telefon: dik başlar (tam ekran isteği YAPMA, player zaten fixed/fullscreen)
+    // TV: zaten yatay
+    // İsteğe bağlı tam ekran (isteğe göre kapat/aç):
+    // Telefonda tam ekran istenmiyorsa bu satırı sil:
+    if (!isTV && !isIOS) {
+      // Android telefon: tam ekrana geç
+      const area = document.getElementById('apk-player-area');
+      if (area.requestFullscreen) area.requestFullscreen().catch(()=>{});
+      else if (area.webkitRequestFullscreen) area.webkitRequestFullscreen();
+    }
+  }
+
+  // APK player kapat
+  function closeApkPlayer() {
+    document.getElementById('apk-player-overlay').classList.remove('active');
+    if (apkClapprPlayer) { apkClapprPlayer.destroy(); apkClapprPlayer = null; }
+    document.getElementById('apk-player').innerHTML = '';
+    document.getElementById('apk-embed-iframe').src = '';
+    const apkVid = document.getElementById('apk-ios-video');
+    apkVid.pause(); apkVid.src = ''; apkVid.load();
+    // Tam ekrandan çık
+    if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+    else if (document.webkitFullscreenElement) document.webkitExitFullscreen();
+  }
+
+  // =====================================================================
+  // ORTAK: TEMA & MODAL
+  // =====================================================================
   function toggleTheme() {
     const d = document.documentElement;
     const isDark = d.getAttribute('data-theme') === 'dark';
@@ -462,10 +831,9 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
 
   function openInfoModal() { document.getElementById('infoModal').style.display = 'flex'; }
   function closeInfoModal() { document.getElementById('infoModal').style.display = 'none'; }
-  window.onload = renderCurrentList;
 
   // =====================================================================
-  // TAM EKRAN YARDIMCI FONKSİYONU
+  // TAM EKRAN YARDIMCI (site görünümü için)
   // =====================================================================
   function toggleFullScreen(elem) {
     if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
@@ -482,21 +850,16 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
   }
 
   // =====================================================================
-  // TV PLAYER KONTROL OVERLAY: Ses ve Tam Ekran Yönetimi
-  // Player'a odaklanıldığında (tv-focus) overlay gösterilir,
-  // içindeki butonlar ayrıca kumandayla gezilir.
+  // TV PLAYER KONTROL OVERLAY (site görünümü)
   // =====================================================================
-  let tvVolume = 1.0;   // 0.0 - 1.0
+  let tvVolume = 1.0;
   let tvMuted  = false;
 
-  // Aktif video elementini döndürür (clappr veya ios-video)
   function getActiveVideoEl() {
-    // Clappr oynatıcı varsa onun video etiketini al
     if (clapprPlayer) {
       const v = document.querySelector('#player video');
       if (v) return v;
     }
-    // iOS video
     const iv = document.getElementById('ios-video');
     if (iv && iv.style.display !== 'none') return iv;
     return null;
@@ -506,7 +869,6 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
     const pct = tvMuted ? 0 : Math.round(tvVolume * 100);
     document.getElementById('tv-vol-bar').style.width = pct + '%';
     document.getElementById('tv-vol-label').textContent = pct;
-    // İkon: sessiz mi değil mi
     const icon = document.getElementById('tv-vol-icon');
     if (tvMuted || tvVolume === 0) {
       icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
@@ -517,56 +879,47 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
 
   function applyVolToVideo() {
     const v = getActiveVideoEl();
-    if (v) {
-      v.volume = tvVolume;
-      v.muted  = tvMuted;
-    }
+    if (v) { v.volume = tvVolume; v.muted = tvMuted; }
   }
 
-  // Kontrol buton tıklamaları
   document.getElementById('tv-btn-fullscreen').addEventListener('click', function(e) {
     e.stopPropagation();
     toggleFullScreen(document.getElementById('playerWrapper'));
   });
   document.getElementById('tv-btn-mute').addEventListener('click', function(e) {
     e.stopPropagation();
-    tvMuted = !tvMuted;
-    applyVolToVideo();
-    updateVolUI();
+    tvMuted = !tvMuted; applyVolToVideo(); updateVolUI();
   });
   document.getElementById('tv-btn-vol-down').addEventListener('click', function(e) {
     e.stopPropagation();
-    tvVolume = Math.max(0, tvVolume - 0.1);
-    tvMuted  = false;
-    applyVolToVideo();
-    updateVolUI();
+    tvVolume = Math.max(0, tvVolume - 0.1); tvMuted = false; applyVolToVideo(); updateVolUI();
   });
   document.getElementById('tv-btn-vol-up').addEventListener('click', function(e) {
     e.stopPropagation();
-    tvVolume = Math.min(1, tvVolume + 0.1);
-    tvMuted  = false;
-    applyVolToVideo();
-    updateVolUI();
+    tvVolume = Math.min(1, tvVolume + 0.1); tvMuted = false; applyVolToVideo(); updateVolUI();
   });
 
   // =====================================================================
-  // TV KUMANDA NAVİGASYON DESTEĞİ
-  // İki mod:
-  //   "ana"       → sayfadaki tüm öğeler arası geziş
-  //   "player"    → player'a odaklanıldığında overlay kontrolleri arası geziş
+  // TV KUMANDA NAVİGASYON — APK + SİTE MODU
   // =====================================================================
   let tvFocusableElements = [];
   let tvFocusedIndex = -1;
-  let tvMode = 'ana';  // 'ana' veya 'player'
+  let tvMode = 'ana'; // 'ana' veya 'player'
 
-  // Player overlay kontrol butonları
   const TV_CTRL_BTNS = ['tv-btn-fullscreen', 'tv-btn-mute', 'tv-btn-vol-down', 'tv-btn-vol-up'];
   let tvCtrlFocusedIndex = 0;
 
   function updateTVFocusableElements() {
-    tvFocusableElements = Array.from(document.querySelectorAll(
-      '.theme-btn, .player-wrapper, .tab-btn, #searchInput, .channel-card, .social-btn, .modal-content button'
-    )).filter(el => el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).display !== 'none');
+    if (isAPK) {
+      // APK modu: kategoriler + kanal kartları
+      tvFocusableElements = Array.from(document.querySelectorAll(
+        '.apk-cat-btn, .apk-channel-card'
+      )).filter(el => el.offsetWidth > 0 && el.offsetHeight > 0);
+    } else {
+      tvFocusableElements = Array.from(document.querySelectorAll(
+        '.theme-btn, .player-wrapper, .tab-btn, #searchInput, .channel-card, .social-btn, .modal-content button'
+      )).filter(el => el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).display !== 'none');
+    }
   }
 
   function setCtrlBtnFocus(idx) {
@@ -576,8 +929,7 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
   }
 
   function enterPlayerMode() {
-    tvMode = 'player';
-    tvCtrlFocusedIndex = 0;
+    tvMode = 'player'; tvCtrlFocusedIndex = 0;
     document.getElementById('tv-player-controls').classList.add('tv-focus-active');
     setCtrlBtnFocus(tvCtrlFocusedIndex);
   }
@@ -588,40 +940,33 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
     TV_CTRL_BTNS.forEach(id => document.getElementById(id).classList.remove('tv-ctrl-focused'));
   }
 
+  // APK modunda TV navigasyonu — ızgara 2 sütun olduğu için sol/sağ ok sütun değiştirir
+  // yukarı/aşağı ok satır değiştirir ve otomatik scroll yapar
+  function getApkGridCols() {
+    // CSS'de grid-template-columns: 1fr 1fr → 2 sütun
+    return 2;
+  }
+
   document.addEventListener('keydown', function(e) {
     const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Backspace', 'Escape'];
     if (!keys.includes(e.key)) return;
-
-    // Input alanında sol/sağ ok doğal çalışsın
     if (document.activeElement.tagName === 'INPUT' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) return;
 
     e.preventDefault();
 
-    // ---- PLAYER MOD (overlay kontrollerinde) ----
+    // ---- APK PLAYER OVERLAY AÇIKSA: geri tuşu kapat ----
+    if (isAPK && document.getElementById('apk-player-overlay').classList.contains('active')) {
+      if (e.key === 'Escape' || e.key === 'Backspace') closeApkPlayer();
+      return;
+    }
+
+    // ---- PLAYER MOD (site, overlay kontrollerinde) ----
     if (tvMode === 'player') {
-      if (e.key === 'Escape' || e.key === 'Backspace') {
-        exitPlayerMode();
-        return;
-      }
-      if (e.key === 'ArrowRight') {
-        tvCtrlFocusedIndex = Math.min(tvCtrlFocusedIndex + 1, TV_CTRL_BTNS.length - 1);
-        setCtrlBtnFocus(tvCtrlFocusedIndex);
-        return;
-      }
-      if (e.key === 'ArrowLeft') {
-        tvCtrlFocusedIndex = Math.max(tvCtrlFocusedIndex - 1, 0);
-        setCtrlBtnFocus(tvCtrlFocusedIndex);
-        return;
-      }
-      if (e.key === 'ArrowDown') {
-        // Aşağı → ana moda dön
-        exitPlayerMode();
-        return;
-      }
-      if (e.key === 'Enter') {
-        document.getElementById(TV_CTRL_BTNS[tvCtrlFocusedIndex]).click();
-        return;
-      }
+      if (e.key === 'Escape' || e.key === 'Backspace') { exitPlayerMode(); return; }
+      if (e.key === 'ArrowRight') { tvCtrlFocusedIndex = Math.min(tvCtrlFocusedIndex + 1, TV_CTRL_BTNS.length - 1); setCtrlBtnFocus(tvCtrlFocusedIndex); return; }
+      if (e.key === 'ArrowLeft') { tvCtrlFocusedIndex = Math.max(tvCtrlFocusedIndex - 1, 0); setCtrlBtnFocus(tvCtrlFocusedIndex); return; }
+      if (e.key === 'ArrowDown') { exitPlayerMode(); return; }
+      if (e.key === 'Enter') { document.getElementById(TV_CTRL_BTNS[tvCtrlFocusedIndex]).click(); return; }
       return;
     }
 
@@ -632,8 +977,7 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
     if (e.key === 'Enter') {
       if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
         const el = tvFocusableElements[tvFocusedIndex];
-        if (el.classList.contains('player-wrapper')) {
-          // Player'a Enter basıldığında → overlay kontrol moduna gir
+        if (!isAPK && el.classList.contains('player-wrapper')) {
           enterPlayerMode();
         } else {
           el.click();
@@ -643,20 +987,55 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
       return;
     }
 
+    // Focus kaldır
     if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
       tvFocusableElements[tvFocusedIndex].classList.remove('tv-focus');
-      // Player'dan ayrılıyorsa overlay'i kapat
-      if (tvFocusableElements[tvFocusedIndex].classList.contains('player-wrapper')) {
-        exitPlayerMode();
-      }
+      if (!isAPK && tvFocusableElements[tvFocusedIndex].classList.contains('player-wrapper')) exitPlayerMode();
     }
 
-    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-      tvFocusedIndex++;
-      if (tvFocusedIndex >= tvFocusableElements.length) tvFocusedIndex = tvFocusableElements.length - 1;
-    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-      tvFocusedIndex--;
-      if (tvFocusedIndex < 0) tvFocusedIndex = 0;
+    if (isAPK) {
+      // APK 2-sütun ızgara navigasyonu
+      const cols = getApkGridCols();
+      const total = tvFocusableElements.length;
+
+      if (e.key === 'ArrowRight') {
+        tvFocusedIndex = Math.min(tvFocusedIndex + 1, total - 1);
+      } else if (e.key === 'ArrowLeft') {
+        tvFocusedIndex = Math.max(tvFocusedIndex - 1, 0);
+      } else if (e.key === 'ArrowDown') {
+        // Kategori butonlarındaysa bir sonraki satıra geç (ilk karta)
+        const curr = tvFocusableElements[tvFocusedIndex];
+        if (curr && curr.classList.contains('apk-cat-btn')) {
+          // İlk karta git
+          const firstCard = tvFocusableElements.findIndex(el => el.classList.contains('apk-channel-card'));
+          if (firstCard !== -1) tvFocusedIndex = firstCard;
+        } else {
+          tvFocusedIndex = Math.min(tvFocusedIndex + cols, total - 1);
+        }
+      } else if (e.key === 'ArrowUp') {
+        const curr = tvFocusableElements[tvFocusedIndex];
+        if (curr && curr.classList.contains('apk-channel-card')) {
+          const newIdx = tvFocusedIndex - cols;
+          if (newIdx < 0) {
+            // Kategori butonuna dön
+            const firstCat = tvFocusableElements.findIndex(el => el.classList.contains('apk-cat-btn'));
+            tvFocusedIndex = firstCat >= 0 ? firstCat : 0;
+          } else {
+            tvFocusedIndex = newIdx;
+          }
+        } else {
+          tvFocusedIndex = Math.max(tvFocusedIndex - 1, 0);
+        }
+      }
+    } else {
+      // Site navigasyonu (orijinal)
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        tvFocusedIndex++;
+        if (tvFocusedIndex >= tvFocusableElements.length) tvFocusedIndex = tvFocusableElements.length - 1;
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        tvFocusedIndex--;
+        if (tvFocusedIndex < 0) tvFocusedIndex = 0;
+      }
     }
 
     const target = tvFocusableElements[tvFocusedIndex];
@@ -666,16 +1045,29 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
     }
   });
 
-  // Sayfa içeriği değiştiğinde focusable listeyi güncelle
+  // MutationObserver — içerik değişince focus listesini güncelle
   const tvObserver = new MutationObserver(function() {
     updateTVFocusableElements();
-    // Fokus indeks sınır kontrolü
     if (tvFocusedIndex >= tvFocusableElements.length) {
       tvFocusedIndex = tvFocusableElements.length - 1;
     }
   });
-  tvObserver.observe(document.getElementById('channelList'), { childList: true });
 
+  // =====================================================================
+  // BAŞLANGICI
+  // =====================================================================
+  window.onload = function() {
+    if (isAPK) {
+      // APK başlangıcı
+      filterApkChannels('Tümü');
+      // Observer APK grid'e bağla
+      tvObserver.observe(document.getElementById('apk-channel-grid'), { childList: true });
+    } else {
+      // Site başlangıcı
+      renderCurrentList();
+      tvObserver.observe(document.getElementById('channelList'), { childList: true });
+    }
+  };
 </script>
 </body>
 </html>
