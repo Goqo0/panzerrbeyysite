@@ -59,7 +59,6 @@
     background-color: var(--player-bg); border-radius: 16px; overflow: hidden;
     aspect-ratio: 16 / 9; position: relative; border: 1px solid var(--border-color);
     box-shadow: 0 10px 30px rgba(0,0,0,0.4); width: 100%; flex-shrink: 0;
-    transition: all 0.2s ease; /* Odaklanma animasyonu için */
   }
   
   #player, #ios-player-container, #embed-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; }
@@ -118,17 +117,25 @@
   .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; color: white; margin-bottom: 12px; font-size: 14px; }
   .mail-area { background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px dashed var(--border-color); margin-bottom: 15px; }
 
-  /* === TV KUMANDA ODAKLANMA (FOCUS) STİLLERİ === */
-  .tv-focus {
-    outline: 3px solid var(--primary) !important;
-    box-shadow: 0 0 15px var(--primary) !important;
-    transform: scale(1.02) !important;
-    z-index: 100;
+  /* === SERBEST GEZEN SANAL İMLEÇ STİLLERİ (YENİ) === */
+  #tv-cursor {
+    position: fixed;
+    width: 26px;
+    height: 26px;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    z-index: 999999;
+    pointer-events: none; /* Bu çok önemli! Altındaki nesnelere tıklayabilmek için. */
+    transform: translate(-50%, -50%);
+    display: none; /* Kumandaya basılana kadar gizli kalır */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transition: width 0.1s, height 0.1s, background-color 0.1s;
   }
-  /* Oynatıcı çok büyük olduğu için onun scale değerini biraz daha düşük tutuyoruz */
-  .player-wrapper.tv-focus {
-    transform: scale(1.01) !important;
-    outline: 4px solid var(--primary) !important;
+  #tv-cursor.clicking {
+    width: 20px;
+    height: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
   }
 </style>
 </head>
@@ -259,14 +266,12 @@ TRT 1 (Yurt Dışı) | Ulusal | HD | https://andro.0638527.xyz/checklist/androst
 TRT SPOR | Ulusal | HD | https://tv-trtspor1.medya.trt.com.tr/master_1080.m3u8 | https://yt3.ggpht.com/FCzDc31AsTFzobw8Z4QBCc8AGtKgFP4mq28RgbcLJGdVNlE0RoremvEr1XntYHFc6G0dAwU-=s176-c-k-c0x00ffffff-no-rj-mo
 TV8 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivetv8.m3u8 | https://yt3.googleusercontent.com/ytc/AIdro_mnwqLdHqFXbkm6QwloGNJ1EX5N3Z8klIpdSF59MRbbLxU=s176-c-k-c0x00ffffff-no-rj-mo
 TV8 (B) | Ulusal | HD | https://api.hitnova.net/s/tv8/mono.m3u8 | https://yt3.googleusercontent.com/ytc/AIdro_mnwqLdHqFXbkm6QwloGNJ1EX5N3Z8klIpdSF59MRbbLxU=s176-c-k-c0x00ffffff-no-rj-mo
-TV8 (C) | Ulusal | HD | https://74betorspintv.live/channel?id=tv8 | https://yt3.googleusercontent.com/ytc/AIdro_mnwqLdHqFXbkm6QwloGNJ1EX5N3Z8klIpdSF59MRbbLxU=s176-c-k-c0x00ffffff-no-rj-mo
 TV8.5 (A) | Ulusal | HD | https://andro.0638527.xyz/checklist/androstreamlivetv85.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
 TV8.5 (B) | Ulusal | HD | https://api.hitnova.net/s/tv85/mono.m3u8 | https://yt3.ggpht.com/mkjHjP6e2h9JykcMntzaTsCXCdNthlLu_EiDKE5_AifSpyLD1qkhCaJaY8g-eYbd_pwApWNfOQ=s176-c-k-c0x00ffffff-no-rj-mo
 Test | Spor | HD |  | https://via.placeholder.com/44?text=T
 </script>
 <script id="kolay-mac-listesi" type="text/plain">
-Arjantin - Zambiya | 02.30 | Futbol | https://sansat.link/ch?id=39
-Brezilya - Hırvatistan | 03.00 | Futbol | https://sansat.link/ch?id=86
+
 </script>
 
 <div class="modal-overlay" id="infoModal" onclick="closeInfoModal()">
@@ -371,84 +376,104 @@ Brezilya - Hırvatistan | 03.00 | Futbol | https://sansat.link/ch?id=86
   function closeInfoModal() { document.getElementById('infoModal').style.display = 'none'; }
   window.onload = renderCurrentList;
 
-  // === TV / KUMANDA NAVİGASYON DESTEĞİ VE TAM EKRAN EKLENTİSİ ===
-  let tvFocusableElements = [];
-  let tvFocusedIndex = -1;
+  // === SERBEST GEZEN SANAL İMLEÇ (AIR MOUSE) SİSTEMİ (YENİ) ===
+  const tvCursor = document.createElement('div');
+  tvCursor.id = 'tv-cursor';
+  document.body.appendChild(tvCursor);
 
-  // Tam Ekran Yapma/Çıkma Fonksiyonu
-  function toggleFullScreen(elem) {
-      if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
-          if (elem.requestFullscreen) { elem.requestFullscreen(); }
-          else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
-          else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
-          else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
-      } else {
-          if (document.exitFullscreen) { document.exitFullscreen(); }
-          else if (document.msExitFullscreen) { document.msExitFullscreen(); }
-          else if (document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
-          else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+  let cursorX = window.innerWidth / 2;
+  let cursorY = window.innerHeight / 2;
+  let cursorSpeed = 16; // İmlecin hareket hızı (Piksel cinsinden)
+  let keysPressed = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
+  let loopRunning = false;
+  let cursorActive = false;
+
+  function activateCursor() {
+    if (!cursorActive) {
+      cursorActive = true;
+      tvCursor.style.display = 'block'; // Kumandaya basıldığında görünür olur
+    }
+  }
+
+  function moveCursorLoop() {
+    if (!keysPressed.ArrowUp && !keysPressed.ArrowDown && !keysPressed.ArrowLeft && !keysPressed.ArrowRight) {
+      loopRunning = false;
+      return;
+    }
+
+    if (keysPressed.ArrowUp) cursorY -= cursorSpeed;
+    if (keysPressed.ArrowDown) cursorY += cursorSpeed;
+    if (keysPressed.ArrowLeft) cursorX -= cursorSpeed;
+    if (keysPressed.ArrowRight) cursorX += cursorSpeed;
+
+    // İmlecin ekrandan dışarı taşmasını engelleme
+    cursorX = Math.max(10, Math.min(window.innerWidth - 10, cursorX));
+    cursorY = Math.max(10, Math.min(window.innerHeight - 10, cursorY));
+
+    tvCursor.style.left = cursorX + 'px';
+    tvCursor.style.top = cursorY + 'px';
+
+    // Otomatik Scroll (Kaydırma) Mantığı
+    // İmleç ekranın altına veya üstüne yaklaştığında listeyi veya sayfayı kaydırır
+    const targetElement = document.elementFromPoint(cursorX, cursorY);
+    if (targetElement) {
+      const scrollableList = targetElement.closest('.channel-list') || targetElement.closest('.left-content');
+      const edgeThreshold = 50; // Kenara kaç piksel kala kaydırmaya başlasın
+      
+      if (scrollableList) {
+        const rect = scrollableList.getBoundingClientRect();
+        if (cursorY > rect.bottom - edgeThreshold) {
+          scrollableList.scrollBy({ top: cursorSpeed, behavior: 'instant' });
+        } else if (cursorY < rect.top + edgeThreshold) {
+          scrollableList.scrollBy({ top: -cursorSpeed, behavior: 'instant' });
+        }
       }
+    }
+
+    requestAnimationFrame(moveCursorLoop);
   }
 
-  function updateTVFocusableElements() {
-      // Artık ".player-wrapper" sınıfı da odaklanılabilir öğeler listesine eklendi!
-      tvFocusableElements = Array.from(document.querySelectorAll('.theme-btn, .player-wrapper, .tab-btn, #searchInput, .channel-card, .social-btn, .modal-content button')).filter(el => {
-          return el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).display !== 'none';
-      });
-  }
-
+  // Kumanda Yön Tuşlarına Basılınca
   document.addEventListener('keydown', function(e) {
-      const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'];
-      if (!keys.includes(e.key)) return;
-
-      if (document.activeElement.tagName === 'INPUT' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-          return;
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault(); // Varsayılan sekme atlamasını engeller
+      activateCursor();
+      keysPressed[e.key] = true;
+      if (!loopRunning) {
+        loopRunning = true;
+        requestAnimationFrame(moveCursorLoop);
       }
+    }
 
-      e.preventDefault(); 
-      updateTVFocusableElements();
+    // Kumanda OK (Enter) Tuşuna Basılınca Tıklama Simülasyonu
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      activateCursor();
+      
+      // Tıklama animasyonu
+      tvCursor.classList.add('clicking');
+      setTimeout(() => tvCursor.classList.remove('clicking'), 150);
 
-      if (tvFocusableElements.length === 0) return;
+      // İmleci anlık gizleyip tam o noktadaki elementi tespit ediyoruz
+      tvCursor.style.display = 'none';
+      const targetElement = document.elementFromPoint(cursorX, cursorY);
+      tvCursor.style.display = 'block';
 
-      if (e.key === 'Enter') {
-          if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
-              const el = tvFocusableElements[tvFocusedIndex];
-              
-              // Eğer odaklanan şey "player-wrapper" (oynatıcı) ise, tıkla yerine TAM EKRAN yap
-              if (el.classList.contains('player-wrapper')) {
-                  toggleFullScreen(el);
-              } else {
-                  el.click();
-                  if (el.id === 'searchInput') {
-                      el.focus();
-                  }
-              }
-          }
-          return;
+      if (targetElement) {
+        targetElement.click(); // Tam altındaki elemente gerçek fare tıklaması yollar
+        // Eğer tıklanan yer arama çubuğu ise odakla
+        if (targetElement.tagName === 'INPUT') {
+           targetElement.focus();
+        }
       }
-
-      if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
-          tvFocusableElements[tvFocusedIndex].classList.remove('tv-focus');
-      }
-
-      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-          tvFocusedIndex++;
-          if (tvFocusedIndex >= tvFocusableElements.length) tvFocusedIndex = tvFocusableElements.length - 1;
-      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-          tvFocusedIndex--;
-          if (tvFocusedIndex < 0) tvFocusedIndex = 0;
-      }
-
-      const target = tvFocusableElements[tvFocusedIndex];
-      if (target) {
-          target.classList.add('tv-focus');
-          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+    }
   });
 
-  const tvObserver = new MutationObserver(() => { updateTVFocusableElements(); });
-  window.addEventListener('DOMContentLoaded', () => {
-      tvObserver.observe(document.body, { childList: true, subtree: true });
+  // Kumanda Tuşu Bırakılınca
+  document.addEventListener('keyup', function(e) {
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      keysPressed[e.key] = false;
+    }
   });
 </script>
 </body>
