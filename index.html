@@ -6,447 +6,339 @@
 <title>PanzerSports - Canlı Yayın</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+<!-- SİTE player kütüphaneleri (değiştirilmedi) -->
 <script src="https://cdn.jsdelivr.net/npm/@clappr/player@0.11.16/dist/clappr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@1.8.3/dist/hlsjs-playback.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/clappr-dash-shaka-playback@0.7.20/dist/dash-shaka-playback.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/level-selector/dist/level-selector.min.js"></script>
+<!-- APK HLS player kütüphanesi -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
 
 <style>
-  /* =====================================================================
-     CSS DEĞIŞKENLERI (Renkler site ve APK'da aynı)
-  ===================================================================== */
-  :root {
-    --bg-color: #0a0a0a; --surface-color: #171717; --text-main: #f9fafb; --text-muted: #9ca3af;
-    --border-color: #262626; --primary: #22c55e; --primary-hover: #16a34a; --primary-light: #064e3b;
-    --player-bg: #000000; --scroll-thumb: #404040;
-  }
-  [data-theme="light"] {
-    --bg-color: #f3f4f6; --surface-color: #ffffff; --text-main: #111827; --text-muted: #6b7280;
-    --border-color: #e5e7eb; --primary: #16a34a; --primary-hover: #15803d; --primary-light: #dcfce7;
-    --player-bg: #000000; --scroll-thumb: #cbd5e1;
-  }
-  
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-  
-  body { 
-    background-color: var(--bg-color); color: var(--text-main); 
-    height: 100vh; display: flex; flex-direction: column; overflow: hidden;
-    -webkit-user-select: none; user-select: none; 
-  }
-  
-  header { 
-    background-color: var(--surface-color); border-bottom: 1px solid var(--border-color); 
-    height: 64px; display: flex; align-items: center; justify-content: space-between; 
-    padding: 0 20px; flex-shrink: 0; z-index: 1000; 
-    transform: translateZ(0); will-change: auto;
-  }
-  .logo { display: flex; align-items: center; gap: 8px; font-size: 20px; }
-  .logo-icon { background-color: var(--primary); color: white; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-  .logo-text-panzer { color: var(--text-main); font-weight: 800; }
-  .logo-text-sports { color: var(--primary); font-weight: 800; }
-  
-  .header-actions { display: flex; align-items: center; gap: 10px; }
-  .theme-btn { 
-    background: var(--surface-color); border: 1px solid var(--border-color); color: var(--text-main); 
-    width: 40px; height: 40px; border-radius: 10px; cursor: pointer; 
-    display: flex; align-items: center; justify-content: center;
-    transition: border-color 0.15s, color 0.15s;
-  }
-  .theme-btn:hover { border-color: var(--primary); color: var(--primary); }
+/* =====================================================================
+   CSS DEĞİŞKENLERİ — site ve APK aynı renkler
+===================================================================== */
+:root {
+  --bg-color:#0a0a0a; --surface-color:#171717; --text-main:#f9fafb; --text-muted:#9ca3af;
+  --border-color:#262626; --primary:#22c55e; --primary-hover:#16a34a; --primary-light:#064e3b;
+  --player-bg:#000000; --scroll-thumb:#404040;
+}
+[data-theme="light"] {
+  --bg-color:#f3f4f6; --surface-color:#ffffff; --text-main:#111827; --text-muted:#6b7280;
+  --border-color:#e5e7eb; --primary:#16a34a; --primary-hover:#15803d; --primary-light:#dcfce7;
+  --player-bg:#000000; --scroll-thumb:#cbd5e1;
+}
 
-  /* =====================================================================
-     SİTE GÖRÜNÜMÜ (isAPK = false)
-  ===================================================================== */
-  .container { display: flex; flex: 1; width: 100%; overflow: hidden; }
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
 
-  .left-content { 
-    flex: 1.5; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; gap: 20px;
-    background-color: var(--bg-color);
-    transform: translateZ(0);
-    -webkit-overflow-scrolling: touch;
-  }
-  .player-wrapper { 
-    background-color: var(--player-bg); border-radius: 16px; overflow: hidden;
-    aspect-ratio: 16 / 9; position: relative; border: 1px solid var(--border-color);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4); width: 100%; flex-shrink: 0;
-    transition: border-color 0.15s ease;
-  }
-  
-  #player, #ios-player-container, #embed-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; }
-  #player { z-index: 5; }
-  #ios-player-container { z-index: 6; background: #000; }
-  #embed-container { z-index: 7; }
-  
-  #ios-video { width: 100%; height: 100%; object-fit: contain; }
-  #embed-iframe { width: 100%; height: 100%; border: none; background: #000; }
+body{
+  background-color:var(--bg-color);color:var(--text-main);
+  height:100vh;display:flex;flex-direction:column;overflow:hidden;
+  -webkit-user-select:none;user-select:none;
+}
 
-  .placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; background: #0a0a0a; z-index: 20; }
+header{
+  background-color:var(--surface-color);border-bottom:1px solid var(--border-color);
+  height:64px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;flex-shrink:0;z-index:1000;
+  transform:translateZ(0);will-change:auto;
+}
+.logo{display:flex;align-items:center;gap:8px;font-size:20px;}
+.logo-icon{background-color:var(--primary);color:white;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.logo-text-panzer{color:var(--text-main);font-weight:800;}
+.logo-text-sports{color:var(--primary);font-weight:800;}
 
-  .banner-section { text-align: center; flex-shrink: 0; }
-  .banner-section img { max-width: 100%; border-radius: 12px; border: 1px solid var(--border-color); }
+.header-actions{display:flex;align-items:center;gap:10px;}
+.theme-btn{
+  background:var(--surface-color);border:1px solid var(--border-color);color:var(--text-main);
+  width:40px;height:40px;border-radius:10px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color 0.15s,color 0.15s;
+}
+.theme-btn:hover{border-color:var(--primary);color:var(--primary);}
 
-  .right-content { 
-    width: 420px; background-color: var(--bg-color); border-left: 1px solid var(--border-color); 
-    display: flex; flex-direction: column; height: 100%; 
-  }
-  
-  .tabs-container { background-color: var(--surface-color); display: flex; padding: 10px 16px 0 16px; gap: 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
-  .tab-btn { flex: 1; padding: 15px 5px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; cursor: pointer; border-bottom: 3px solid transparent; font-size: 13px; text-transform: uppercase;
-    transition: color 0.15s, border-color 0.15s; }
-  .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-  
-  .list-header { background-color: var(--surface-color); padding: 16px; flex-shrink: 0; }
-  .search-box { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-main); outline: none; }
-  
-  .channel-list { 
-    flex: 1; 
-    padding: 16px 16px 80px 16px;
-    display: flex; 
-    flex-direction: column; 
-    gap: 10px; 
-    overflow-y: auto; 
-    background-color: var(--bg-color);
-    transform: translateZ(0);
-    -webkit-overflow-scrolling: touch;
-  }
-  .channel-list::-webkit-scrollbar { width: 6px; }
-  .channel-list::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 10px; }
+/* =====================================================================
+   SİTE GÖRÜNÜMÜ — hiç dokunulmadı
+===================================================================== */
+.container{display:flex;flex:1;width:100%;overflow:hidden;}
 
-  .channel-card { display: flex; align-items: center; padding: 14px; border-radius: 12px; cursor: pointer; background-color: var(--surface-color); border: 1px solid var(--border-color);
-    transition: border-color 0.1s; flex-shrink: 0; }
-  .channel-card:hover { border-color: var(--primary); }
-  .channel-card.active { border-color: var(--primary); background-color: var(--primary-light); }
-  
-  .cc-logo { width: 42px; height: 42px; border-radius: 8px; flex-shrink: 0; margin-right: 12px; background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  .cc-logo img { width: 100%; height: 100%; object-fit: contain; }
+.left-content{
+  flex:1.5;display:flex;flex-direction:column;overflow-y:auto;padding:20px;gap:20px;
+  background-color:var(--bg-color);transform:translateZ(0);-webkit-overflow-scrolling:touch;
+}
+.player-wrapper{
+  background-color:var(--player-bg);border-radius:16px;overflow:hidden;
+  aspect-ratio:16/9;position:relative;border:1px solid var(--border-color);
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);width:100%;flex-shrink:0;
+  transition:border-color 0.15s ease;
+}
 
-  @media (max-width: 960px) {
-    .container { flex-direction: column; overflow: hidden; }
-    .left-content { flex: none; padding: 12px; gap: 12px; height: auto; }
-    .right-content { width: 100%; flex: 1; border-left: none; border-top: 1px solid var(--border-color); min-height: 0; }
-    .channel-list { padding-bottom: 100px; }
-  }
+#player,#ios-player-container,#embed-container{width:100%;height:100%;position:absolute;top:0;left:0;display:none;}
+#player{z-index:5;}
+#ios-player-container{z-index:6;background:#000;}
+#embed-container{z-index:7;}
+#ios-video{width:100%;height:100%;object-fit:contain;}
+#embed-iframe{width:100%;height:100%;border:none;background:#000;}
 
-  /* =====================================================================
-     MODAL
-  ===================================================================== */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-  .modal-content { background: var(--surface-color); border-radius: 20px; width: 90%; max-width: 360px; padding: 24px; border: 1px solid var(--border-color); text-align: center; }
-  .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 700; color: white; margin-bottom: 12px; font-size: 14px; }
-  .mail-area { background: var(--bg-color); padding: 15px; border-radius: 12px; border: 1px dashed var(--border-color); margin-bottom: 15px; }
+.placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;background:#0a0a0a;z-index:20;}
 
-  /* =====================================================================
-     TV FOCUS STİLLERİ
-  ===================================================================== */
-  .tv-focus {
-    outline: 3px solid var(--primary) !important;
-    box-shadow: 0 0 15px var(--primary) !important;
-    z-index: 100;
-  }
-  .player-wrapper.tv-focus {
-    outline: 4px solid var(--primary) !important;
-  }
+.banner-section{text-align:center;flex-shrink:0;}
+.banner-section img{max-width:100%;border-radius:12px;border:1px solid var(--border-color);}
 
-  /* =====================================================================
-     TV PLAYER KONTROL OVERLAY
-  ===================================================================== */
-  #tv-player-controls {
-    display: none;
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    z-index: 30;
-    background: linear-gradient(transparent, rgba(0,0,0,0.85));
-    padding: 12px 16px 14px;
-    align-items: center;
-    gap: 10px;
-    pointer-events: none;
-  }
-  #tv-player-controls.tv-focus-active {
-    display: flex !important;
-    pointer-events: auto;
-  }
-  .tv-ctrl-btn {
-    background: rgba(255,255,255,0.15);
-    border: 2px solid rgba(255,255,255,0.3);
-    color: #fff;
-    border-radius: 10px;
-    padding: 8px 14px;
-    font-size: 18px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    min-width: 46px; min-height: 46px;
-    transition: background 0.1s, border-color 0.1s;
-    outline: none;
-  }
-  .tv-ctrl-btn.tv-ctrl-focused {
-    background: var(--primary);
-    border-color: var(--primary);
-    box-shadow: 0 0 10px var(--primary);
-  }
-  .tv-volume-bar-wrap { display: flex; align-items: center; gap: 6px; flex: 1; }
-  .tv-volume-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; }
-  .tv-volume-bar-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.1s; }
-  .tv-volume-label { color: #fff; font-size: 12px; min-width: 28px; text-align: right; }
+.right-content{
+  width:420px;background-color:var(--bg-color);border-left:1px solid var(--border-color);
+  display:flex;flex-direction:column;height:100%;
+}
 
-  /* =====================================================================
-     APK GÖRÜNÜMÜ STİLLERİ
-     body.apk-mode olduğunda tüm site layoutu gizlenir,
-     APK layoutu aktif olur.
-  ===================================================================== */
+.tabs-container{background-color:var(--surface-color);display:flex;padding:10px 16px 0 16px;gap:10px;border-bottom:1px solid var(--border-color);flex-shrink:0;}
+.tab-btn{flex:1;padding:15px 5px;border:none;background:transparent;color:var(--text-muted);font-weight:700;cursor:pointer;border-bottom:3px solid transparent;font-size:13px;text-transform:uppercase;transition:color 0.15s,border-color 0.15s;}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);}
 
-  /* APK modda site layoutunu gizle */
-  body.apk-mode .container { display: none !important; }
-  body.apk-mode header { display: flex !important; } /* header kalıyor */
+.list-header{background-color:var(--surface-color);padding:16px;flex-shrink:0;}
+.search-box{width:100%;padding:12px 16px;border-radius:12px;border:1px solid var(--border-color);background-color:var(--bg-color);color:var(--text-main);outline:none;}
 
-  /* APK ANA WRAPPER */
-  #apk-layout {
-    display: none;
-    flex-direction: column;
-    flex: 1;
-    overflow: hidden;
-    background: var(--bg-color);
-  }
-  body.apk-mode #apk-layout { display: flex; }
+.channel-list{
+  flex:1;padding:16px 16px 80px 16px;display:flex;flex-direction:column;gap:10px;
+  overflow-y:auto;background-color:var(--bg-color);transform:translateZ(0);-webkit-overflow-scrolling:touch;
+}
+.channel-list::-webkit-scrollbar{width:6px;}
+.channel-list::-webkit-scrollbar-thumb{background:var(--scroll-thumb);border-radius:10px;}
 
-  /* ---- APK KATEGORİ ÇUBUĞU ---- */
-  #apk-categories {
-    display: flex;
-    gap: 8px;
-    padding: 10px 12px;
-    overflow-x: auto;
-    background: var(--surface-color);
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  #apk-categories::-webkit-scrollbar { display: none; }
-  .apk-cat-btn {
-    padding: 8px 18px;
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    background: transparent;
-    color: var(--text-muted);
-    font-weight: 700;
-    font-size: 13px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
-  .apk-cat-btn.active {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: #fff;
-  }
-  .apk-cat-btn:hover:not(.active) {
-    border-color: var(--primary);
-    color: var(--primary);
-  }
-  /* TV focus için kategori butonu */
-  .apk-cat-btn.tv-focus {
-    outline: 2px solid var(--primary) !important;
-    box-shadow: 0 0 10px var(--primary) !important;
-  }
+.channel-card{display:flex;align-items:center;padding:14px;border-radius:12px;cursor:pointer;background-color:var(--surface-color);border:1px solid var(--border-color);transition:border-color 0.1s;flex-shrink:0;}
+.channel-card:hover{border-color:var(--primary);}
+.channel-card.active{border-color:var(--primary);background-color:var(--primary-light);}
 
-  /* ---- APK KANAL IZGARASI ---- */
-  #apk-channel-grid {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* 2 sütun */
-    gap: 10px;
-    -webkit-overflow-scrolling: touch;
-    transform: translateZ(0);
-  }
-  #apk-channel-grid::-webkit-scrollbar { width: 4px; }
-  #apk-channel-grid::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 10px; }
+.cc-logo{width:42px;height:42px;border-radius:8px;flex-shrink:0;margin-right:12px;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.cc-logo img{width:100%;height:100%;object-fit:contain;}
 
-  /* TV: Izgara kutucukları daha büyük ve odaklanabilir */
-  .apk-channel-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 14px 10px;
-    border-radius: 14px;
-    background: var(--surface-color);
-    border: 2px solid var(--border-color);
-    cursor: pointer;
-    transition: border-color 0.1s, background 0.1s;
-    text-align: center;
-    gap: 10px;
-    min-height: 90px;
-    /* TV: GPU katmanı */
-    transform: translateZ(0);
-  }
-  .apk-channel-card:hover { border-color: var(--primary); }
-  .apk-channel-card.active {
-    border-color: var(--primary);
-    background: var(--primary-light);
-  }
-  /* TV focus için kart */
-  .apk-channel-card.tv-focus {
-    outline: 3px solid var(--primary) !important;
-    box-shadow: 0 0 16px var(--primary) !important;
-    border-color: var(--primary) !important;
-  }
+@media(max-width:960px){
+  .container{flex-direction:column;overflow:hidden;}
+  .left-content{flex:none;padding:12px;gap:12px;height:auto;}
+  .right-content{width:100%;flex:1;border-left:none;border-top:1px solid var(--border-color);min-height:0;}
+  .channel-list{padding-bottom:100px;}
+}
 
-  .apk-card-logo {
-    width: 52px; height: 52px;
-    border-radius: 10px;
-    background: #fff;
-    overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .apk-card-logo img { width: 100%; height: 100%; object-fit: contain; }
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(5px);}
+.modal-content{background:var(--surface-color);border-radius:20px;width:90%;max-width:360px;padding:24px;border:1px solid var(--border-color);text-align:center;}
+.social-btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border-radius:12px;text-decoration:none;font-weight:700;color:white;margin-bottom:12px;font-size:14px;}
+.mail-area{background:var(--bg-color);padding:15px;border-radius:12px;border:1px dashed var(--border-color);margin-bottom:15px;}
 
-  .apk-card-name {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-main);
-    line-height: 1.3;
-    word-break: break-word;
-  }
-  .apk-card-cat {
-    font-size: 10px;
-    color: var(--text-muted);
-    margin-top: 2px;
-  }
+/* TV focus — site */
+.tv-focus{outline:3px solid var(--primary)!important;box-shadow:0 0 15px var(--primary)!important;z-index:100;}
+.player-wrapper.tv-focus{outline:4px solid var(--primary)!important;}
 
-  /* ---- APK PLAYER OVERLAY (tam ekran) ---- */
-  #apk-player-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: #000;
-    z-index: 5000;
-    flex-direction: column;
-  }
-  #apk-player-overlay.active { display: flex; }
+/* TV player overlay — site */
+#tv-player-controls{display:none;position:absolute;bottom:0;left:0;right:0;z-index:30;background:linear-gradient(transparent,rgba(0,0,0,0.85));padding:12px 16px 14px;align-items:center;gap:10px;pointer-events:none;}
+#tv-player-controls.tv-focus-active{display:flex!important;pointer-events:auto;}
+.tv-ctrl-btn{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;padding:8px 14px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:46px;min-height:46px;transition:background 0.1s,border-color 0.1s;outline:none;}
+.tv-ctrl-btn.tv-ctrl-focused{background:var(--primary);border-color:var(--primary);box-shadow:0 0 10px var(--primary);}
+.tv-volume-bar-wrap{display:flex;align-items:center;gap:6px;flex:1;}
+.tv-volume-bar-bg{flex:1;height:6px;background:rgba(255,255,255,0.2);border-radius:4px;overflow:hidden;}
+.tv-volume-bar-fill{height:100%;background:var(--primary);border-radius:4px;transition:width 0.1s;}
+.tv-volume-label{color:#fff;font-size:12px;min-width:28px;text-align:right;}
 
-  /* Player içerik alanı */
-  #apk-player-area {
-    flex: 1;
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-  #apk-player, #apk-ios-player-container, #apk-embed-container {
-    width: 100%; height: 100%;
-    position: absolute; top: 0; left: 0;
-    display: none;
-  }
-  #apk-player { z-index: 5; }
-  #apk-ios-player-container { z-index: 6; background: #000; }
-  #apk-embed-container { z-index: 7; }
-  #apk-ios-video { width: 100%; height: 100%; object-fit: contain; }
-  #apk-embed-iframe { width: 100%; height: 100%; border: none; background: #000; }
+/* =====================================================================
+   APK GÖRÜNÜMÜ — sadece body.apk-mode aktif
+===================================================================== */
+body.apk-mode .container{display:none!important;}
+body.apk-mode header{display:flex!important;}
 
-  /* APK Player geri butonu */
-  #apk-back-btn {
-    position: absolute;
-    top: 14px; left: 14px;
-    z-index: 100;
-    background: rgba(0,0,0,0.65);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: #fff;
-    border-radius: 10px;
-    width: 42px; height: 42px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    font-size: 20px;
-    backdrop-filter: blur(4px);
-    transition: background 0.15s;
-  }
-  #apk-back-btn:hover { background: rgba(34,197,94,0.6); }
+#apk-layout{display:none;flex-direction:column;flex:1;overflow:hidden;background:var(--bg-color);}
+body.apk-mode #apk-layout{display:flex;}
 
-  /* APK Player kanal adı göstergesi */
-  #apk-channel-label {
-    position: absolute;
-    top: 14px; left: 64px; right: 14px;
-    z-index: 100;
-    color: #fff;
-    font-size: 15px;
-    font-weight: 700;
-    text-shadow: 0 1px 6px rgba(0,0,0,0.8);
-    pointer-events: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+/* Kategori çubuğu */
+#apk-categories{
+  display:flex;gap:8px;padding:10px 12px;overflow-x:auto;
+  background:var(--surface-color);border-bottom:1px solid var(--border-color);
+  flex-shrink:0;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+#apk-categories::-webkit-scrollbar{display:none;}
+.apk-cat-btn{
+  padding:8px 18px;border-radius:20px;border:1px solid var(--border-color);
+  background:transparent;color:var(--text-muted);font-weight:700;font-size:13px;
+  cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0;
+}
+.apk-cat-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+.apk-cat-btn:hover:not(.active){border-color:var(--primary);color:var(--primary);}
+.apk-cat-btn.tv-focus{outline:2px solid var(--primary)!important;box-shadow:0 0 10px var(--primary)!important;}
 
-  /* =====================================================================
-     TV BÜYÜK EKRAN MODUNDA APK IZGARASI: 2 sütun daha büyük
-  ===================================================================== */
-  body.apk-mode.tv-device #apk-channel-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    padding: 16px;
-  }
-  body.apk-mode.tv-device .apk-channel-card {
-    min-height: 130px;
-    padding: 20px 14px;
-    border-radius: 18px;
-    border-width: 2px;
-    gap: 12px;
-  }
-  body.apk-mode.tv-device .apk-card-logo {
-    width: 68px; height: 68px;
-  }
-  body.apk-mode.tv-device .apk-card-name {
-    font-size: 14px;
-  }
-  body.apk-mode.tv-device .apk-cat-btn {
-    font-size: 15px;
-    padding: 10px 24px;
-  }
-  body.apk-mode.tv-device #apk-categories {
-    padding: 14px 16px;
-  }
+/* Kanal ızgarası */
+#apk-channel-grid{
+  flex:1;overflow-y:auto;padding:12px;
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  -webkit-overflow-scrolling:touch;transform:translateZ(0);
+}
+#apk-channel-grid::-webkit-scrollbar{width:4px;}
+#apk-channel-grid::-webkit-scrollbar-thumb{background:var(--scroll-thumb);border-radius:10px;}
+
+.apk-channel-card{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:14px 10px;border-radius:14px;background:var(--surface-color);
+  border:2px solid var(--border-color);cursor:pointer;
+  transition:border-color 0.1s,background 0.1s;text-align:center;gap:10px;
+  min-height:90px;transform:translateZ(0);
+}
+.apk-channel-card:hover{border-color:var(--primary);}
+.apk-channel-card.active{border-color:var(--primary);background:var(--primary-light);}
+.apk-channel-card.tv-focus{outline:3px solid var(--primary)!important;box-shadow:0 0 16px var(--primary)!important;border-color:var(--primary)!important;}
+
+.apk-card-logo{width:52px;height:52px;border-radius:10px;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.apk-card-logo img{width:100%;height:100%;object-fit:contain;}
+.apk-card-name{font-size:11px;font-weight:700;color:var(--text-main);line-height:1.3;word-break:break-word;}
+.apk-card-cat{font-size:10px;color:var(--text-muted);margin-top:2px;}
+
+/* TV büyük ekran */
+body.apk-mode.tv-device #apk-channel-grid{grid-template-columns:1fr 1fr;gap:16px;padding:16px;}
+body.apk-mode.tv-device .apk-channel-card{min-height:130px;padding:20px 14px;border-radius:18px;gap:12px;}
+body.apk-mode.tv-device .apk-card-logo{width:68px;height:68px;}
+body.apk-mode.tv-device .apk-card-name{font-size:14px;}
+body.apk-mode.tv-device .apk-cat-btn{font-size:15px;padding:10px 24px;}
+body.apk-mode.tv-device #apk-categories{padding:14px 16px;}
+
+/* =====================================================================
+   APK PLAYER OVERLAY
+===================================================================== */
+#apk-player-overlay{
+  display:none;position:fixed;inset:0;background:#000;z-index:5000;
+}
+#apk-player-overlay.active{display:block;}
+
+#apk-video{
+  width:100%;height:100%;object-fit:contain;background:#000;
+  display:block;position:absolute;inset:0;z-index:1;
+}
+
+#apk-embed-container{
+  display:none;position:absolute;inset:0;z-index:10;
+}
+#apk-embed-iframe{width:100%;height:100%;border:none;background:#000;}
+
+/* Özel player kontrol katmanı */
+#apk-controls{
+  display:none;
+  position:absolute;inset:0;z-index:20;
+  background:
+    linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, transparent 22%),
+    linear-gradient(to top,    rgba(0,0,0,0.85) 0%, transparent 30%);
+  pointer-events:none;
+}
+#apk-controls.visible{
+  display:block;
+  pointer-events:auto;
+}
+
+/* Üst bant */
+#apk-ctrl-top{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;align-items:center;gap:12px;
+  padding:16px 20px;
+}
+#apk-btn-back{
+  width:44px;height:44px;border-radius:12px;
+  background:rgba(255,255,255,0.12);
+  border:1.5px solid rgba(255,255,255,0.25);
+  color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background 0.15s,border-color 0.15s;
+}
+#apk-btn-back:hover,#apk-btn-back.apk-focused{background:var(--primary);border-color:var(--primary);}
+#apk-ctrl-channel-name{
+  color:#fff;font-size:16px;font-weight:700;
+  text-shadow:0 1px 6px rgba(0,0,0,0.9);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+/* Alt bant */
+#apk-ctrl-bottom{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:0 20px 18px 20px;
+  display:flex;flex-direction:column;gap:10px;
+}
+
+/* Canlı çubuğu */
+#apk-progress-wrap{display:flex;align-items:center;gap:10px;}
+#apk-live-bar-bg{flex:1;height:4px;background:rgba(255,255,255,0.2);border-radius:4px;overflow:hidden;}
+#apk-live-bar-fill{height:100%;background:var(--primary);border-radius:4px;width:100%;}
+#apk-live-badge{background:var(--primary);color:#fff;font-size:11px;font-weight:800;letter-spacing:.5px;padding:3px 8px;border-radius:6px;flex-shrink:0;}
+
+/* Kontrol satırı */
+#apk-ctrl-row{display:flex;align-items:center;justify-content:space-between;}
+#apk-ctrl-left{display:flex;align-items:center;gap:10px;}
+#apk-ctrl-right{display:flex;align-items:center;gap:10px;}
+
+/* Kontrol butonu */
+.apk-ctrl-btn{
+  width:48px;height:48px;border-radius:14px;
+  background:rgba(255,255,255,0.10);
+  border:1.5px solid rgba(255,255,255,0.2);
+  color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.15s,border-color 0.15s;
+  outline:none;flex-shrink:0;
+}
+.apk-ctrl-btn:hover,.apk-ctrl-btn.apk-focused{
+  background:var(--primary);border-color:var(--primary);
+  box-shadow:0 0 12px rgba(34,197,94,0.5);
+}
+
+/* Ses grubu */
+#apk-vol-group{display:flex;align-items:center;gap:6px;}
+#apk-vol-slider{
+  -webkit-appearance:none;appearance:none;
+  width:80px;height:4px;border-radius:4px;
+  background:rgba(255,255,255,0.25);outline:none;cursor:pointer;
+}
+#apk-vol-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--primary);cursor:pointer;
+  box-shadow:0 0 4px rgba(34,197,94,0.6);
+}
+body.apk-mode.tv-device #apk-vol-slider{display:none;}
+
+/* TV focus APK kontrol butonları */
+.apk-ctrl-btn.tv-apk-focus{
+  background:var(--primary)!important;
+  border-color:var(--primary)!important;
+  box-shadow:0 0 16px rgba(34,197,94,0.7)!important;
+}
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">
-    <div class="logo-icon">▶</div>
+    <div class="logo-icon">&#9654;</div>
     <div><span class="logo-text-panzer">Panzer</span><span class="logo-text-sports">Sports</span></div>
   </div>
   <div class="header-actions">
-    <button class="theme-btn" onclick="openInfoModal()" title="İletişim & İşbirliği">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <button class="theme-btn" onclick="openInfoModal()" title="İletişim &amp; İşbirliği">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
     </button>
     <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>
     </button>
   </div>
 </header>
 
 <!-- ================================================================
-     SİTE GÖRÜNÜMÜ (APK modunda gizlenir)
+     SİTE GÖRÜNÜMÜ
 ================================================================ -->
 <div class="container">
   <div class="left-content" id="playerTop">
     <div class="player-wrapper" id="playerWrapper">
       <div class="placeholder" id="placeholder">
-        <div style="font-size:50px; margin-bottom:15px">📺</div>
-        <p style="font-weight:700; font-size:18px">İzlemek istediğiniz içeriği seçin</p>
+        <div style="font-size:50px;margin-bottom:15px">&#128250;</div>
+        <p style="font-weight:700;font-size:18px">İzlemek istediğiniz içeriği seçin</p>
       </div>
-      
       <div id="player"></div>
-      
       <div id="ios-player-container">
         <video id="ios-video" playsinline webkit-playsinline controls autoplay muted></video>
       </div>
-      
       <div id="embed-container">
         <iframe id="embed-iframe" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
       </div>
-
       <div id="tv-player-controls">
         <button class="tv-ctrl-btn" id="tv-btn-fullscreen" title="Tam Ekran">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -459,80 +351,119 @@
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
           </svg>
         </button>
-        <button class="tv-ctrl-btn" id="tv-btn-vol-down" title="Sesi Azalt" style="font-size:20px;">−</button>
+        <button class="tv-ctrl-btn" id="tv-btn-vol-down" title="Sesi Azalt" style="font-size:20px;">&#8722;</button>
         <div class="tv-volume-bar-wrap">
-          <div class="tv-volume-bar-bg">
-            <div class="tv-volume-bar-fill" id="tv-vol-bar" style="width:100%;"></div>
-          </div>
+          <div class="tv-volume-bar-bg"><div class="tv-volume-bar-fill" id="tv-vol-bar" style="width:100%;"></div></div>
           <span class="tv-volume-label" id="tv-vol-label">100</span>
         </div>
         <button class="tv-ctrl-btn" id="tv-btn-vol-up" title="Sesi Artır" style="font-size:20px;">+</button>
       </div>
     </div>
-	 
     <div class="banner-section">
       <a href="https://refpa97757.com/L?tag=d_5396305m_65427c_&site=5396305&ad=65427" target="_blank">
         <img src="https://i.imgur.com/iUgXGdJ.gif" alt="Reklam">
       </a>
     </div>
   </div>
-
   <div class="right-content">
     <div class="tabs-container">
-        <button class="tab-btn active" id="btn-channels" onclick="switchTab('channels')">CANLI KANALLAR</button>
-        <button class="tab-btn" id="btn-matches" onclick="switchTab('matches')">MAÇ LİSTESİ</button>
+      <button class="tab-btn active" id="btn-channels" onclick="switchTab('channels')">CANLI KANALLAR</button>
+      <button class="tab-btn" id="btn-matches" onclick="switchTab('matches')">MAÇ LİSTESİ</button>
     </div>
-
     <div class="list-header">
       <input type="text" class="search-box" id="searchInput" placeholder="Kanal veya maç ara..." onkeyup="renderCurrentList()">
     </div>
-
     <div class="channel-list" id="channelList"></div>
   </div>
 </div>
 
 <!-- ================================================================
-     APK GÖRÜNÜMÜ (Yalnızca APK modunda aktif)
+     APK GÖRÜNÜMÜ
 ================================================================ -->
 <div id="apk-layout">
-
-  <!-- KATEGORİ ÇUBUĞU
-       Yeni kategori eklemek için aşağıdaki pattern'i kullan:
-       <button class="apk-cat-btn" onclick="filterApkChannels('KATEGORİ_ADI')">KATEGORİ ETİKETİ</button>
-       KATEGORİ_ADI kanalların cat sütunundaki değerle birebir eşleşmeli (veya 'Tümü').
-  -->
+  <!-- KATEGORİ: Yeni eklemek için → <button class="apk-cat-btn" onclick="filterApkChannels('KATEGORİ')">ETİKET</button> -->
   <div id="apk-categories">
     <button class="apk-cat-btn active" onclick="filterApkChannels('Tümü')">Tümü</button>
     <button class="apk-cat-btn" onclick="filterApkChannels('Spor')">Spor</button>
     <button class="apk-cat-btn" onclick="filterApkChannels('Ulusal')">Ulusal</button>
     <!-- YENİ KATEGORİ EKLEMEK İÇİN BURAYA EKLE -->
     <!-- <button class="apk-cat-btn" onclick="filterApkChannels('Haber')">Haber</button> -->
-    <!-- <button class="apk-cat-btn" onclick="filterApkChannels('Belgesel')">Belgesel</button> -->
   </div>
-
-  <!-- KANAL IZGARASI (2 sütun) -->
   <div id="apk-channel-grid"></div>
 </div>
 
-<!-- APK TAM EKRAN PLAYER OVERLAY -->
+<!-- ================================================================
+     APK PLAYER OVERLAY
+================================================================ -->
 <div id="apk-player-overlay">
-  <div id="apk-player-area">
-    <button id="apk-back-btn" onclick="closeApkPlayer()">&#8592;</button>
-    <span id="apk-channel-label"></span>
 
-    <div id="apk-player"></div>
+  <video id="apk-video" playsinline webkit-playsinline autoplay
+    style="width:100%;height:100%;object-fit:contain;background:#000;display:block;position:absolute;inset:0;z-index:1;">
+  </video>
 
-    <div id="apk-ios-player-container">
-      <video id="apk-ios-video" playsinline webkit-playsinline controls autoplay style="width:100%;height:100%;object-fit:contain;background:#000;"></video>
+  <div id="apk-embed-container">
+    <iframe id="apk-embed-iframe"
+      allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+      sandbox="allow-scripts allow-same-origin allow-presentation allow-popups">
+    </iframe>
+  </div>
+
+  <div id="apk-controls">
+    <!-- Üst bant: geri + kanal adı -->
+    <div id="apk-ctrl-top">
+      <button class="apk-ctrl-btn" id="apk-btn-back" onclick="closeApkPlayer()" title="Geri">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <span id="apk-ctrl-channel-name"></span>
     </div>
 
-    <div id="apk-embed-container">
-      <iframe id="apk-embed-iframe" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
+    <!-- Alt bant -->
+    <div id="apk-ctrl-bottom">
+      <!-- Canlı çubuğu -->
+      <div id="apk-progress-wrap">
+        <div id="apk-live-bar-bg"><div id="apk-live-bar-fill"></div></div>
+        <span id="apk-live-badge">&#9679; CANLI</span>
+      </div>
+      <!-- Kontrol satırı -->
+      <div id="apk-ctrl-row">
+        <!-- Sol: oynat/durdur -->
+        <div id="apk-ctrl-left">
+          <button class="apk-ctrl-btn" id="apk-btn-playpause" onclick="apkTogglePlay()" title="Oynat/Durdur">
+            <svg id="apk-play-icon" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+              <rect x="6" y="4" width="4" height="16" rx="1"/>
+              <rect x="14" y="4" width="4" height="16" rx="1"/>
+            </svg>
+          </button>
+        </div>
+        <!-- Sağ: ses + tam ekran -->
+        <div id="apk-ctrl-right">
+          <div id="apk-vol-group">
+            <button class="apk-ctrl-btn" id="apk-btn-mute" onclick="apkToggleMute()" title="Ses">
+              <svg id="apk-mute-icon" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              </svg>
+            </button>
+            <input type="range" id="apk-vol-slider" min="0" max="100" value="100"
+              oninput="apkSetVolume(this.value)" title="Ses">
+          </div>
+          <button class="apk-ctrl-btn" id="apk-btn-fs" onclick="apkToggleFullscreen()" title="Tam Ekran">
+            <svg id="apk-fs-icon" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
+
 </div>
 
-<!-- KANAL LİSTESİ VERİSİ -->
+<!-- ================================================================
+     VERİ
+================================================================ -->
 <script id="kolay-kanal-listesi" type="text/plain">
 Bein Sports 1 (A) | Spor | HD | https://hlsssssss.ercansov.workers.dev/https://corestream.ronaldovurdu.help//hls/bein-sports-1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
 Bein Sports 1 (B)| Spor | HD | https://andro.0638527.xyz/checklist/androstreamlivebs1.m3u8 | https://downloadr2.apkmirror.com/wp-content/uploads/2023/08/65/64d12cc185a4f_ptv.bein.ui.png
@@ -607,477 +538,433 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
 Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
 </script>
 
-<!-- İLETİŞİM MODALI -->
 <div class="modal-overlay" id="infoModal" onclick="closeInfoModal()">
   <div class="modal-content" onclick="event.stopPropagation()">
-    <h3 style="margin-bottom:15px;">İletişim & İşbirliği</h3>
+    <h3 style="margin-bottom:15px;">İletişim &amp; İşbirliği</h3>
     <div class="mail-area">
-      <p style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">Reklam ve İşbirliği İçin:</p>
-      <p style="font-weight:800; color:var(--primary); font-size:15px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0c7c6d6276697e7f7c637e787f4c7c7e63786362226169">[email&#160;protected]</a></p>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:5px;">Reklam ve İşbirliği İçin:</p>
+      <p style="font-weight:800;color:var(--primary);font-size:15px;">panzersports@proton.me</p>
     </div>
     <a href="https://t.me/xpanzerrbeyy" target="_blank" class="social-btn" style="background:#229ED9;">Telegram'dan Yaz</a>
     <a href="https://x.com/panzerrbeyyx" target="_blank" class="social-btn" style="background:#000;">X (Twitter) Profili</a>
-    <button onclick="closeInfoModal()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:12px; cursor:pointer; font-weight:700; margin-top:5px;">Kapat</button>
+    <button onclick="closeInfoModal()" style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:12px;cursor:pointer;font-weight:700;margin-top:5px;">Kapat</button>
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-  // =====================================================================
-  // CİHAZ TESPİTİ
-  // =====================================================================
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  const isTV = /Android TV|SMART-TV|SmartTV|Tizen|webOS|NetCast|AFTS|AFTB|AFTMM|HbbTV/.test(navigator.userAgent)
-    || (window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script>
+/* =====================================================================
+   CİHAZ TESPİTİ
+===================================================================== */
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isTV  = /Android TV|SMART-TV|SmartTV|Tizen|webOS|NetCast|AFTS|AFTB|AFTMM|HbbTV/.test(navigator.userAgent)
+  || (window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
+const urlParams = new URLSearchParams(window.location.search);
+const isAPK = urlParams.get('apk') === '1';
+if (isAPK) document.body.classList.add('apk-mode');
+if (isTV)  document.body.classList.add('tv-device');
 
-  // APK TESPİTİ: Median.co launch URL'ine ?apk=1 ekle
-  // Örnek: https://panzersports.onrender.com/?apk=1
-  const urlParams = new URLSearchParams(window.location.search);
-  const isAPK = urlParams.get('apk') === '1';
-
-  // APK ve TV sınıflarını ekle
-  if (isAPK) document.body.classList.add('apk-mode');
-  if (isTV) document.body.classList.add('tv-device');
-
-  // =====================================================================
-  // VERİ PARSE
-  // =====================================================================
-  const parse = (id, pre) => document.getElementById(id).textContent.split('\n').filter(l => l.trim()).map((l, i) => {
+/* =====================================================================
+   VERİ PARSE
+===================================================================== */
+const parse = (id, pre) => document.getElementById(id).textContent.split('\n')
+  .filter(l => l.trim()).map((l, i) => {
     const p = l.split('|').map(x => x.trim());
-    return { id: pre + i, name: p[0], cat: p[1], qual: p[2], url: p[3], logo: p[4] || '' };
+    return { id: pre+i, name: p[0], cat: p[1], qual: p[2], url: p[3], logo: p[4]||'' };
   });
+const channels = parse('kolay-kanal-listesi','ch');
+const matches  = parse('kolay-mac-listesi','mt');
 
-  const channels = parse('kolay-kanal-listesi', 'ch');
-  const matches = parse('kolay-mac-listesi', 'mt');
+/* =====================================================================
+   SİTE — değiştirilmedi
+===================================================================== */
+let activeId=null, clapprPlayer=null, currentTab='channels';
 
-  // =====================================================================
-  // SİTE GÖRÜNÜMÜ FONKSİYONLARI (değiştirilmedi)
-  // =====================================================================
-  let activeId = null, clapprPlayer = null, currentTab = 'channels';
-
-  function switchTab(t) {
-    currentTab = t;
-    document.getElementById('btn-channels').classList.toggle('active', t === 'channels');
-    document.getElementById('btn-matches').classList.toggle('active', t === 'matches');
-    renderCurrentList();
+function switchTab(t) {
+  currentTab=t;
+  document.getElementById('btn-channels').classList.toggle('active', t==='channels');
+  document.getElementById('btn-matches').classList.toggle('active', t==='matches');
+  renderCurrentList();
+}
+function renderCurrentList() {
+  const list   = currentTab==='channels' ? channels : matches;
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  document.getElementById('channelList').innerHTML = list
+    .filter(c => c.name.toLowerCase().includes(search))
+    .map(c => `<div class="channel-card ${activeId===c.id?'active':''}" onclick="play('${c.id}')">
+      ${currentTab==='channels'?`<div class="cc-logo"><img src="${c.logo}" onerror="this.src='https://via.placeholder.com/42'"></div>`:''}
+      <div><div style="font-weight:700;font-size:14px">${c.name}</div>
+      <div style="font-size:11px;color:var(--text-muted)">${c.cat} • ${c.qual}</div></div></div>`).join('');
+}
+function play(id) {
+  activeId=id;
+  const item=[...channels,...matches].find(c=>c.id===id);
+  renderCurrentList();
+  document.getElementById('placeholder').style.display='none';
+  document.getElementById('player').style.display='none';
+  document.getElementById('ios-player-container').style.display='none';
+  document.getElementById('embed-container').style.display='none';
+  if (clapprPlayer) clapprPlayer.destroy();
+  document.getElementById('player').innerHTML='';
+  document.getElementById('embed-iframe').src='';
+  const iv=document.getElementById('ios-video');
+  iv.pause(); iv.src=''; iv.load();
+  const isHLS=item.url.includes('.m3u8')||item.url.includes('checklist')||item.url.includes('proxy')||item.url.includes('m3u');
+  if (!isHLS) {
+    document.getElementById('embed-container').style.display='block';
+    document.getElementById('embed-iframe').src=item.url;
+  } else if (isIOS) {
+    document.getElementById('ios-player-container').style.display='block';
+    iv.src=item.url; iv.load(); iv.muted=true;
+    iv.play().catch(e=>console.log('Oynatma hatası:',e));
+  } else {
+    document.getElementById('player').style.display='block';
+    clapprPlayer=new Clappr.Player({source:item.url,mimeType:'application/x-mpegURL',
+      parentId:'#player',width:'100%',height:'100%',autoPlay:true,
+      plugins:[HlsjsPlayback,LevelSelector],hlsjsConfig:{enableWorker:true}});
   }
-
-  function renderCurrentList() {
-    const list = currentTab === 'channels' ? channels : matches;
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    const container = document.getElementById('channelList');
-    container.innerHTML = list.filter(c => c.name.toLowerCase().includes(search)).map(c => `
-      <div class="channel-card ${activeId === c.id ? 'active' : ''}" onclick="play('${c.id}')">
-        ${currentTab === 'channels' ? `<div class="cc-logo"><img src="${c.logo}" onerror="this.src='https://via.placeholder.com/42'"></div>` : ''}
-        <div><div style="font-weight:700; font-size:14px">${c.name}</div><div style="font-size:11px; color:var(--text-muted)">${c.cat} • ${c.qual}</div></div>
-      </div>`).join('');
+}
+function toggleTheme() {
+  const d=document.documentElement, isDark=d.getAttribute('data-theme')==='dark';
+  d.setAttribute('data-theme',isDark?'light':'dark');
+  document.getElementById('themeBtn').innerHTML=isDark
+    ?'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>'
+    :'<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>';
+}
+function openInfoModal()  { document.getElementById('infoModal').style.display='flex'; }
+function closeInfoModal() { document.getElementById('infoModal').style.display='none'; }
+function toggleFullScreen(elem) {
+  if (!document.fullscreenElement&&!document.webkitFullscreenElement) {
+    if (elem.requestFullscreen) elem.requestFullscreen();
+    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
   }
+}
+let tvVolume=1.0, tvMuted=false;
+function getActiveVideoEl() {
+  if (clapprPlayer){const v=document.querySelector('#player video');if(v)return v;}
+  const iv=document.getElementById('ios-video');
+  if (iv&&iv.style.display!=='none') return iv;
+  return null;
+}
+function updateVolUI() {
+  const pct=tvMuted?0:Math.round(tvVolume*100);
+  document.getElementById('tv-vol-bar').style.width=pct+'%';
+  document.getElementById('tv-vol-label').textContent=pct;
+  document.getElementById('tv-vol-icon').innerHTML=(tvMuted||tvVolume===0)
+    ?'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>'
+    :'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>';
+}
+function applyVolToVideo(){const v=getActiveVideoEl();if(v){v.volume=tvVolume;v.muted=tvMuted;}}
+document.getElementById('tv-btn-fullscreen').addEventListener('click',e=>{e.stopPropagation();toggleFullScreen(document.getElementById('playerWrapper'));});
+document.getElementById('tv-btn-mute').addEventListener('click',e=>{e.stopPropagation();tvMuted=!tvMuted;applyVolToVideo();updateVolUI();});
+document.getElementById('tv-btn-vol-down').addEventListener('click',e=>{e.stopPropagation();tvVolume=Math.max(0,tvVolume-0.1);tvMuted=false;applyVolToVideo();updateVolUI();});
+document.getElementById('tv-btn-vol-up').addEventListener('click',e=>{e.stopPropagation();tvVolume=Math.min(1,tvVolume+0.1);tvMuted=false;applyVolToVideo();updateVolUI();});
 
-  function play(id) {
-    activeId = id;
-    const item = [...channels, ...matches].find(c => c.id === id);
-    renderCurrentList();
-    
-    document.getElementById('placeholder').style.display = 'none';
-    document.getElementById('player').style.display = 'none';
-    document.getElementById('ios-player-container').style.display = 'none';
-    document.getElementById('embed-container').style.display = 'none';
+/* =====================================================================
+   APK
+===================================================================== */
+let apkActiveCat='Tümü', apkHlsInst=null, apkActiveId=null;
+let apkCtrlTimer=null, apkIsEmbed=false;
 
-    if (clapprPlayer) clapprPlayer.destroy();
-    document.getElementById('player').innerHTML = "";
-    document.getElementById('embed-iframe').src = "";
-    
-    const iosVideo = document.getElementById('ios-video');
-    iosVideo.pause(); iosVideo.src = ""; iosVideo.load();
+function filterApkChannels(cat) {
+  apkActiveCat=cat;
+  document.querySelectorAll('.apk-cat-btn').forEach(b=>b.classList.toggle('active',b.textContent.trim()===cat));
+  renderApkGrid();
+}
+function renderApkGrid() {
+  const filtered=channels.filter(c=>apkActiveCat==='Tümü'||c.cat===apkActiveCat);
+  document.getElementById('apk-channel-grid').innerHTML=filtered.map(c=>`
+    <div class="apk-channel-card ${apkActiveId===c.id?'active':''}"
+         onclick="playApk('${c.id}')" data-id="${c.id}" tabindex="0">
+      <div class="apk-card-logo">
+        <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/52?text=${encodeURIComponent((c.name[0]||'?'))}'">
+      </div>
+      <div><div class="apk-card-name">${c.name}</div><div class="apk-card-cat">${c.qual}</div></div>
+    </div>`).join('');
+  if (isTV) updateTVFocusableElements();
+}
 
-    const isHLS = item.url.includes('.m3u8') || item.url.includes('checklist') || item.url.includes('proxy') || item.url.includes('m3u');
-
-    if (!isHLS) {
-        document.getElementById('embed-container').style.display = 'block';
-        document.getElementById('embed-iframe').src = item.url;
-    } else if (isIOS) {
-        document.getElementById('ios-player-container').style.display = 'block';
-        iosVideo.src = item.url; iosVideo.load(); iosVideo.muted = true;
-        iosVideo.play().catch(e => console.log("Oynatma hatası:", e));
+function playApk(id) {
+  apkActiveId=id;
+  const item=channels.find(c=>c.id===id);
+  if (!item) return;
+  renderApkGrid();
+  /* öncekini temizle */
+  if (apkHlsInst){try{apkHlsInst.destroy();}catch(e){}apkHlsInst=null;}
+  const vid=document.getElementById('apk-video');
+  vid.pause(); vid.src=''; vid.load();
+  document.getElementById('apk-embed-container').style.display='none';
+  document.getElementById('apk-embed-iframe').src='';
+  apkIsEmbed=false;
+  /* overlay aç */
+  document.getElementById('apk-player-overlay').classList.add('active');
+  document.getElementById('apk-ctrl-channel-name').textContent=item.name;
+  setApkPlayIcon(true);
+  /* oynat */
+  const isHLS=item.url.includes('.m3u8')||item.url.includes('checklist')||item.url.includes('proxy')||item.url.includes('m3u');
+  if (!isHLS) {
+    apkIsEmbed=true;
+    document.getElementById('apk-embed-container').style.display='block';
+    document.getElementById('apk-embed-iframe').src=item.url;
+  } else if (isIOS) {
+    vid.src=item.url; vid.load(); vid.muted=false;
+    vid.play().catch(()=>{vid.muted=true;vid.play().catch(()=>{});});
+  } else {
+    if (typeof Hls!=='undefined'&&Hls.isSupported()) {
+      apkHlsInst=new Hls({enableWorker:false,startLevel:-1});
+      apkHlsInst.loadSource(item.url);
+      apkHlsInst.attachMedia(vid);
+      apkHlsInst.on(Hls.Events.MANIFEST_PARSED,()=>{
+        vid.muted=false;
+        vid.play().catch(()=>{vid.muted=true;vid.play().catch(()=>{});});
+      });
     } else {
-        document.getElementById('player').style.display = 'block';
-        clapprPlayer = new Clappr.Player({ 
-            source: item.url, mimeType: 'application/x-mpegURL',
-            parentId: '#player', width: '100%', height: '100%', autoPlay: true, 
-            plugins: [HlsjsPlayback, LevelSelector],
-            hlsjsConfig: { enableWorker: true }
-        });
+      vid.src=item.url; vid.load(); vid.muted=false;
+      vid.play().catch(()=>{vid.muted=true;vid.play().catch(()=>{});});
     }
   }
+  apkShowControls();
+  /* TV: player kontrol moduna geç */
+  if (isTV) { tvApkMode='player'; updateTVFocusableElements(); }
+}
 
-  // =====================================================================
-  // APK GÖRÜNÜMÜ FONKSİYONLARI
-  // =====================================================================
-  let apkActiveCat = 'Tümü';
-  let apkHlsInstance = null; // HLS.js instance (Clappr yerine)
-  let apkActiveId = null;
+function closeApkPlayer() {
+  if (apkHlsInst){try{apkHlsInst.destroy();}catch(e){}apkHlsInst=null;}
+  const vid=document.getElementById('apk-video');
+  vid.pause(); vid.src=''; vid.load();
+  document.getElementById('apk-embed-iframe').src='';
+  document.getElementById('apk-embed-container').style.display='none';
+  document.getElementById('apk-player-overlay').classList.remove('active');
+  apkHideControls();
+  apkIsEmbed=false;
+  try{if(document.fullscreenElement)document.exitFullscreen();else if(document.webkitFullscreenElement)document.webkitExitFullscreen();}catch(e){}
+  if (isTV){tvApkMode='grid';APK_PLAYER_BTNS.forEach(id=>document.getElementById(id).classList.remove('tv-apk-focus'));updateTVFocusableElements();}
+}
 
-  // Kategori filtrele ve ızgarayı render et
-  function filterApkChannels(cat) {
-    apkActiveCat = cat;
-    // Kategori butonları
-    document.querySelectorAll('.apk-cat-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.textContent.trim() === cat);
-    });
-    renderApkGrid();
+/* Kontroller */
+function apkShowControls(){
+  clearTimeout(apkCtrlTimer);
+  document.getElementById('apk-controls').classList.add('visible');
+  if (!apkIsEmbed) apkCtrlTimer=setTimeout(apkHideControls,3000);
+}
+function apkHideControls(){
+  clearTimeout(apkCtrlTimer);
+  document.getElementById('apk-controls').classList.remove('visible');
+}
+
+/* Ekrana dokunulunca */
+document.getElementById('apk-player-overlay').addEventListener('click',function(e){
+  if (e.target===this||e.target===document.getElementById('apk-video')){
+    document.getElementById('apk-controls').classList.contains('visible')?apkHideControls():apkShowControls();
   }
+});
 
-  function renderApkGrid() {
-    const filtered = channels.filter(c => apkActiveCat === 'Tümü' || c.cat === apkActiveCat);
-    const grid = document.getElementById('apk-channel-grid');
-    grid.innerHTML = filtered.map(c => `
-      <div class="apk-channel-card ${apkActiveId === c.id ? 'active' : ''}" 
-           onclick="playApk('${c.id}')" 
-           data-id="${c.id}"
-           tabindex="0">
-        <div class="apk-card-logo">
-          <img src="${c.logo}" onerror="this.src='https://via.placeholder.com/52?text=${encodeURIComponent(c.name[0])}'">
-        </div>
-        <div>
-          <div class="apk-card-name">${c.name}</div>
-          <div class="apk-card-cat">${c.qual}</div>
-        </div>
-      </div>`).join('');
+/* Oynat/durdur */
+function setApkPlayIcon(playing){
+  document.getElementById('apk-play-icon').innerHTML=playing
+    ?'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'
+    :'<polygon points="5 3 19 12 5 21 5 3"/>';
+}
+function apkTogglePlay(){
+  if (apkIsEmbed) return;
+  const vid=document.getElementById('apk-video');
+  if (vid.paused){vid.play();setApkPlayIcon(true);}
+  else{vid.pause();setApkPlayIcon(false);}
+  apkShowControls();
+}
 
-    // TV modunda focus listesini güncelle
-    if (isTV) updateTVFocusableElements();
+/* Ses */
+function apkToggleMute(){
+  if (apkIsEmbed) return;
+  const vid=document.getElementById('apk-video');
+  vid.muted=!vid.muted;
+  document.getElementById('apk-vol-slider').value=vid.muted?0:Math.round(vid.volume*100);
+  updateApkMuteIcon(vid.muted);
+  apkShowControls();
+}
+function apkSetVolume(val){
+  if (apkIsEmbed) return;
+  const vid=document.getElementById('apk-video');
+  vid.volume=val/100; vid.muted=(val==0);
+  updateApkMuteIcon(vid.muted);
+  apkShowControls();
+}
+function updateApkMuteIcon(muted){
+  document.getElementById('apk-mute-icon').innerHTML=muted
+    ?'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>'
+    :'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>';
+}
+
+/* Tam ekran */
+function apkToggleFullscreen(){
+  const ov=document.getElementById('apk-player-overlay');
+  if (!document.fullscreenElement&&!document.webkitFullscreenElement){
+    if (ov.requestFullscreen) ov.requestFullscreen().catch(()=>{});
+    else if (ov.webkitRequestFullscreen) ov.webkitRequestFullscreen();
+    document.getElementById('apk-fs-icon').innerHTML='<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>';
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    document.getElementById('apk-fs-icon').innerHTML='<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"/>';
   }
+  apkShowControls();
+}
 
-  // APK player aç
-  function playApk(id) {
-    apkActiveId = id;
-    const item = channels.find(c => c.id === id);
-    if (!item) return;
+/* =====================================================================
+   TV KUMANDA NAVİGASYON
+===================================================================== */
+let tvFocusableElements=[], tvFocusedIndex=-1, tvMode='ana';
+const TV_CTRL_BTNS=['tv-btn-fullscreen','tv-btn-mute','tv-btn-vol-down','tv-btn-vol-up'];
+let tvCtrlFocusedIndex=0;
 
-    // Aktif kartı güncelle
-    renderApkGrid();
+/* APK TV */
+const APK_PLAYER_BTNS=['apk-btn-back','apk-btn-playpause','apk-btn-mute','apk-btn-fs'];
+let tvApkPlayerBtnIdx=0, tvApkMode='grid';
 
-    // Player overlay'i aç
-    const overlay = document.getElementById('apk-player-overlay');
-    overlay.classList.add('active');
+function updateTVFocusableElements(){
+  if (isAPK){
+    tvFocusableElements = tvApkMode==='grid'
+      ? Array.from(document.querySelectorAll('.apk-cat-btn,.apk-channel-card')).filter(el=>el.offsetWidth>0)
+      : APK_PLAYER_BTNS.map(id=>document.getElementById(id)).filter(Boolean);
+  } else {
+    tvFocusableElements=Array.from(document.querySelectorAll(
+      '.theme-btn,.player-wrapper,.tab-btn,#searchInput,.channel-card,.social-btn,.modal-content button'
+    )).filter(el=>el.offsetWidth>0&&window.getComputedStyle(el).display!=='none');
+  }
+}
+function setCtrlBtnFocus(i){TV_CTRL_BTNS.forEach((id,j)=>document.getElementById(id).classList.toggle('tv-ctrl-focused',j===i));}
+function enterPlayerMode(){tvMode='player';tvCtrlFocusedIndex=0;document.getElementById('tv-player-controls').classList.add('tv-focus-active');setCtrlBtnFocus(0);}
+function exitPlayerMode(){tvMode='ana';document.getElementById('tv-player-controls').classList.remove('tv-focus-active');TV_CTRL_BTNS.forEach(id=>document.getElementById(id).classList.remove('tv-ctrl-focused'));}
 
-    // Kanal adını göster
-    document.getElementById('apk-channel-label').textContent = item.name;
+function enterApkPlayerTV(){
+  tvApkMode='player';
+  apkShowControls();
+  tvApkPlayerBtnIdx=0;
+  updateTVFocusableElements();
+  APK_PLAYER_BTNS.forEach((id,i)=>document.getElementById(id).classList.toggle('tv-apk-focus',i===0));
+}
+function exitApkPlayerTV(){
+  tvApkMode='grid';
+  APK_PLAYER_BTNS.forEach(id=>document.getElementById(id).classList.remove('tv-apk-focus'));
+  apkHideControls();
+  updateTVFocusableElements();
+}
 
-    // Tüm player alanlarını sıfırla
-    if (apkHlsInstance) { try { apkHlsInstance.destroy(); } catch(e){} apkHlsInstance = null; }
-    document.getElementById('apk-player').style.display = 'none';
-    document.getElementById('apk-player').innerHTML = '';
-    document.getElementById('apk-ios-player-container').style.display = 'none';
-    document.getElementById('apk-embed-container').style.display = 'none';
-    document.getElementById('apk-embed-iframe').src = '';
-    const apkVid = document.getElementById('apk-ios-video');
-    apkVid.pause(); apkVid.src = ''; apkVid.load();
+document.addEventListener('keydown',function(e){
+  const KEYS=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter',
+              'Backspace','Escape','GoBack','Back','XF86Back'];
+  if (!KEYS.includes(e.key)) return;
+  if (document.activeElement.tagName==='INPUT'&&(e.key==='ArrowLeft'||e.key==='ArrowRight')) return;
+  e.preventDefault();
 
-    const isHLS = item.url.includes('.m3u8') || item.url.includes('checklist') || item.url.includes('proxy') || item.url.includes('m3u');
+  const isBack=e.key==='Backspace'||e.key==='Escape'||e.key==='GoBack'||e.key==='Back'||e.key==='XF86Back';
 
-    if (!isHLS) {
-      // iframe embed
-      document.getElementById('apk-embed-container').style.display = 'block';
-      document.getElementById('apk-embed-iframe').src = item.url;
-    } else if (isIOS) {
-      // iOS: native video
-      document.getElementById('apk-ios-player-container').style.display = 'block';
-      apkVid.src = item.url; apkVid.load(); apkVid.muted = false;
-      apkVid.play().catch(e => console.log('APK oynatma hatası:', e));
-    } else {
-      // Android WebView: HLS.js + native <video> (Clappr yerine, çok daha güvenilir)
-      document.getElementById('apk-ios-player-container').style.display = 'block';
-      if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-        apkHlsInstance = new Hls({ enableWorker: false, startLevel: -1 });
-        apkHlsInstance.loadSource(item.url);
-        apkHlsInstance.attachMedia(apkVid);
-        apkHlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-          apkVid.muted = false;
-          apkVid.play().catch(e => { apkVid.muted = true; apkVid.play().catch(()=>{}); });
-        });
-      } else {
-        // Fallback: native HLS desteği varsa (bazı Android tarayıcıları)
-        apkVid.src = item.url; apkVid.load(); apkVid.muted = false;
-        apkVid.play().catch(e => { apkVid.muted = true; apkVid.play().catch(()=>{}); });
+  /* ---- APK ---- */
+  if (isAPK){
+    const overlayActive=document.getElementById('apk-player-overlay').classList.contains('active');
+
+    if (overlayActive){
+      if (isBack){
+        if (tvApkMode==='player'){exitApkPlayerTV();}
+        else{closeApkPlayer();}
+        return;
       }
-    }
-
-    // Telefon: dik başlar (tam ekran isteği YAPMA, player zaten fixed/fullscreen)
-    // TV: zaten yatay
-    // İsteğe bağlı tam ekran (isteğe göre kapat/aç):
-    // Telefonda tam ekran istenmiyorsa bu satırı sil:
-    if (!isTV && !isIOS) {
-      // Android telefon: tam ekrana geç
-      const area = document.getElementById('apk-player-area');
-      if (area.requestFullscreen) area.requestFullscreen().catch(()=>{});
-      else if (area.webkitRequestFullscreen) area.webkitRequestFullscreen();
-    }
-  }
-
-  // APK player kapat
-  function closeApkPlayer() {
-    if (apkHlsInstance) { try { apkHlsInstance.destroy(); } catch(e){} apkHlsInstance = null; }
-    document.getElementById('apk-player').style.display = 'none';
-    document.getElementById('apk-player').innerHTML = '';
-    document.getElementById('apk-ios-player-container').style.display = 'none';
-    document.getElementById('apk-embed-container').style.display = 'none';
-    document.getElementById('apk-embed-iframe').src = '';
-    const apkVid = document.getElementById('apk-ios-video');
-    apkVid.pause(); apkVid.src = ''; apkVid.load();
-    document.getElementById('apk-player-overlay').classList.remove('active');
-    if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
-    else if (document.webkitFullscreenElement) document.webkitExitFullscreen();
-  }
-
-  // =====================================================================
-  // ORTAK: TEMA & MODAL
-  // =====================================================================
-  function toggleTheme() {
-    const d = document.documentElement;
-    const isDark = d.getAttribute('data-theme') === 'dark';
-    d.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    document.getElementById('themeBtn').innerHTML = isDark ? 
-        '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>' : 
-        '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>';
-  }
-
-  function openInfoModal() { document.getElementById('infoModal').style.display = 'flex'; }
-  function closeInfoModal() { document.getElementById('infoModal').style.display = 'none'; }
-
-  // =====================================================================
-  // TAM EKRAN YARDIMCI (site görünümü için)
-  // =====================================================================
-  function toggleFullScreen(elem) {
-    if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
-      if (elem.requestFullscreen) elem.requestFullscreen();
-      else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
-      else if (elem.mozRequestFullScreen) elem.mozRequestFullScreen();
-      else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-    } else {
-      if (document.exitFullscreen) document.exitFullscreen();
-      else if (document.msExitFullscreen) document.msExitFullscreen();
-      else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    }
-  }
-
-  // =====================================================================
-  // TV PLAYER KONTROL OVERLAY (site görünümü)
-  // =====================================================================
-  let tvVolume = 1.0;
-  let tvMuted  = false;
-
-  function getActiveVideoEl() {
-    if (clapprPlayer) {
-      const v = document.querySelector('#player video');
-      if (v) return v;
-    }
-    const iv = document.getElementById('ios-video');
-    if (iv && iv.style.display !== 'none') return iv;
-    return null;
-  }
-
-  function updateVolUI() {
-    const pct = tvMuted ? 0 : Math.round(tvVolume * 100);
-    document.getElementById('tv-vol-bar').style.width = pct + '%';
-    document.getElementById('tv-vol-label').textContent = pct;
-    const icon = document.getElementById('tv-vol-icon');
-    if (tvMuted || tvVolume === 0) {
-      icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
-    } else {
-      icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>';
-    }
-  }
-
-  function applyVolToVideo() {
-    const v = getActiveVideoEl();
-    if (v) { v.volume = tvVolume; v.muted = tvMuted; }
-  }
-
-  document.getElementById('tv-btn-fullscreen').addEventListener('click', function(e) {
-    e.stopPropagation();
-    toggleFullScreen(document.getElementById('playerWrapper'));
-  });
-  document.getElementById('tv-btn-mute').addEventListener('click', function(e) {
-    e.stopPropagation();
-    tvMuted = !tvMuted; applyVolToVideo(); updateVolUI();
-  });
-  document.getElementById('tv-btn-vol-down').addEventListener('click', function(e) {
-    e.stopPropagation();
-    tvVolume = Math.max(0, tvVolume - 0.1); tvMuted = false; applyVolToVideo(); updateVolUI();
-  });
-  document.getElementById('tv-btn-vol-up').addEventListener('click', function(e) {
-    e.stopPropagation();
-    tvVolume = Math.min(1, tvVolume + 0.1); tvMuted = false; applyVolToVideo(); updateVolUI();
-  });
-
-  // =====================================================================
-  // TV KUMANDA NAVİGASYON — APK + SİTE MODU
-  // =====================================================================
-  let tvFocusableElements = [];
-  let tvFocusedIndex = -1;
-  let tvMode = 'ana'; // 'ana' veya 'player'
-
-  const TV_CTRL_BTNS = ['tv-btn-fullscreen', 'tv-btn-mute', 'tv-btn-vol-down', 'tv-btn-vol-up'];
-  let tvCtrlFocusedIndex = 0;
-
-  function updateTVFocusableElements() {
-    if (isAPK) {
-      // APK modu: kategoriler + kanal kartları
-      tvFocusableElements = Array.from(document.querySelectorAll(
-        '.apk-cat-btn, .apk-channel-card'
-      )).filter(el => el.offsetWidth > 0 && el.offsetHeight > 0);
-    } else {
-      tvFocusableElements = Array.from(document.querySelectorAll(
-        '.theme-btn, .player-wrapper, .tab-btn, #searchInput, .channel-card, .social-btn, .modal-content button'
-      )).filter(el => el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).display !== 'none');
-    }
-  }
-
-  function setCtrlBtnFocus(idx) {
-    TV_CTRL_BTNS.forEach((id, i) => {
-      document.getElementById(id).classList.toggle('tv-ctrl-focused', i === idx);
-    });
-  }
-
-  function enterPlayerMode() {
-    tvMode = 'player'; tvCtrlFocusedIndex = 0;
-    document.getElementById('tv-player-controls').classList.add('tv-focus-active');
-    setCtrlBtnFocus(tvCtrlFocusedIndex);
-  }
-
-  function exitPlayerMode() {
-    tvMode = 'ana';
-    document.getElementById('tv-player-controls').classList.remove('tv-focus-active');
-    TV_CTRL_BTNS.forEach(id => document.getElementById(id).classList.remove('tv-ctrl-focused'));
-  }
-
-  // APK modunda TV navigasyonu — ızgara 2 sütun olduğu için sol/sağ ok sütun değiştirir
-  // yukarı/aşağı ok satır değiştirir ve otomatik scroll yapar
-  function getApkGridCols() {
-    // CSS'de grid-template-columns: 1fr 1fr → 2 sütun
-    return 2;
-  }
-
-  document.addEventListener('keydown', function(e) {
-    const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Backspace', 'Escape'];
-    if (!keys.includes(e.key)) return;
-    if (document.activeElement.tagName === 'INPUT' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) return;
-
-    e.preventDefault();
-
-    // ---- APK PLAYER OVERLAY AÇIKSA: geri tuşu kapat ----
-    if (isAPK && document.getElementById('apk-player-overlay').classList.contains('active')) {
-      if (e.key === 'Escape' || e.key === 'Backspace') closeApkPlayer();
+      /* Herhangi ok/enter → kontrolleri göster ve kontrol moduna gir */
+      apkShowControls();
+      if (tvApkMode==='grid'){enterApkPlayerTV();return;}
+      /* tvApkMode==='player' → butonlar arası gezin */
+      if (e.key==='ArrowLeft') tvApkPlayerBtnIdx=Math.max(0,tvApkPlayerBtnIdx-1);
+      else if (e.key==='ArrowRight') tvApkPlayerBtnIdx=Math.min(APK_PLAYER_BTNS.length-1,tvApkPlayerBtnIdx+1);
+      else if (e.key==='ArrowDown'){exitApkPlayerTV();return;}
+      else if (e.key==='Enter'){document.getElementById(APK_PLAYER_BTNS[tvApkPlayerBtnIdx]).click();return;}
+      APK_PLAYER_BTNS.forEach((id,i)=>document.getElementById(id).classList.toggle('tv-apk-focus',i===tvApkPlayerBtnIdx));
       return;
     }
 
-    // ---- PLAYER MOD (site, overlay kontrollerinde) ----
-    if (tvMode === 'player') {
-      if (e.key === 'Escape' || e.key === 'Backspace') { exitPlayerMode(); return; }
-      if (e.key === 'ArrowRight') { tvCtrlFocusedIndex = Math.min(tvCtrlFocusedIndex + 1, TV_CTRL_BTNS.length - 1); setCtrlBtnFocus(tvCtrlFocusedIndex); return; }
-      if (e.key === 'ArrowLeft') { tvCtrlFocusedIndex = Math.max(tvCtrlFocusedIndex - 1, 0); setCtrlBtnFocus(tvCtrlFocusedIndex); return; }
-      if (e.key === 'ArrowDown') { exitPlayerMode(); return; }
-      if (e.key === 'Enter') { document.getElementById(TV_CTRL_BTNS[tvCtrlFocusedIndex]).click(); return; }
-      return;
-    }
-
-    // ---- ANA MOD ----
+    /* Izgara modu */
+    if (isBack) return;
     updateTVFocusableElements();
-    if (tvFocusableElements.length === 0) return;
+    if (!tvFocusableElements.length) return;
 
-    if (e.key === 'Enter') {
-      if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
-        const el = tvFocusableElements[tvFocusedIndex];
-        if (!isAPK && el.classList.contains('player-wrapper')) {
-          enterPlayerMode();
-        } else {
-          el.click();
-          if (el.id === 'searchInput') el.focus();
-        }
-      }
+    if (e.key==='Enter'){
+      if (tvFocusedIndex>=0&&tvFocusableElements[tvFocusedIndex]) tvFocusableElements[tvFocusedIndex].click();
       return;
     }
+    if (tvFocusedIndex>=0&&tvFocusableElements[tvFocusedIndex]) tvFocusableElements[tvFocusedIndex].classList.remove('tv-focus');
 
-    // Focus kaldır
-    if (tvFocusedIndex >= 0 && tvFocusableElements[tvFocusedIndex]) {
-      tvFocusableElements[tvFocusedIndex].classList.remove('tv-focus');
-      if (!isAPK && tvFocusableElements[tvFocusedIndex].classList.contains('player-wrapper')) exitPlayerMode();
+    const cols=2, total=tvFocusableElements.length;
+    if (e.key==='ArrowRight') tvFocusedIndex=Math.min(tvFocusedIndex+1,total-1);
+    else if (e.key==='ArrowLeft') tvFocusedIndex=Math.max(tvFocusedIndex-1,0);
+    else if (e.key==='ArrowDown'){
+      const cur=tvFocusableElements[tvFocusedIndex];
+      if (cur&&cur.classList.contains('apk-cat-btn')){
+        const fc=tvFocusableElements.findIndex(el=>el.classList.contains('apk-channel-card'));
+        if (fc!==-1) tvFocusedIndex=fc;
+      } else tvFocusedIndex=Math.min(tvFocusedIndex+cols,total-1);
     }
-
-    if (isAPK) {
-      // APK 2-sütun ızgara navigasyonu
-      const cols = getApkGridCols();
-      const total = tvFocusableElements.length;
-
-      if (e.key === 'ArrowRight') {
-        tvFocusedIndex = Math.min(tvFocusedIndex + 1, total - 1);
-      } else if (e.key === 'ArrowLeft') {
-        tvFocusedIndex = Math.max(tvFocusedIndex - 1, 0);
-      } else if (e.key === 'ArrowDown') {
-        // Kategori butonlarındaysa bir sonraki satıra geç (ilk karta)
-        const curr = tvFocusableElements[tvFocusedIndex];
-        if (curr && curr.classList.contains('apk-cat-btn')) {
-          // İlk karta git
-          const firstCard = tvFocusableElements.findIndex(el => el.classList.contains('apk-channel-card'));
-          if (firstCard !== -1) tvFocusedIndex = firstCard;
-        } else {
-          tvFocusedIndex = Math.min(tvFocusedIndex + cols, total - 1);
-        }
-      } else if (e.key === 'ArrowUp') {
-        const curr = tvFocusableElements[tvFocusedIndex];
-        if (curr && curr.classList.contains('apk-channel-card')) {
-          const newIdx = tvFocusedIndex - cols;
-          if (newIdx < 0) {
-            // Kategori butonuna dön
-            const firstCat = tvFocusableElements.findIndex(el => el.classList.contains('apk-cat-btn'));
-            tvFocusedIndex = firstCat >= 0 ? firstCat : 0;
-          } else {
-            tvFocusedIndex = newIdx;
-          }
-        } else {
-          tvFocusedIndex = Math.max(tvFocusedIndex - 1, 0);
-        }
-      }
-    } else {
-      // Site navigasyonu (orijinal)
-      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-        tvFocusedIndex++;
-        if (tvFocusedIndex >= tvFocusableElements.length) tvFocusedIndex = tvFocusableElements.length - 1;
-      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-        tvFocusedIndex--;
-        if (tvFocusedIndex < 0) tvFocusedIndex = 0;
-      }
+    else if (e.key==='ArrowUp'){
+      const cur=tvFocusableElements[tvFocusedIndex];
+      if (cur&&cur.classList.contains('apk-channel-card')){
+        const ni=tvFocusedIndex-cols;
+        if (ni<0){const fc=tvFocusableElements.findIndex(el=>el.classList.contains('apk-cat-btn'));tvFocusedIndex=fc>=0?fc:0;}
+        else tvFocusedIndex=ni;
+      } else tvFocusedIndex=Math.max(tvFocusedIndex-1,0);
     }
+    const t=tvFocusableElements[tvFocusedIndex];
+    if (t){t.classList.add('tv-focus');t.scrollIntoView({behavior:'smooth',block:'nearest'});}
+    return;
+  }
 
-    const target = tvFocusableElements[tvFocusedIndex];
-    if (target) {
-      target.classList.add('tv-focus');
-      target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  /* ---- SİTE TV ---- */
+  if (tvMode==='player'){
+    if (isBack){exitPlayerMode();return;}
+    if (e.key==='ArrowRight'){tvCtrlFocusedIndex=Math.min(tvCtrlFocusedIndex+1,TV_CTRL_BTNS.length-1);setCtrlBtnFocus(tvCtrlFocusedIndex);return;}
+    if (e.key==='ArrowLeft'){tvCtrlFocusedIndex=Math.max(tvCtrlFocusedIndex-1,0);setCtrlBtnFocus(tvCtrlFocusedIndex);return;}
+    if (e.key==='ArrowDown'){exitPlayerMode();return;}
+    if (e.key==='Enter'){document.getElementById(TV_CTRL_BTNS[tvCtrlFocusedIndex]).click();return;}
+    return;
+  }
+  updateTVFocusableElements();
+  if (!tvFocusableElements.length) return;
+  if (e.key==='Enter'){
+    if (tvFocusedIndex>=0&&tvFocusableElements[tvFocusedIndex]){
+      const el=tvFocusableElements[tvFocusedIndex];
+      if (el.classList.contains('player-wrapper')) enterPlayerMode();
+      else{el.click();if(el.id==='searchInput')el.focus();}
     }
-  });
+    return;
+  }
+  if (tvFocusedIndex>=0&&tvFocusableElements[tvFocusedIndex]){
+    tvFocusableElements[tvFocusedIndex].classList.remove('tv-focus');
+    if (tvFocusableElements[tvFocusedIndex].classList.contains('player-wrapper')) exitPlayerMode();
+  }
+  if (e.key==='ArrowDown'||e.key==='ArrowRight') tvFocusedIndex=Math.min(tvFocusedIndex+1,tvFocusableElements.length-1);
+  else if (e.key==='ArrowUp'||e.key==='ArrowLeft') tvFocusedIndex=Math.max(tvFocusedIndex-1,0);
+  const t=tvFocusableElements[tvFocusedIndex];
+  if (t){t.classList.add('tv-focus');t.scrollIntoView({behavior:'smooth',block:'nearest'});}
+});
 
-  // MutationObserver — içerik değişince focus listesini güncelle
-  const tvObserver = new MutationObserver(function() {
-    updateTVFocusableElements();
-    if (tvFocusedIndex >= tvFocusableElements.length) {
-      tvFocusedIndex = tvFocusableElements.length - 1;
-    }
-  });
+/* MutationObserver */
+const tvObserver=new MutationObserver(()=>{
+  updateTVFocusableElements();
+  if (tvFocusedIndex>=tvFocusableElements.length) tvFocusedIndex=tvFocusableElements.length-1;
+});
 
-  // =====================================================================
-  // BAŞLANGIÇ
-  // =====================================================================
-  window.onload = function() {
-    if (isAPK) {
-      filterApkChannels('Tümü');
-      tvObserver.observe(document.getElementById('apk-channel-grid'), { childList: true });
-    } else {
-      renderCurrentList();
-      tvObserver.observe(document.getElementById('channelList'), { childList: true });
-    }
-  };
-
+/* =====================================================================
+   BAŞLANGIÇ
+===================================================================== */
+window.onload=function(){
+  if (isAPK){
+    filterApkChannels('Tümü');
+    tvObserver.observe(document.getElementById('apk-channel-grid'),{childList:true});
+  } else {
+    renderCurrentList();
+    tvObserver.observe(document.getElementById('channelList'),{childList:true});
+  }
+};
 </script>
 </body>
 </html>
