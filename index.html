@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@1.8.3/dist/hlsjs-playback.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/clappr-dash-shaka-playback@0.7.20/dist/dash-shaka-playback.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/level-selector/dist/level-selector.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
 
 <style>
   /* =====================================================================
@@ -522,7 +523,7 @@
     <div id="apk-player"></div>
 
     <div id="apk-ios-player-container">
-      <video id="apk-ios-video" playsinline webkit-playsinline controls autoplay muted></video>
+      <video id="apk-ios-video" playsinline webkit-playsinline controls autoplay style="width:100%;height:100%;object-fit:contain;background:#000;"></video>
     </div>
 
     <div id="apk-embed-container">
@@ -712,7 +713,7 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
   // APK GÖRÜNÜMÜ FONKSİYONLARI
   // =====================================================================
   let apkActiveCat = 'Tümü';
-  let apkClapprPlayer = null;
+  let apkHlsInstance = null; // HLS.js instance (Clappr yerine)
   let apkActiveId = null;
 
   // Kategori filtrele ve ızgarayı render et
@@ -763,46 +764,42 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
     document.getElementById('apk-channel-label').textContent = item.name;
 
     // Tüm player alanlarını sıfırla
+    if (apkHlsInstance) { try { apkHlsInstance.destroy(); } catch(e){} apkHlsInstance = null; }
     document.getElementById('apk-player').style.display = 'none';
+    document.getElementById('apk-player').innerHTML = '';
     document.getElementById('apk-ios-player-container').style.display = 'none';
     document.getElementById('apk-embed-container').style.display = 'none';
-    if (apkClapprPlayer) { apkClapprPlayer.destroy(); apkClapprPlayer = null; }
-    document.getElementById('apk-player').innerHTML = '';
     document.getElementById('apk-embed-iframe').src = '';
     const apkVid = document.getElementById('apk-ios-video');
     apkVid.pause(); apkVid.src = ''; apkVid.load();
 
-    // Oynat — overlay DOM'da render olduktan sonra başlat
     const isHLS = item.url.includes('.m3u8') || item.url.includes('checklist') || item.url.includes('proxy') || item.url.includes('m3u');
 
     if (!isHLS) {
+      // iframe embed
       document.getElementById('apk-embed-container').style.display = 'block';
       document.getElementById('apk-embed-iframe').src = item.url;
     } else if (isIOS) {
+      // iOS: native video
       document.getElementById('apk-ios-player-container').style.display = 'block';
       apkVid.src = item.url; apkVid.load(); apkVid.muted = false;
       apkVid.play().catch(e => console.log('APK oynatma hatası:', e));
     } else {
-      // Önce div'i göster, sonra Clappr'ı başlat
-      // (overlay display:flex olduktan sonra layout hesaplanması için bekle)
-      const apkPlayerDiv = document.getElementById('apk-player');
-      apkPlayerDiv.style.display = 'block';
-      requestAnimationFrame(function() {
-        setTimeout(function() {
-          // Clappr için yeni bir wrapper div oluştur (destroy/recreate sorununu önler)
-          apkPlayerDiv.innerHTML = '<div id="apk-player-inner" style="width:100%;height:100%;position:absolute;top:0;left:0;"></div>';
-          apkClapprPlayer = new Clappr.Player({
-            source: item.url,
-            mimeType: 'application/x-mpegURL',
-            parentId: '#apk-player-inner',
-            width: '100%',
-            height: '100%',
-            autoPlay: true,
-            plugins: [HlsjsPlayback, LevelSelector],
-            hlsjsConfig: { enableWorker: true, startLevel: -1 }
-          });
-        }, 80);
-      });
+      // Android WebView: HLS.js + native <video> (Clappr yerine, çok daha güvenilir)
+      document.getElementById('apk-ios-player-container').style.display = 'block';
+      if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+        apkHlsInstance = new Hls({ enableWorker: false, startLevel: -1 });
+        apkHlsInstance.loadSource(item.url);
+        apkHlsInstance.attachMedia(apkVid);
+        apkHlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+          apkVid.muted = false;
+          apkVid.play().catch(e => { apkVid.muted = true; apkVid.play().catch(()=>{}); });
+        });
+      } else {
+        // Fallback: native HLS desteği varsa (bazı Android tarayıcıları)
+        apkVid.src = item.url; apkVid.load(); apkVid.muted = false;
+        apkVid.play().catch(e => { apkVid.muted = true; apkVid.play().catch(()=>{}); });
+      }
     }
 
     // Telefon: dik başlar (tam ekran isteği YAPMA, player zaten fixed/fullscreen)
@@ -819,11 +816,7 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
 
   // APK player kapat
   function closeApkPlayer() {
-    // Önce Clappr'ı durdur, sonra DOM'u temizle
-    if (apkClapprPlayer) {
-      try { apkClapprPlayer.destroy(); } catch(e) {}
-      apkClapprPlayer = null;
-    }
+    if (apkHlsInstance) { try { apkHlsInstance.destroy(); } catch(e){} apkHlsInstance = null; }
     document.getElementById('apk-player').style.display = 'none';
     document.getElementById('apk-player').innerHTML = '';
     document.getElementById('apk-ios-player-container').style.display = 'none';
@@ -832,7 +825,6 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
     const apkVid = document.getElementById('apk-ios-video');
     apkVid.pause(); apkVid.src = ''; apkVid.load();
     document.getElementById('apk-player-overlay').classList.remove('active');
-    // Tam ekrandan çık
     if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
     else if (document.webkitFullscreenElement) document.webkitExitFullscreen();
   }
