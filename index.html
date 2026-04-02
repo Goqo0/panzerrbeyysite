@@ -612,7 +612,7 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
     <h3 style="margin-bottom:15px;">İletişim & İşbirliği</h3>
     <div class="mail-area">
       <p style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">Reklam ve İşbirliği İçin:</p>
-      <p style="font-weight:800; color:var(--primary); font-size:15px;">panzersports@proton.me</p>
+      <p style="font-weight:800; color:var(--primary); font-size:15px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0c7c6d6276697e7f7c637e787f4c7c7e63786362226169">[email&#160;protected]</a></p>
     </div>
     <a href="https://t.me/xpanzerrbeyy" target="_blank" class="social-btn" style="background:#229ED9;">Telegram'dan Yaz</a>
     <a href="https://x.com/panzerrbeyyx" target="_blank" class="social-btn" style="background:#000;">X (Twitter) Profili</a>
@@ -620,7 +620,7 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // =====================================================================
   // CİHAZ TESPİTİ
   // =====================================================================
@@ -772,7 +772,7 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
     const apkVid = document.getElementById('apk-ios-video');
     apkVid.pause(); apkVid.src = ''; apkVid.load();
 
-    // Oynat
+    // Oynat — overlay DOM'da render olduktan sonra başlat
     const isHLS = item.url.includes('.m3u8') || item.url.includes('checklist') || item.url.includes('proxy') || item.url.includes('m3u');
 
     if (!isHLS) {
@@ -783,12 +783,25 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
       apkVid.src = item.url; apkVid.load(); apkVid.muted = false;
       apkVid.play().catch(e => console.log('APK oynatma hatası:', e));
     } else {
-      document.getElementById('apk-player').style.display = 'block';
-      apkClapprPlayer = new Clappr.Player({
-        source: item.url, mimeType: 'application/x-mpegURL',
-        parentId: '#apk-player', width: '100%', height: '100%', autoPlay: true,
-        plugins: [HlsjsPlayback, LevelSelector],
-        hlsjsConfig: { enableWorker: true }
+      // Önce div'i göster, sonra Clappr'ı başlat
+      // (overlay display:flex olduktan sonra layout hesaplanması için bekle)
+      const apkPlayerDiv = document.getElementById('apk-player');
+      apkPlayerDiv.style.display = 'block';
+      requestAnimationFrame(function() {
+        setTimeout(function() {
+          // Clappr için yeni bir wrapper div oluştur (destroy/recreate sorununu önler)
+          apkPlayerDiv.innerHTML = '<div id="apk-player-inner" style="width:100%;height:100%;position:absolute;top:0;left:0;"></div>';
+          apkClapprPlayer = new Clappr.Player({
+            source: item.url,
+            mimeType: 'application/x-mpegURL',
+            parentId: '#apk-player-inner',
+            width: '100%',
+            height: '100%',
+            autoPlay: true,
+            plugins: [HlsjsPlayback, LevelSelector],
+            hlsjsConfig: { enableWorker: true, startLevel: -1 }
+          });
+        }, 80);
       });
     }
 
@@ -806,12 +819,19 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
 
   // APK player kapat
   function closeApkPlayer() {
-    document.getElementById('apk-player-overlay').classList.remove('active');
-    if (apkClapprPlayer) { apkClapprPlayer.destroy(); apkClapprPlayer = null; }
+    // Önce Clappr'ı durdur, sonra DOM'u temizle
+    if (apkClapprPlayer) {
+      try { apkClapprPlayer.destroy(); } catch(e) {}
+      apkClapprPlayer = null;
+    }
+    document.getElementById('apk-player').style.display = 'none';
     document.getElementById('apk-player').innerHTML = '';
+    document.getElementById('apk-ios-player-container').style.display = 'none';
+    document.getElementById('apk-embed-container').style.display = 'none';
     document.getElementById('apk-embed-iframe').src = '';
     const apkVid = document.getElementById('apk-ios-video');
     apkVid.pause(); apkVid.src = ''; apkVid.load();
+    document.getElementById('apk-player-overlay').classList.remove('active');
     // Tam ekrandan çık
     if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
     else if (document.webkitFullscreenElement) document.webkitExitFullscreen();
@@ -1061,13 +1081,4 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
       // APK başlangıcı
       filterApkChannels('Tümü');
       // Observer APK grid'e bağla
-      tvObserver.observe(document.getElementById('apk-channel-grid'), { childList: true });
-    } else {
-      // Site başlangıcı
-      renderCurrentList();
-      tvObserver.observe(document.getElementById('channelList'), { childList: true });
-    }
-  };
-</script>
-</body>
-</html>
+      tvObserver.observe(document.getElementById('a
