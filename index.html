@@ -1074,11 +1074,18 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
   });
 
   // =====================================================================
-  // BAŞLANGICI
+  // BAŞLANGIÇ
   // =====================================================================
   window.onload = function() {
     if (isAPK) {
-      // APK başlangıcı
       filterApkChannels('Tümü');
-      // Observer APK grid'e bağla
-      tvObserver.observe(document.getElementById('a
+      tvObserver.observe(document.getElementById('apk-channel-grid'), { childList: true });
+    } else {
+      renderCurrentList();
+      tvObserver.observe(document.getElementById('channelList'), { childList: true });
+    }
+  };
+
+</script>
+</body>
+</html>
