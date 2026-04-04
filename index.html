@@ -549,7 +549,7 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
     <h3 style="margin-bottom:15px;">İletişim &amp; İşbirliği</h3>
     <div class="mail-area">
       <p style="font-size:12px;color:var(--text-muted);margin-bottom:5px;">Reklam ve İşbirliği İçin:</p>
-      <p style="font-weight:800;color:var(--primary);font-size:15px;">panzersports@proton.me</p>
+      <p style="font-weight:800;color:var(--primary);font-size:15px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="08786966726d7a7b78677a7c7b48787a677c676626656d">[email&#160;protected]</a></p>
     </div>
     <a href="https://t.me/xpanzerrbeyy" target="_blank" class="social-btn" style="background:#229ED9;">Telegram'dan Yaz</a>
     <a href="https://x.com/panzerrbeyyx" target="_blank" class="social-btn" style="background:#000;">X (Twitter) Profili</a>
@@ -557,7 +557,7 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 <script>
 /* =====================================================================
    CİHAZ TESPİTİ
@@ -602,6 +602,9 @@ function renderCurrentList() {
       <div><div style="font-weight:700;font-size:14px">${c.name}</div>
       <div style="font-size:11px;color:var(--text-muted)">${c.cat} • ${c.qual}</div></div></div>`).join('');
 }
+/* Site için HLS.js instance (webOS/TV fallback) */
+let siteHlsInst = null;
+
 function play(id) {
   activeId=id;
   const item=[...channels,...matches].find(c=>c.id===id);
@@ -610,20 +613,40 @@ function play(id) {
   document.getElementById('player').style.display='none';
   document.getElementById('ios-player-container').style.display='none';
   document.getElementById('embed-container').style.display='none';
-  if (clapprPlayer) clapprPlayer.destroy();
+  if (clapprPlayer) { clapprPlayer.destroy(); clapprPlayer=null; }
+  if (siteHlsInst) { try{siteHlsInst.destroy();}catch(e){} siteHlsInst=null; }
   document.getElementById('player').innerHTML='';
   document.getElementById('embed-iframe').src='';
   const iv=document.getElementById('ios-video');
   iv.pause(); iv.src=''; iv.load();
+
   const isHLS=item.url.includes('.m3u8')||item.url.includes('checklist')||item.url.includes('proxy')||item.url.includes('m3u');
+
   if (!isHLS) {
     document.getElementById('embed-container').style.display='block';
     document.getElementById('embed-iframe').src=item.url;
   } else if (isIOS) {
+    /* iOS: native video */
     document.getElementById('ios-player-container').style.display='block';
     iv.src=item.url; iv.load(); iv.muted=true;
     iv.play().catch(e=>console.log('Oynatma hatası:',e));
+  } else if (isTV) {
+    /* LG/Samsung/webOS/Tizen TV: Clappr yerine HLS.js + native video */
+    document.getElementById('ios-player-container').style.display='block';
+    if (typeof Hls!=='undefined'&&Hls.isSupported()) {
+      siteHlsInst=new Hls({enableWorker:false,startLevel:-1});
+      siteHlsInst.loadSource(item.url);
+      siteHlsInst.attachMedia(iv);
+      siteHlsInst.on(Hls.Events.MANIFEST_PARSED,()=>{
+        iv.muted=false;
+        iv.play().catch(()=>{iv.muted=true;iv.play().catch(()=>{});});
+      });
+    } else {
+      iv.src=item.url; iv.load(); iv.muted=true;
+      iv.play().catch(e=>console.log('TV oynatma hatası:',e));
+    }
   } else {
+    /* Masaüstü/diğer: Clappr */
     document.getElementById('player').style.display='block';
     clapprPlayer=new Clappr.Player({source:item.url,mimeType:'application/x-mpegURL',
       parentId:'#player',width:'100%',height:'100%',autoPlay:true,
