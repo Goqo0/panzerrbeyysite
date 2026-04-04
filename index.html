@@ -549,7 +549,7 @@ Houston - Milwaukee | 03.00 | NBA | https://streams.center/embed/ch71.php
     <h3 style="margin-bottom:15px;">İletişim &amp; İşbirliği</h3>
     <div class="mail-area">
       <p style="font-size:12px;color:var(--text-muted);margin-bottom:5px;">Reklam ve İşbirliği İçin:</p>
-      <p style="font-weight:800;color:var(--primary);font-size:15px;">panzersports@proton.me</p>
+      <p style="font-weight:800;color:var(--primary);font-size:15px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e9998887938c9b9a99869b9d9aa9999b869d8687c7848c">[email&#160;protected]</a></p>
     </div>
     <a href="https://t.me/xpanzerrbeyy" target="_blank" class="social-btn" style="background:#229ED9;">Telegram'dan Yaz</a>
     <a href="https://x.com/panzerrbeyyx" target="_blank" class="social-btn" style="background:#000;">X (Twitter) Profili</a>
@@ -864,9 +864,18 @@ document.addEventListener('keydown',function(e){
               'Backspace','Escape','GoBack','Back','XF86Back'];
   if (!KEYS.includes(e.key)) return;
   if (document.activeElement.tagName==='INPUT'&&(e.key==='ArrowLeft'||e.key==='ArrowRight')) return;
-  e.preventDefault();
 
   const isBack=e.key==='Backspace'||e.key==='Escape'||e.key==='GoBack'||e.key==='Back'||e.key==='XF86Back';
+
+  /* Geri tuşu için preventDefault SADECE APK'da ve overlay açıkken çağır.
+     Diğer durumlarda çağırma — Android WebView crash'ini önler. */
+  if (!isBack) {
+    e.preventDefault();
+  } else if (isAPK) {
+    const overlayActive=document.getElementById('apk-player-overlay').classList.contains('active');
+    if (overlayActive) e.preventDefault();
+    /* Izgara modunda geri tuşunu engelleme — WebView kendi geri navigasyonunu yönetsin */
+  }
 
   /* ---- APK ---- */
   if (isAPK){
