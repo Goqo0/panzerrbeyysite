@@ -196,17 +196,17 @@ body.tv-device .right-content{width:380px;}
 #tv-vol-slider{-webkit-appearance:none;appearance:none;width:80px;height:3px;border-radius:3px;background:rgba(255,255,255,0.28);outline:none;cursor:pointer;}
 #tv-vol-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;cursor:pointer;}
 
-/* TV D-pad kanal seçimi — site: sade açık gri highlight */
-.tv-focus{outline:none!important;box-shadow:none!important;z-index:100;}
+/* TV D-pad — yeşil kutucuk (hem site hem APK) */
+.tv-focus{ z-index:100; }
 .channel-card.tv-focus{
-  background:rgba(255,255,255,0.10)!important;
-  border-color:rgba(255,255,255,0.35)!important;
+  border-color:var(--primary)!important;
+  background:var(--primary-light)!important;
+  box-shadow:0 0 0 2px var(--primary), 0 0 14px rgba(34,197,94,0.4)!important;
   outline:none!important;
-  box-shadow:none!important;
-  transition:background 0.15s,border-color 0.15s;
+  transition:all 0.12s;
 }
 /* APK: yeşil focus korunur */
-.apk-channel-card.tv-focus{background:var(--primary-light)!important;border-color:var(--primary)!important;outline:none!important;box-shadow:0 0 16px rgba(34,197,94,0.45)!important;}
+.apk-channel-card.tv-focus{background:var(--primary-light)!important;border-color:var(--primary)!important;outline:none!important;box-shadow:0 0 0 2px var(--primary), 0 0 16px rgba(34,197,94,0.45)!important;}
 .apk-cat-btn.tv-focus{background:var(--primary)!important;border-color:var(--primary)!important;color:#fff!important;outline:none!important;box-shadow:0 0 10px var(--primary)!important;}
 
 /* =====================================================================
@@ -677,12 +677,19 @@ Test | Spor | HD |  | https://via.placeholder.com/44?text=T
    CİHAZ TESPİTİ
 ===================================================================== */
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isTV  = /Android TV|SMART-TV|SmartTV|Tizen|webOS|NetCast|AFTS|AFTB|AFTMM|HbbTV/.test(navigator.userAgent)
-  || (window.screen.width >= 1280 && !('ontouchstart' in window) && navigator.maxTouchPoints === 0);
 const urlParams = new URLSearchParams(window.location.search);
 const isAPK = urlParams.get('apk') === '1';
+
+/* TV tespiti: UA bazlı (kesin) VEYA ?tv=1 parametresi (test/zorla) */
+const isTVua = /Android TV|SMART-TV|SmartTV|Tizen|webOS|NetCast|AFTS|AFTB|AFTMM|HbbTV|CrKey/.test(navigator.userAgent);
+const isTV = isTVua || urlParams.get('tv') === '1';
+
 if (isAPK) document.body.classList.add('apk-mode');
-if (isTV)  document.body.classList.add('tv-device');
+if (isTV)  {
+  document.body.classList.add('tv-device');
+  /* TV'de fare imlecini gizle */
+  document.documentElement.style.cursor = 'none';
+}
 
 /* =====================================================================
    VERİ PARSE
@@ -734,8 +741,8 @@ function renderCurrentList() {
       <div><div style="font-weight:700;font-size:14px">${c.name}</div>
       <div style="font-size:11px;color:var(--text-muted)">${c.cat} \u2022 ${c.qual}</div></div></div>`).join('');
 
-  // TV modunda D-pad focus sistemini güncelle
-  if (isTV && !isAPK) tvInitFocus();
+  // TV: fokus güncelle
+  if (isTV && !isAPK) tvRefreshFocus();
 }
 
 /* =====================================================================
@@ -1058,97 +1065,129 @@ function tvToggleFullscreen(){
 }
 
 /* =====================================================================
-   TV D-PAD NAVİGASYON (Site + APK TV)
+   TV D-PAD NAVİGASYON
 ===================================================================== */
 let tvFocusedIndex = -1;
-/* APK için iki bölge: 'cat' = kategori satırı, 'grid' = kanal ızgarası */
-let apkTvZone = 'grid'; /* başlangıçta grid */
+let apkTvZone = 'grid'; /* 'cat' | 'grid' */
 
-function tvGetFocusable() {
+/* Odaklanabilir öğeleri getir */
+function tvGetItems() {
   if (isAPK) {
-    if (apkTvZone === 'cat') return Array.from(document.querySelectorAll('#apk-categories .apk-cat-btn'));
+    if (apkTvZone === 'cat')
+      return Array.from(document.querySelectorAll('#apk-categories .apk-cat-btn'));
     return Array.from(document.querySelectorAll('#apk-channel-grid .apk-channel-card'));
   }
+  /* Site: sadece kanal listesi */
   return Array.from(document.querySelectorAll('#channelList .channel-card'));
 }
-function tvClearFocus() { document.querySelectorAll('.tv-focus,.tv-apk-focus').forEach(el=>{el.classList.remove('tv-focus');el.classList.remove('tv-apk-focus');}); }
-function tvSetFocus(idx) {
-  const items = tvGetFocusable();
-  if (!items.length) return;
-  tvClearFocus();
-  tvFocusedIndex = Math.max(0, Math.min(idx, items.length-1));
-  const el = items[tvFocusedIndex];
-  /* APK için yeşil (.tv-focus), site için (.tv-focus sade gri) */
-  el.classList.add('tv-focus');
-  el.scrollIntoView({block:'nearest',behavior:'smooth'});
-}
-function tvInitFocus() {
-  if (!isTV) return;
-  if (isAPK) { apkTvZone='grid'; }
-  tvFocusedIndex = 0;
-  const items = tvGetFocusable();
-  if (items.length) { tvClearFocus(); items[0].classList.add('tv-focus'); }
+
+function tvClearFocus() {
+  document.querySelectorAll('.tv-focus').forEach(el => el.classList.remove('tv-focus'));
 }
 
+function tvSetFocus(idx) {
+  const items = tvGetItems();
+  if (!items.length) return;
+  tvClearFocus();
+  tvFocusedIndex = Math.max(0, Math.min(idx, items.length - 1));
+  const el = items[tvFocusedIndex];
+  el.classList.add('tv-focus');
+  el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+/* İlk focus: site'de kanal listesinin ilk kartı, APK'da grid ilk kart */
+function tvInitFocus() {
+  if (!isTV) return;
+  if (isAPK) apkTvZone = 'grid';
+  tvFocusedIndex = -1;
+  /* Kısa gecikme — DOM render tamamlansın */
+  setTimeout(() => tvSetFocus(0), 80);
+}
+
+/* renderCurrentList çağrıldıktan sonra fokus koru */
+function tvRefreshFocus() {
+  if (!isTV || isAPK) return;
+  const items = tvGetItems();
+  if (!items.length) { tvFocusedIndex = -1; return; }
+  /* aktif kanal varsa onu fokusla, yoksa 0 */
+  const activeIdx = items.findIndex(el => el.dataset.id === activeId);
+  tvSetFocus(activeIdx >= 0 ? activeIdx : Math.min(tvFocusedIndex, items.length - 1));
+}
+
+/* APK grid render sonrası fokus */
+function tvApkRefreshFocus() {
+  if (!isTV || !isAPK) return;
+  apkTvZone = 'grid';
+  setTimeout(() => tvSetFocus(0), 80);
+}
+
+/* =====================================================================
+   KLAVYE / KUMANDA OLAYLARI
+===================================================================== */
 document.addEventListener('keydown', function(e) {
   if (!isTV) return;
 
-  /* TV player açıkken kumanda */
-  const tvOpen = isAPK
-    ? document.getElementById('apk-player-overlay').classList.contains('active')
-    : tvOverlay.classList.contains('active');
+  const key = e.key || '';
+  const code = e.keyCode || 0;
 
-  if (tvOpen) {
-    if (e.key==='Backspace'||e.key==='Back'||e.keyCode===8||e.keyCode===461) {
-      e.preventDefault();
-      if (isAPK) closeApkPlayer(); else closeTvPlayer();
-    }
-    if (e.key==='Enter'||e.keyCode===13) {
-      if (isAPK) showApkControls(); else tvShowControls();
-    }
+  const isDown  = key==='ArrowDown'  || code===40;
+  const isUp    = key==='ArrowUp'    || code===38;
+  const isRight = key==='ArrowRight' || code===39;
+  const isLeft  = key==='ArrowLeft'  || code===37;
+  const isEnter = key==='Enter'      || code===13;
+  const isBack  = key==='Backspace'||key==='Back'||key==='GoBack'||code===8||code===461||code===10009;
+
+  /* ── Player açıkken ── */
+  const apkOpen = document.getElementById('apk-player-overlay').classList.contains('active');
+  const tvOpen  = tvOverlay.classList.contains('active');
+
+  if (apkOpen || tvOpen) {
+    if (isBack)  { e.preventDefault(); apkOpen ? closeApkPlayer() : closeTvPlayer(); }
+    if (isEnter) { e.preventDefault(); apkOpen ? showApkControls() : tvShowControls(); }
     return;
   }
 
-  /* Liste navigasyon */
-  const items = tvGetFocusable();
-  if (!items.length && tvFocusedIndex < 0) { tvSetFocus(0); return; }
-  if (tvFocusedIndex < 0) { tvSetFocus(0); return; }
+  /* ── Modal açıkken sadece back dinle ── */
+  if (document.getElementById('exit-modal').classList.contains('show')) {
+    if (isBack) { e.preventDefault(); closeExitModal(); }
+    return;
+  }
 
-  /* Sütun sayısı: APK grid = 2, APK cat = satırdaki buton sayısı (yatay), site = 1 */
-  const isCatZone = isAPK && apkTvZone==='cat';
-  const cols = isCatZone ? 1 : (isAPK ? 2 : 1);
+  /* ── Liste navigasyon ── */
+  e.preventDefault();
 
-  if (e.key==='ArrowDown'||e.keyCode===40) {
-    e.preventDefault();
-    if (isAPK && apkTvZone==='cat') {
-      /* Kategori satırından grid'e in */
-      apkTvZone='grid'; tvFocusedIndex=-1; tvSetFocus(0);
-    } else {
-      tvSetFocus(tvFocusedIndex + (isAPK ? 2 : 1));
+  const items = tvGetItems();
+  /* Henüz focus yoksa başlat */
+  if (tvFocusedIndex < 0 || !items.length) { tvSetFocus(0); return; }
+
+  if (isAPK) {
+    /* APK: 2 sütunlu grid + kategori satırı */
+    const inCat  = apkTvZone === 'cat';
+    const inGrid = apkTvZone === 'grid';
+
+    if (isDown) {
+      if (inCat) { apkTvZone='grid'; tvFocusedIndex=-1; tvSetFocus(0); }
+      else        { tvSetFocus(tvFocusedIndex + 2); }
+    } else if (isUp) {
+      if (inGrid && tvFocusedIndex < 2) { apkTvZone='cat'; tvFocusedIndex=-1; tvSetFocus(0); }
+      else if (inGrid)                   { tvSetFocus(tvFocusedIndex - 2); }
+      /* inCat + up → kal */
+    } else if (isRight) {
+      tvSetFocus(tvFocusedIndex + 1);
+    } else if (isLeft) {
+      tvSetFocus(tvFocusedIndex - 1);
+    } else if (isEnter) {
+      const el = items[tvFocusedIndex];
+      if (el) el.click();
+    } else if (isBack) {
+      showExitModal();
     }
-  } else if (e.key==='ArrowUp'||e.keyCode===38) {
-    e.preventDefault();
-    if (isAPK && apkTvZone==='grid' && tvFocusedIndex < 2) {
-      /* Grid'in ilk satırından kategori satırına çık */
-      apkTvZone='cat'; tvFocusedIndex=-1; tvSetFocus(0);
-    } else if (isAPK && apkTvZone==='cat') {
-      /* Kategori satırında yukarı basılırsa kal */
-    } else {
-      tvSetFocus(tvFocusedIndex - (isAPK ? 2 : 1));
-    }
-  } else if (e.key==='ArrowRight'||e.keyCode===39) {
-    e.preventDefault();
-    tvSetFocus(tvFocusedIndex + 1);
-  } else if (e.key==='ArrowLeft'||e.keyCode===37) {
-    e.preventDefault();
-    tvSetFocus(tvFocusedIndex - 1);
-  } else if (e.key==='Enter'||e.keyCode===13) {
-    e.preventDefault();
-    const el = items[tvFocusedIndex];
-    if (el) el.click();
-  } else if (e.key==='Backspace'||e.key==='Back'||e.keyCode===8||e.keyCode===461) {
-    e.preventDefault();
-    showExitModal();
+  } else {
+    /* Site: tek sütunlu kanal listesi */
+    if (isDown)        { tvSetFocus(tvFocusedIndex + 1); }
+    else if (isUp)     { tvSetFocus(tvFocusedIndex - 1); }
+    else if (isEnter)  { const el=items[tvFocusedIndex]; if(el) el.click(); }
+    else if (isBack)   { showExitModal(); }
   }
 });
 
@@ -1208,7 +1247,7 @@ function renderApkGrid() {
       </div>
       <div><div class="apk-card-name">${c.name}</div><div class="apk-card-cat">${c.qual}</div></div>
     </div>`).join('');
-  if (isTV) { apkTvZone='grid'; tvInitFocus(); }
+  if (isTV) { apkTvZone='grid'; tvApkRefreshFocus(); }
 }
 
 function playApk(id, src) {
@@ -1355,7 +1394,7 @@ if (isAPK || isTV) {
 renderCurrentList();
 buildApkCategories();
 renderApkGrid();
-if (isTV && !isAPK) { setTimeout(tvInitFocus, 300); }
+if (isTV && !isAPK) { setTimeout(tvInitFocus, 400); }
 </script>
 
 <!-- Chromecast SDK -->
