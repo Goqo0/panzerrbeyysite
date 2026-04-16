@@ -8,7 +8,7 @@
 <title>PanzerSports - Canlı Yayın</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/shaka-player/dist/shaka-player.compiled.js"></script>
+
 <style>
 /* =====================================================================
    CSS DEĞİŞKENLERİ
@@ -323,8 +323,8 @@ body.tv-mode .channel-list{scroll-behavior:smooth;}
     <h3 style="margin-bottom:5px;">PanzerSports APK İndir</h3>
     <p style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">Uygulamayı Android cihazınıza kurarak kesintisiz izleyebilirsiniz.</p>
     <div class="download-options">
-      <a href="https://www.mediafire.com/file/nlksjscq69ffd7d/PanzerTV_2.0.3.apk/file" target="_blank" class="dl-btn"><span>Alternatif 1</span><strong>Mediafire</strong></a>
-      <a href="https://gofile.io/d/LNVoKq" target="_blank" class="dl-btn"><span>Alternatif 2</span><strong>Gofile</strong></a>
+      <a href="https://www.mediafire.com/file/vu2gqo33ek1vx0p/PanzerTV+2.0.4.apk/file" target="_blank" class="dl-btn"><span>Alternatif 1</span><strong>Mediafire</strong></a>
+      <a href="https://gofile.io/d/ZkFCjU" target="_blank" class="dl-btn"><span>Alternatif 2</span><strong>Gofile</strong></a>
     </div>
     <button onclick="closeDownloadModal()" style="width:100%;padding:12px;background:var(--border-color);color:var(--text-main);border:none;border-radius:12px;cursor:pointer;font-weight:700;margin-top:15px;">Kapat</button>
   </div>
@@ -553,25 +553,22 @@ function play(id) {
   /* Normal site: player içinde aç */
   stopSitePlayer();
   const isHLS  = item.url.includes('.m3u8') || item.url.includes('checklist') || item.url.includes('proxy') || item.url.includes('m3u');
-  const isDASH = item.url.includes('.mpd');
 
-  if (!isHLS && !isDASH) {
+  if (!isHLS) {
     document.getElementById('site-embed-container').style.display = 'block';
     document.getElementById('site-embed-iframe').src = item.url;
     return;
   }
   document.getElementById('site-player-root').style.display = 'block';
-  document.getElementById('site-spinner').classList.add('show');
   siteShowControls();
 
-  if (isDASH) initShaka(item.url);
-  else        initHls(item.url);
+  initHls(item.url);
 }
 
 /* ==========================================================
    SITE PLAYER — HLS / DASH
 ========================================================== */
-let siteHls = null, shakaPlayer = null, seekTimer = null, ctrlTimer = null;
+let siteHls = null, seekTimer = null, ctrlTimer = null;
 let sitePlayId = 0; /* Her play çağrısına benzersiz ID — eski async işlemleri iptal eder */
 const siteVid  = document.getElementById('site-video');
 const siteSpin = document.getElementById('site-spinner');
@@ -585,14 +582,10 @@ function stopSitePlayer() {
   siteSpin.classList.remove('show');
   siteCtrl.classList.remove('visible');
   clearInterval(seekTimer);
-  /* HLS/Shaka: önce durdur sonra destroy — sıra önemli */
+  /* HLS: önce durdur sonra destroy — sıra önemli */
   if (siteHls) {
     try { siteHls.stopLoad(); siteHls.detachMedia(); siteHls.destroy(); } catch(e){}
     siteHls = null;
-  }
-  if (shakaPlayer) {
-    try { shakaPlayer.destroy(); } catch(e){}
-    shakaPlayer = null;
   }
   /* load() ÇAĞRILMIYOR — yeni src atanmadan önce load() async kuyruğa girer
      ve yeni kaynağı geciktirir. Sadece pause + src temizleme yeterli. */
@@ -646,15 +639,6 @@ function initHls(url) {
       }
     });
   }
-}
-
-async function initShaka(url) {
-  if (typeof shaka === 'undefined') return;
-  shaka.polyfill.installAll();
-  const p = new shaka.Player(siteVid);
-  p.addEventListener('error', e => console.warn('Shaka err', e));
-  try { await p.load(url); siteVid.play(); } catch(e) { console.warn(e); }
-  shakaPlayer = p;
 }
 
 siteVid.addEventListener('waiting', () => siteSpin.classList.add('show'));
@@ -847,7 +831,6 @@ function openTvPlayer(item) {
   tvVid.removeAttribute('src');
 
   document.getElementById('tv-ctrl-channel-name').textContent = item.name;
-  tvSpin.classList.add('show');
   tvControls.classList.remove('visible');
 
   let embedEl = document.getElementById('tv-embed-iframe');
